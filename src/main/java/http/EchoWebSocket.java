@@ -1,4 +1,4 @@
-/**
+package http; /**
  * Created by macbookpro on 03/12/2016.
  */
 import org.eclipse.jetty.websocket.api.*;
