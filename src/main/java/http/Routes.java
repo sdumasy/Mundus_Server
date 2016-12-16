@@ -7,21 +7,43 @@ import models.User;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static spark.Spark.*;
 
 /**
- * Created by macbookpro on 05/12/2016.
+ * Declares the API routes
  */
 public class Routes {
 
     public static void setupRoutes() {
         setupWebsocketRoutes();
+        setupTokenValidation();
         setupJoinRoutes();
 
     }
 
-    public static void setupJoinRoutes() {
+    private static void setupTokenValidation() {
+        post("/requestToken", (request, response) -> {
+            // TODO: 17/12/16 Get deviceID from request
+            // TODO: 17/12/16 Generate unique token
+            // TODO: 17/12/16 Store deviceID and token combination
+            return request.body();
+        });
+
+        before((request, response) -> {
+            Logger.getGlobal().log(Level.INFO,request.requestMethod() + ": " + request.uri());
+            if (request.uri() != "/requestToken") {
+                // TODO: 17/12/16 Validate token and deviceId with stored values
+                if (false) {
+                    halt(401,"Invalid Token or deviceID.");
+                }
+            }
+        });
+    }
+
+    private static void setupJoinRoutes() {
         get("/hello", (req, res) -> "Hello World");
 
         post("/gamesession", (req, res) -> {
@@ -42,7 +64,7 @@ public class Routes {
         });
     }
 
-    public static void setupWebsocketRoutes() {
+    private static void setupWebsocketRoutes() {
         webSocket("/echo", EchoWebSocket.class);
     }
 }
