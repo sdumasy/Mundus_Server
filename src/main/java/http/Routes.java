@@ -22,6 +22,8 @@ public class Routes {
         setupTokenValidation();
         setupCreateSessionRoute();
         setupJoinRoutes();
+        setupGetScoreRoute();
+        setupUpdateScoreRoute();
     }
 
     private static void setupTokenValidation() {
@@ -35,23 +37,60 @@ public class Routes {
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
             if (request.uri().equals("/requestToken")) {
-                // TODO: 17/12/16 Validate token and deviceId with stored values
+
+                // TODO: 17/12/16 Check parameters for SQL injection
+                // TODO: 17/12/16 Validate Device ID & Authentication Token
+
                 halt(401, "Invalid Token or deviceID.");
             }
         });
     }
 
     private static void setupCreateSessionRoute() {
-        get("/device/:device-id/token/:auth-token/create-session", (req, res) -> {
+        post("/device/:device-id/token/:auth-token/create-session", (req, res) -> {
             String deviceId = req.params("device-id");
             String authToken = req.params("auth-token");
 
-            //TODO: 17/12/16 Check parameters for SQL injection
-            //TODO: 17/12/16 Validate Device ID & Authentication Token
-            //TODO: 17/12/16 Create new session
-            //TODO: 17/12/16 Return correct values
+            // TODO: 17/12/16 Check parameters for SQL injection
+            // TODO: 17/12/16 Validate Device ID & Authentication Token
+            // TODO: 17/12/16 Create new session
+            // TODO: 17/12/16 Return correct values
 
-            return "{\"Hello\": \"" + deviceId + "\", \"Token\": \"" + authToken + "\"}";
+            return "{\"Device ID\": \"" + deviceId + "\", \"Token\": \"" + authToken + "\"}";
+        });
+    }
+
+    private static void setupGetScoreRoute() {
+        get("/device/:device-id/token/:auth-token/player/:player-id/score", (req, res) -> {
+            String deviceId = req.params("device-id");
+            String authToken = req.params("auth-token");
+            String playerId = req.params("player-id");
+
+            // TODO: 17/12/16 Validate Player ID & Device ID
+            // TODO: 17/12/16 Read Score from Database
+            // TODO: 17/12/16 Return correct values
+
+            return "{\"Session ID\": \"" + playerId + "\", \"Score\": 2}";
+        });
+    }
+
+    private static void setupUpdateScoreRoute() {
+        put("/device/:device-id/token/:auth-token/player/:player-id/score/:score", (req, res) -> {
+            String deviceId = req.params("device-id");
+            String authToken = req.params("auth-token");
+            String playerId = req.params("player-id");
+            String scoreString = req.params("score");
+            int score = 0;
+
+            if (scoreString.matches("-?\\d+(\\.\\d+)?")) {
+                score = Integer.parseInt(req.params("score"));
+            }
+
+            // TODO: 17/12/16 Validate Player ID & Device ID
+            // TODO: 17/12/16 Update Score in Database
+            // TODO: 17/12/16 Return correct values
+
+            return "{\"Result\": \"" + (score == 0) + "\", \"error\": \"\"}";
         });
     }
 
