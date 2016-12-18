@@ -1,3 +1,17 @@
 language: java
 notifications:
   email: false
+
+ env:
+   matrix:
+     - CUSTOM_JDK="default"
+     - CUSTOM_JDK="oraclejdk8"
+     - CUSTOM_JDK="oraclejdk7"
+     - CUSTOM_JDK="openjdk7"
+
+before_script:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install build-essential automake1.10 libtool; fi
+
+script:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then "mvn install -P osx64"; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then "mvn install -P linux64"; fi
