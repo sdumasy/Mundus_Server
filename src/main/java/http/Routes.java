@@ -1,9 +1,11 @@
 package http;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import database.Database;
 import models.GameSession;
 import models.User;
+import validation.Validation;
 
 import java.util.List;
 import java.util.Map;
@@ -28,10 +30,11 @@ public class Routes {
 
     private static void setupTokenValidation() {
         post("/requestToken", (request, response) -> {
-            // TODO: 17/12/16 Get deviceID from request
-            // TODO: 17/12/16 Generate unique token
-            // TODO: 17/12/16 Store deviceID and token combination
-            return request.body();
+            JsonObject requestObject = new Gson().fromJson(request.body(), JsonObject.class);
+            String deviceID = requestObject.get("deviceID").getAsString();
+            String token = Validation.createToken(deviceID);
+
+            return new Gson().toJson(token);
         });
 
         before((request, response) -> {
@@ -52,7 +55,11 @@ public class Routes {
             String authToken = req.params("auth-token");
 
             // TODO: 17/12/16 Check parameters for SQL injection
-            // TODO: 17/12/16 Validate Device ID & Authentication Token
+
+            if(!Validation.authenticateDevice(deviceId, authToken)){
+                halt(401, "Invalid Token or deviceID.");
+            }
+
             // TODO: 17/12/16 Create new session
             // TODO: 17/12/16 Return correct values
 
@@ -66,7 +73,10 @@ public class Routes {
             String authToken = req.params("auth-token");
             String playerId = req.params("player-id");
 
-            // TODO: 17/12/16 Validate Player ID & Device ID
+            if(!Validation.authenticateDevice(deviceId, authToken)){
+                halt(401, "Invalid Token or deviceID.");
+            }
+
             // TODO: 17/12/16 Read Score from Database
             // TODO: 17/12/16 Return correct values
 
@@ -86,7 +96,10 @@ public class Routes {
                 score = Integer.parseInt(req.params("score"));
             }
 
-            // TODO: 17/12/16 Validate Player ID & Device ID
+            if(!Validation.authenticateDevice(deviceId, authToken)){
+                halt(401, "Invalid Token or deviceID.");
+            }
+
             // TODO: 17/12/16 Update Score in Database
             // TODO: 17/12/16 Return correct values
 
