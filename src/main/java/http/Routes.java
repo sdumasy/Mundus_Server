@@ -2,13 +2,8 @@ package http;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import database.Database;
-import models.User;
 import validation.Validation;
-
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,9 +12,14 @@ import static spark.Spark.*;
 import static validation.Validation.authenticateDevice;
 
 /**
- * Declares the API routes
+ * Declares the API routes.
  */
-public class Routes {
+public final class Routes {
+
+    /**
+     * Private constructor.
+     */
+    private Routes() { }
 
     /**
      * Setup all route hooks.
@@ -38,9 +38,9 @@ public class Routes {
      */
     private static void convertJson() {
         before(((request, response) -> {
-            HashMap<String,String> map = new Gson().fromJson(request.body(),HashMap.class);
+            HashMap<String, String> map = new Gson().fromJson(request.body(), HashMap.class);
             for (String k:map.keySet()) {
-                request.attribute(k,map.get(k));
+                request.attribute(k, map.get(k));
             }
         }));
     }
@@ -48,6 +48,7 @@ public class Routes {
     /**
      * Setup the route for new tokens and intercept all other requests that don't come with a proper deviceID and token.
      */
+    @SuppressWarnings("checkstyle:magicnumber") // 401 is an error code.
     private static void setupTokenValidation() {
         post("/token", (request, response) -> {
             String token = Validation.createToken(request.attribute("deviceID").toString());
@@ -58,8 +59,8 @@ public class Routes {
         });
 
         before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri() +
-                    ", body: " + request.body());
+            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri()
+                    + ", body: " + request.body());
             if (!request.uri().equals("/token")) {
 
                 // TODO: 17/12/16 Check parameters for SQL injection
@@ -85,12 +86,13 @@ public class Routes {
     }
 
     /**
-     * Setup the route that allows clients to join a session
+     * Setup the route that allows clients to join a session.
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
             retrieveSessionToken(request);
-            request.attribute("playerID",generateUniqueID("SELECT player_id FROM session_player WHERE player_id='id_placeholder'"));
+            request.attribute("playerID",
+                    generateUniqueID("SELECT player_id FROM session_player WHERE player_id='id_placeholder'"));
             addNewPlayer(request);
 
             // TODO: 19/12/16 convert roleID to role

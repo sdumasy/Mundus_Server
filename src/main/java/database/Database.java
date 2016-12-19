@@ -1,6 +1,5 @@
 package database;
 
-import com.google.gson.Gson;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
@@ -16,13 +15,19 @@ import static java.sql.DriverManager.getConnection;
 /**
  * Created by macbookpro on 03/12/2016.
  */
-public class Database {
+public final class Database {
 
     private static Connection connection = null;
 
-    private static String url = "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm";
+    private static String url =
+            "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm";
     private static String user = "yum29ckgulepk404";
     private static String password = "xp5oc6vwuz4tijx4";
+
+    /**
+     * Private constructor.
+     */
+    private Database() { }
 
     /**
      * Open a connection with the storage DB.
