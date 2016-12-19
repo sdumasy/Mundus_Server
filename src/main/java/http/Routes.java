@@ -23,14 +23,14 @@ public class Routes {
 
     public static void setupRoutes() {
         setupWebsocketRoutes();
-        covertJson();
+        convertJson();
         setupTokenValidation();
         setupCreateSessionRoute();
-        setupJoinRoutes();
+        setupJoinSessionRoutes();
         setupGetScoreRoute();
     }
 
-    private static void covertJson() {
+    private static void convertJson() {
         before(((request, response) -> {
             HashMap<String,String> map = new Gson().fromJson(request.body(),HashMap.class);
             for (String k:map.keySet()) {
@@ -40,7 +40,7 @@ public class Routes {
     }
 
     private static void setupTokenValidation() {
-        post("/requestToken", (request, response) -> {
+        post("/token", (request, response) -> {
             String token = Validation.createToken(request.attribute("deviceID").toString());
 
             JsonObject responseObject = new JsonObject();
@@ -50,7 +50,7 @@ public class Routes {
 
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri() + ", body: " + request.body());
-            if (!request.uri().equals("/requestToken")) {
+            if (!request.uri().equals("/token")) {
 
                 // TODO: 17/12/16 Check parameters for SQL injection
 
@@ -66,7 +66,7 @@ public class Routes {
     }
 
     private static void setupCreateSessionRoute() {
-        post("/createSession", (req, res) -> {
+        post("/session/create", (req, res) -> {
             String deviceID = req.attribute("deviceID");
 
             User user = new Gson().fromJson(req.body(), User.class);
@@ -75,9 +75,19 @@ public class Routes {
         });
     }
 
+    private static void setupJoinSessionRoutes() {
+        post("/session/join", (req, res) -> {
+            User user = new Gson().fromJson(req.body(), User.class);
+            String query = "insert into User (name) values ('" + user.getName() + "')";
+            List<Map<String, Object>> queryRes = Database.excecuteUpdateQuery(query);
+            user.setId(queryRes.get(0).get("GENERATED_KEY").toString());
+            return new Gson().toJson(user);
+        });
+    }
+
     private static void setupGetScoreRoute() {
-        get("/getScore", (req, res) -> {
-            String deviceID = req.attribute("deviceID");
+        get("/session/:sessionID/score", (req, res) -> {
+            String sessionID = req.params("sessionID");
             String playerID = req.attribute("playerID");
 
             // TODO: 17/12/16 Read Score from Database
@@ -87,16 +97,6 @@ public class Routes {
             responseObject.addProperty("playerID", playerID);
             responseObject.addProperty("score", "");
             return responseObject;
-        });
-    }
-
-    private static void setupJoinRoutes() {
-        post("/user", (req, res) -> {
-            User user = new Gson().fromJson(req.body(), User.class);
-            String query = "insert into User (name) values ('" + user.getName() + "')";
-            List<Map<String, Object>> queryRes = Database.excecuteUpdateQuery(query);
-            user.setId(queryRes.get(0).get("GENERATED_KEY").toString());
-            return new Gson().toJson(user);
         });
     }
 
