@@ -1,6 +1,5 @@
 package database;
 
-import com.google.gson.Gson;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
@@ -16,16 +15,22 @@ import static java.sql.DriverManager.getConnection;
 /**
  * Created by macbookpro on 03/12/2016.
  */
-public class Database {
+public final class Database {
 
     private static Connection connection = null;
 
-    private static String url = "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm";
+    private static String url =
+            "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm";
     private static String user = "yum29ckgulepk404";
     private static String password = "xp5oc6vwuz4tijx4";
 
     /**
-     * Open a connection with the storage DB
+     * Private constructor.
+     */
+    private Database() { }
+
+    /**
+     * Open a connection with the storage DB.
      * @return null
      */
     protected static Connection openConnectionToDb() {
@@ -38,7 +43,7 @@ public class Database {
     }
 
     /**
-     * Close the connection with the remote database if it is open
+     * Close the connection with the remote database if it is open.
      * @param con the connection
      */
     protected static void closeConnectionToDb(Connection con) {
@@ -52,9 +57,9 @@ public class Database {
     }
 
     /**
-     * Edits values in the database with the supplied query
-     * @param query the query that will be executed
-     * @return the resultSet
+     * Edits values in the database with the supplied query.
+     * @param query The query that will be executed.
+     * @return The resultSet.
      */
     public static List<Map<String, Object>> executeUpdateQuery(final String query) {
         List<Map<String, Object>> listOfMaps = null;
@@ -71,9 +76,9 @@ public class Database {
     }
 
     /**
-     * Get values in the database with the supplied query
-     * @param query the query that will be executed
-     * @return A JSON object with the query results
+     * Get values in the database with the supplied query.
+     * @param query The query that will be executed.
+     * @return A JSON object with the query results.
      */
     public static List<Map<String, Object>> executeSearchQuery(String query) {
         List<Map<String, Object>> listOfMaps = null;

@@ -10,7 +10,11 @@ import static database.Database.executeUpdateQuery;
 /**
  * Created by Thomas on 18-12-2016.
  */
-public class Validation {
+public final class Validation {
+    /**
+     * Private constructor.
+     */
+    private Validation() { }
 
     public static boolean hasToken(String deviceID) {
         List<Map<String, Object>> result = executeSearchQuery("SELECT * FROM device WHERE device_id='" + deviceID + "'");
@@ -18,19 +22,20 @@ public class Validation {
     }
 
     /**
-     * Validate the deviceID and authToken combination supplied by the client
+     * Validate the deviceID and authToken combination supplied by the client.
      * @param deviceID the device ID
      * @param authToken the authentication token
      * @return true if the token and deviceID match the ones stored in the database, false otherwise
      */
     public static boolean authenticateDevice(String deviceID, String authToken) {
-        List<Map<String, Object>> result = executeSearchQuery("SELECT auth_token FROM device WHERE device_id='" + deviceID + "'");
+        List<Map<String, Object>> result =
+                executeSearchQuery("SELECT auth_token FROM device WHERE device_id='" + deviceID + "'");
 
         return result.size() > 0 && result.get(0).get("auth_token").toString().equals(authToken);
     }
 
     /**
-     * Generate a new token, then store it in the DB and return it
+     * Generate a new token, then store it in the DB and return it.
      * @param deviceID the device ID
      * @return the newly generated authToken
      */

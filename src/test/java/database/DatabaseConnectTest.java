@@ -6,9 +6,6 @@
 //import java.sql.DriverManager;
 //import java.sql.SQLException;
 //
-//import static database.DatabaseConnect.DATABASE_PASSWORD;
-//import static database.DatabaseConnect.DATABASE_URL;
-//import static database.DatabaseConnect.DATABASE_USERNAME;
 //import static org.mockito.Mockito.times;
 //import static org.mockito.Mockito.verify;
 //
@@ -20,7 +17,7 @@
 //    @Test
 //    public void testConnectToDB() throws SQLException, InterruptedException {
 //        DriverManager dM = Mockito.mock(DriverManager.class);
-//        DatabaseConnect.open();
-//        verify(dM, times(1)).getConnection(DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD);
+//        Database.openConnectionToDb();
+//        //verify(dM, times(1)).getConnection(url, DATABASE_USERNAME, DATABASE_PASSWORD);
 //    }
 //}
