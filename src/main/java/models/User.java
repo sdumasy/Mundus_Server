@@ -21,6 +21,8 @@ public class User {
         return name;
     }
 
+    public String getID() { return id;}
+
     public String getGameSessionId() {
         return GameSessionId;
     }

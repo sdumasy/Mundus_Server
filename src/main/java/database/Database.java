@@ -63,7 +63,6 @@ public class Database {
         List<Map<String, Object>> listOfMaps = null;
         try {
             openConnectionToDb();
-            System.out.println("delete working");
             QueryRunner queryRunner = new QueryRunner();
             listOfMaps = queryRunner.insert(connection, query, new MapListHandler());
         } catch (SQLException e) {
