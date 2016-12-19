@@ -21,10 +21,14 @@ public class Database {
 
     private static Connection connection = null;
 
-    private static String url = "jdbc:mysql://localhost:3306/mundus";
-    private static String user = "admin";
-    private static String password = "123456";
+    private static String url = "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm";
+    private static String user = "yum29ckgulepk404";
+    private static String password = "xp5oc6vwuz4tijx4";
 
+    /**
+     * Open a connection with the storage DB
+     * @return null
+     */
     public static Connection openConnectionToDb() {
         try {
             connection = getConnection(url, user, password);
@@ -35,6 +39,10 @@ public class Database {
         return null;
     }
 
+    /**
+     * Close the connection with the remote database if it is open
+     * @param con the connection
+     */
     public static void closeConnectionToDb(Connection con) {
         try {
             if (con != null) {
@@ -46,11 +54,15 @@ public class Database {
         }
     }
 
+    /**
+     * Edits values in the database with the supplied query
+     * @param query the query that will be executed
+     * @return the resultSet
+     */
     public static List<Map<String, Object>> excecuteUpdateQuery(final String query) {
         List<Map<String, Object>> listOfMaps = null;
         try {
             openConnectionToDb();
-            System.out.println("delete working");
             QueryRunner queryRunner = new QueryRunner();
             listOfMaps = queryRunner.insert(connection, query, new MapListHandler());
         } catch (SQLException e) {
@@ -61,7 +73,12 @@ public class Database {
         return listOfMaps;
     }
 
-    public static String excecuteSearchQuery(Connection connection, String query) {
+    /**
+     * Get values in the database with the supplied query
+     * @param query the query that will be executed
+     * @return A JSON object with the query results
+     */
+    public static String excecuteSearchQuery(String query) {
         List<Map<String, Object>> listOfMaps = null;
         try {
             openConnectionToDb();
