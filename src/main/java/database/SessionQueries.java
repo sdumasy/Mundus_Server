@@ -32,6 +32,10 @@ public class SessionQueries {
                 "','" + sessionID + "', '" + 2 + "')";
         Database.excecuteUpdateQuery(query);
 
+        query = "INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES ('" + playerID +
+                "','" + deviceID + "','" + sessionID + "','" + 0 + "','" + 0 + "')";
+        Database.excecuteUpdateQuery(query);
+
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("modToken", modToken);
         jsonObject.addProperty("userToken", userToken);
