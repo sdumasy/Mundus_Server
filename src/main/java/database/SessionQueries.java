@@ -14,45 +14,38 @@ import static database.Database.excecuteSearchQuery;
  */
 public class SessionQueries {
 
-    public static JsonObject createSession(String playerID){
-        String sessionID = generateUniqueSessionID();
+    public static JsonObject createSession(String deviceID){
+        String sessionID = generateUniqueID("SELECT session_id FROM session WHERE session_id='id_placeholder'");
+        String playerID = generateUniqueID("SELECT player_id FROM session_player WHERE player_id='id_placeholder'");
 
         String query = "INSERT INTO session (session_id, player_id, status, created) VALUES ('" + sessionID +
                 "','" + playerID + "','" + 1 + "','" + LocalDateTime.now() + "')";
         Database.excecuteUpdateQuery(query);
 
         String modToken = generateUniqueJoinToken();
-        String userToken = generateUniqueJoinToken();
-
         query = "INSERT INTO session_token (join_token, session_id, role_id) VALUES ('" + modToken +
                 "','" + sessionID + "', '" + 1 + "')";
         Database.excecuteUpdateQuery(query);
 
+        String userToken = generateUniqueJoinToken();
         query = "INSERT INTO session_token (join_token, session_id, role_id) VALUES ('" + userToken +
-                "','" + sessionID + "', '" + 1 + "')";
+                "','" + sessionID + "', '" + 2 + "')";
         Database.excecuteUpdateQuery(query);
-
-        //TODO: Add player_id with administrator role
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("modToken", modToken);
         jsonObject.addProperty("userToken", userToken);
         return jsonObject;
-
     }
 
-    public void inserToken(String sessionID, String token){
-
-    }
-
-    public static String generateUniqueSessionID(){
+    public static String generateUniqueID(String query){
         while(true) {
-            String sessionID = UUID.randomUUID().toString();
-            String result = excecuteSearchQuery("SELECT session_id FROM session WHERE session_id='" + sessionID + "'");
+            String id = UUID.randomUUID().toString();
+            query = query.replace("id_placeholder", id);
+            String result = excecuteSearchQuery(query);
             JsonObject[] jArray = new Gson().fromJson(result, JsonObject[].class);
-
             if (jArray.length == 0) {
-                return sessionID;
+                return id;
             }
         }
     }
@@ -60,10 +53,9 @@ public class SessionQueries {
     public static String generateUniqueJoinToken(){
         while(true) {
             Random rand = new Random();
-            String joinToken = Integer.toHexString(rand.nextInt(10000)).substring(0,5);
+            String joinToken = Integer.toHexString(rand.nextInt()).substring(0,5);
             String result = excecuteSearchQuery("SELECT join_token FROM session_token WHERE join_token='" + joinToken + "'");
             JsonObject[] jArray = new Gson().fromJson(result, JsonObject[].class);
-
             if (jArray.length == 0) {
                 return joinToken;
             }

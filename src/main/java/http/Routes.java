@@ -68,10 +68,7 @@ public class Routes {
     private static void setupCreateSessionRoute() {
         post("/session/create", (req, res) -> {
             String deviceID = req.attribute("deviceID");
-
-            User user = new Gson().fromJson(req.body(), User.class);
-            return createSession(user.getID());
-
+            return createSession(deviceID);
         });
     }
 
