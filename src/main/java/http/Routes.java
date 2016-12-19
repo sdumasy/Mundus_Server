@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static database.SessionQueries.createSession;
+import static database.SessionQueries.*;
 import static spark.Spark.*;
 import static validation.Validation.authenticateDevice;
 
@@ -79,9 +79,8 @@ public class Routes {
      * Setup the route that allows the creation of a new session.
      */
     private static void setupCreateSessionRoute() {
-        post("/session/create", (req, res) -> {
-            String deviceID = req.attribute("deviceID");
-            return createSession(deviceID);
+        post("/session/create", (request, response) -> {
+            return createSession(request.attribute("deviceID"));
         });
     }
 
@@ -89,12 +88,18 @@ public class Routes {
      * Setup the route that allows clients to join a session
      */
     private static void setupJoinSessionRoutes() {
-        post("/session/join", (req, res) -> {
-            User user = new Gson().fromJson(req.body(), User.class);
-            String query = "insert into User (name) values ('" + user.getName() + "')";
-            List<Map<String, Object>> queryRes = Database.excecuteUpdateQuery(query);
-            user.setId(queryRes.get(0).get("GENERATED_KEY").toString());
-            return new Gson().toJson(user);
+        post("/session/join", (request, response) -> {
+            retrieveSessionToken(request);
+            request.attribute("playerID",generateUniqueID("SELECT player_id FROM session_player WHERE player_id='id_placeholder'"));
+            addNewPlayer(request);
+
+            // TODO: 19/12/16 convert roleID to role
+
+            JsonObject responseObject = new JsonObject();
+            responseObject.addProperty("sessionID", request.attribute("session_id").toString());
+            responseObject.addProperty("playerID", request.attribute("playerID").toString());
+            responseObject.addProperty("role", request.attribute("role_id").toString());
+            return responseObject;
         });
     }
 
@@ -102,9 +107,9 @@ public class Routes {
      * Setup the route that allows clients to get their scores.
      */
     private static void setupGetScoreRoute() {
-        get("/session/:sessionID/score", (req, res) -> {
-            String sessionID = req.params("sessionID");
-            String playerID = req.attribute("playerID");
+        get("/session/:sessionID/score", (request, response) -> {
+            String sessionID = request.params("sessionID");
+            String playerID = request.attribute("playerID");
 
             // TODO: 17/12/16 Read Score from Database
             // TODO: 17/12/16 Return correct values

@@ -3,10 +3,12 @@ package validation;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import static database.Database.excecuteSearchQuery;
-import static database.Database.excecuteUpdateQuery;
+import static database.Database.executeSearchQuery;
+import static database.Database.executeUpdateQuery;
 
 /**
  * Created by Thomas on 18-12-2016.
@@ -20,10 +22,9 @@ public class Validation {
      * @return true if the token and deviceID match the ones stored in the database, false otherwise
      */
     public static boolean authenticateDevice(String deviceID, String authToken) {
-        String result = excecuteSearchQuery("SELECT auth_token FROM device WHERE device_id='" + deviceID + "'");
-        JsonObject[] jArray = new Gson().fromJson(result, JsonObject[].class);
+        List<Map<String, Object>> result = executeSearchQuery("SELECT auth_token FROM device WHERE device_id='" + deviceID + "'");
 
-        return jArray.length > 0 && jArray[0].get("auth_token").getAsString().equals(authToken);
+        return result.size() > 0 && result.get(0).get("auth_token").toString().equals(authToken);
     }
 
     /**
@@ -33,7 +34,7 @@ public class Validation {
      */
     public static String createToken(String deviceID) {
         String authToken = UUID.randomUUID().toString();
-        excecuteUpdateQuery("INSERT INTO device VALUES ('" + deviceID + "','" + authToken + "');");
+        executeUpdateQuery("INSERT INTO device VALUES ('" + deviceID + "','" + authToken + "');");
 
         return authToken;
     }
