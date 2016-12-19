@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import models.Player;
 import validation.Validation;
+
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,7 +99,7 @@ public final class Routes {
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
-            Player player = retrieveSessionToken(request.attribute("joinToken"));
+            Player player = getNewPlayerOfSession(request.attribute("joinToken"));
             addNewPlayer(player,request.attribute("deviceID"));
 
             JsonObject responseObject = new JsonObject();

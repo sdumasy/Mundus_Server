@@ -2,7 +2,6 @@ package database;
 
 import com.google.gson.JsonObject;
 import models.Player;
-import spark.http.matching.Halt;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,7 +57,12 @@ public final class SessionQueries {
         return jsonObject;
     }
 
-    public static Player retrieveSessionToken(String joinToken) {
+    /**
+     * Creates a new player of the session corresponding with the join token.
+     * @param joinToken The join token to fetch the data of.
+     * @return The new player.
+     */
+    public static Player getNewPlayerOfSession(String joinToken) {
         String query = "SELECT join_token,session_id,role_id FROM session_token WHERE join_token='" + joinToken + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
         if (result.size()==1) {
@@ -73,7 +77,8 @@ public final class SessionQueries {
 
     /**
      * Adds a new player to a session.
-     * @param request The request with the added attributes: playerID, deviceID, sessionID and roleID.
+     * @param player The player to be added to the database.
+     * @param deviceID The device the player is using.
      */
     public static void addNewPlayer(Player player, String deviceID) {
         String query = "SELECT * FROM session_player WHERE device_id='" + deviceID
