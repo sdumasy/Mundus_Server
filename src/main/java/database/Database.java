@@ -1,7 +1,6 @@
 package database;
 
 import com.google.gson.Gson;
-import com.sun.tools.javac.jvm.ClassFile;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
@@ -29,12 +28,11 @@ public class Database {
      * Open a connection with the storage DB
      * @return null
      */
-    public static Connection openConnectionToDb() {
+    protected static Connection openConnectionToDb() {
         try {
             connection = getConnection(url, user, password);
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(ClassFile.Version.class.getName());
-            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            Logger.getGlobal().log(Level.SEVERE, ex.getMessage(), ex);
         }
         return null;
     }
@@ -43,14 +41,13 @@ public class Database {
      * Close the connection with the remote database if it is open
      * @param con the connection
      */
-    public static void closeConnectionToDb(Connection con) {
+    protected static void closeConnectionToDb(Connection con) {
         try {
             if (con != null) {
                 con.close();
             }
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(ClassFile.Version.class.getName());
-            lgr.log(Level.WARNING, ex.getMessage(), ex);
+            Logger.getGlobal().log(Level.WARNING, ex.getMessage(), ex);
         }
     }
 
@@ -59,7 +56,7 @@ public class Database {
      * @param query the query that will be executed
      * @return the resultSet
      */
-    public static List<Map<String, Object>> excecuteUpdateQuery(final String query) {
+    public static List<Map<String, Object>> executeUpdateQuery(final String query) {
         List<Map<String, Object>> listOfMaps = null;
         try {
             openConnectionToDb();
@@ -78,7 +75,7 @@ public class Database {
      * @param query the query that will be executed
      * @return A JSON object with the query results
      */
-    public static String excecuteSearchQuery(String query) {
+    public static List<Map<String, Object>> executeSearchQuery(String query) {
         List<Map<String, Object>> listOfMaps = null;
         try {
             openConnectionToDb();
@@ -90,7 +87,7 @@ public class Database {
         finally {
             closeConnectionToDb(connection);
         }
-        return new Gson().toJson(listOfMaps);
+        return listOfMaps;
     }
 
 }
