@@ -1,8 +1,5 @@
 package validation;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +11,11 @@ import static database.Database.executeUpdateQuery;
  * Created by Thomas on 18-12-2016.
  */
 public class Validation {
+
+    public static boolean hasToken(String deviceID) {
+        List<Map<String, Object>> result = executeSearchQuery("SELECT * FROM device WHERE device_id='" + deviceID + "'");
+        return result.size()>0;
+    }
 
     /**
      * Validate the deviceID and authToken combination supplied by the client

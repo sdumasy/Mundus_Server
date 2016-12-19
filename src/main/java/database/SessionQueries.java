@@ -1,8 +1,8 @@
 package database;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import spark.Request;
+import models.Player;
+import spark.http.matching.Halt;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,26 +46,31 @@ public class SessionQueries {
         return jsonObject;
     }
 
-    public static void retrieveSessionToken(Request request) {
-        String query = "SELECT join_token,session_id,role_id FROM session_token WHERE join_token='" + request.attribute("joinToken") + "'";
+    public static Player retrieveSessionToken(String joinToken) {
+        String query = "SELECT join_token,session_id,role_id FROM session_token WHERE join_token='" + joinToken + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
         if (result.size()==1) {
-            Map<String, Object> map = result.get(0);
-            for (String k:map.keySet()) {
-                request.attribute(k,map.get(k));
-            }
+            return new Player(result.get(0).get("session_id").toString(),(int) result.get(0).get("role_id"));
         } else if (result.size()==0){
-            halt(400,"Invalid joinToken");
+            halt(401,"Invalid joinToken");
         } else {
-            halt(400,"Identical joinTokens in database");
+            halt(401,"Identical joinTokens in database");
         }
+        return null;
     }
 
-    public static void addNewPlayer(Request request) {
-        Database.executeUpdateQuery("INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES ('"
-                + request.attribute("playerID") + "','" + request.attribute("deviceID") + "','"
-                + request.attribute("session_id") + "','" + request.attribute("role_id") + "','" + + 0 + "')");
-
+    public static void addNewPlayer(Player player, String deviceID) {
+        String query = "SELECT * FROM session_player WHERE device_id='" + deviceID
+                + "' AND session_id='" + player.getSessionID()
+                + "' AND role_id='" + player.getRoleID() + "'";
+        List<Map<String, Object>> result = executeSearchQuery(query);
+        if (result.size()==0) {
+            Database.executeUpdateQuery("INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES ('"
+                    + player.getPlayerID() + "','" + deviceID + "','"
+                    + player.getSessionID() + "','" + player.getRoleID() + "','" + +player.getScore() + "')");
+        } else {
+            halt(401,"Player already created.");
+        }
     }
 
 
