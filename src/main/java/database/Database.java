@@ -26,7 +26,7 @@ public class Database {
     private static String password = "xp5oc6vwuz4tijx4";
 
     /**
-     * Open a connection with the storage DB
+     * Open a connection with the storage DB.
      * @return null
      */
     public static Connection openConnectionToDb() {
@@ -40,7 +40,7 @@ public class Database {
     }
 
     /**
-     * Close the connection with the remote database if it is open
+     * Close the connection with the remote database if it is open.
      * @param con the connection
      */
     public static void closeConnectionToDb(Connection con) {
@@ -55,9 +55,9 @@ public class Database {
     }
 
     /**
-     * Edits values in the database with the supplied query
-     * @param query the query that will be executed
-     * @return the resultSet
+     * Edits values in the database with the supplied query.
+     * @param query The query that will be executed.
+     * @return The resultSet.
      */
     public static List<Map<String, Object>> excecuteUpdateQuery(final String query) {
         List<Map<String, Object>> listOfMaps = null;
@@ -74,9 +74,9 @@ public class Database {
     }
 
     /**
-     * Get values in the database with the supplied query
-     * @param query the query that will be executed
-     * @return A JSON object with the query results
+     * Get values in the database with the supplied query.
+     * @param query The query that will be executed.
+     * @return A JSON object with the query results.
      */
     public static String excecuteSearchQuery(String query) {
         List<Map<String, Object>> listOfMaps = null;
