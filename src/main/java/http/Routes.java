@@ -1,16 +1,20 @@
 package http;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import database.Database;
-import models.GameSession;
 import models.User;
+import validation.Validation;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static database.SessionQueries.createSession;
 import static spark.Spark.*;
+import static validation.Validation.authenticateDevice;
 
 /**
  * Declares the API routes
@@ -19,99 +23,80 @@ public class Routes {
 
     public static void setupRoutes() {
         setupWebsocketRoutes();
+        convertJson();
         setupTokenValidation();
         setupCreateSessionRoute();
-        setupJoinRoutes();
+        setupJoinSessionRoutes();
         setupGetScoreRoute();
-        setupUpdateScoreRoute();
+    }
+
+    private static void convertJson() {
+        before(((request, response) -> {
+            HashMap<String,String> map = new Gson().fromJson(request.body(),HashMap.class);
+            for (String k:map.keySet()) {
+                request.attribute(k,map.get(k));
+            }
+        }));
     }
 
     private static void setupTokenValidation() {
-        post("/requestToken", (request, response) -> {
-            // TODO: 17/12/16 Get deviceID from request
-            // TODO: 17/12/16 Generate unique token
-            // TODO: 17/12/16 Store deviceID and token combination
-            return request.body();
+        post("/token", (request, response) -> {
+            String token = Validation.createToken(request.attribute("deviceID").toString());
+
+            JsonObject responseObject = new JsonObject();
+            responseObject.addProperty("token", token);
+            return responseObject;
         });
 
         before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
-            if (request.uri().equals("/requestToken")) {
+            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri() + ", body: " + request.body());
+            if (!request.uri().equals("/token")) {
 
                 // TODO: 17/12/16 Check parameters for SQL injection
-                // TODO: 17/12/16 Validate Device ID & Authentication Token
 
-                halt(401, "Invalid Token or deviceID.");
+                if(!authenticateDevice(request.attribute("deviceID"), request.attribute("token"))) {
+                    halt(401, "Invalid Token or deviceID.");
+                }
             }
         });
+
+        after(((request, response) -> {
+            Logger.getGlobal().log(Level.INFO, "Response: " + response.raw());
+        }));
     }
 
     private static void setupCreateSessionRoute() {
-        post("/device/:device-id/token/:auth-token/create-session", (req, res) -> {
-            String deviceId = req.params("device-id");
-            String authToken = req.params("auth-token");
+        post("/session/create", (req, res) -> {
+            String deviceID = req.attribute("deviceID");
 
-            // TODO: 17/12/16 Check parameters for SQL injection
-            // TODO: 17/12/16 Validate Device ID & Authentication Token
-            // TODO: 17/12/16 Create new session
-            // TODO: 17/12/16 Return correct values
+            User user = new Gson().fromJson(req.body(), User.class);
+            return createSession(user.getID());
 
-            return "{\"Device ID\": \"" + deviceId + "\", \"Token\": \"" + authToken + "\"}";
         });
     }
 
-    private static void setupGetScoreRoute() {
-        get("/device/:device-id/token/:auth-token/player/:player-id/score", (req, res) -> {
-            String deviceId = req.params("device-id");
-            String authToken = req.params("auth-token");
-            String playerId = req.params("player-id");
-
-            // TODO: 17/12/16 Validate Player ID & Device ID
-            // TODO: 17/12/16 Read Score from Database
-            // TODO: 17/12/16 Return correct values
-
-            return "{\"Session ID\": \"" + playerId + "\", \"Score\": 2}";
-        });
-    }
-
-    private static void setupUpdateScoreRoute() {
-        put("/device/:device-id/token/:auth-token/player/:player-id/score/:score", (req, res) -> {
-            String deviceId = req.params("device-id");
-            String authToken = req.params("auth-token");
-            String playerId = req.params("player-id");
-            String scoreString = req.params("score");
-            int score = 0;
-
-            if (scoreString.matches("-?\\d+(\\.\\d+)?")) {
-                score = Integer.parseInt(req.params("score"));
-            }
-
-            // TODO: 17/12/16 Validate Player ID & Device ID
-            // TODO: 17/12/16 Update Score in Database
-            // TODO: 17/12/16 Return correct values
-
-            return "{\"Result\": \"" + (score == 0) + "\", \"error\": \"\"}";
-        });
-    }
-
-    private static void setupJoinRoutes() {
-        get("/hello", (req, res) -> "Hello World");
-
-        post("/gamesession", (req, res) -> {
-            GameSession gameSession = new Gson().fromJson(req.body(), GameSession.class);
-            String query = "insert into GameSession (adminUserId, adminJoinToken, userJoinToken) values ('" + gameSession.getAdminUserId() + "', '"
-                    + gameSession.getAdminJoinToken() + "', '" + gameSession.getUserJoinToken() + "')";
-            Database.excecuteUpdateQuery(query);
-            return req.body();
-        });
-
-        post("/user", (req, res) -> {
-            System.out.println("user makkke");
+    private static void setupJoinSessionRoutes() {
+        post("/session/join", (req, res) -> {
             User user = new Gson().fromJson(req.body(), User.class);
             String query = "insert into User (name) values ('" + user.getName() + "')";
             List<Map<String, Object>> queryRes = Database.excecuteUpdateQuery(query);
             user.setId(queryRes.get(0).get("GENERATED_KEY").toString());
             return new Gson().toJson(user);
+        });
+    }
+
+    private static void setupGetScoreRoute() {
+        get("/session/:sessionID/score", (req, res) -> {
+            String sessionID = req.params("sessionID");
+            String playerID = req.attribute("playerID");
+
+            // TODO: 17/12/16 Read Score from Database
+            // TODO: 17/12/16 Return correct values
+
+            JsonObject responseObject = new JsonObject();
+            responseObject.addProperty("playerID", playerID);
+            responseObject.addProperty("score", "");
+            return responseObject;
         });
     }
 

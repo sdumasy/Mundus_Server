@@ -15,7 +15,9 @@ public class GameSession {
     }
 
     public GameSession(String adminUserId, String adminJoinToken, String userJoinToken) {
-
+        this.adminJoinToken =  adminJoinToken;
+        this.adminUserId = adminUserId;
+        this.userJoinToken = userJoinToken;
     }
 
     public String getId() {
