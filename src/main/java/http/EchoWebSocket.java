@@ -11,10 +11,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Created by macbookpro on 03/12/2016.
+ * Creates a WebSocket connection which sends the same message back.
  */
-
-
 @WebSocket
 public class EchoWebSocket {
 
@@ -22,8 +20,8 @@ public class EchoWebSocket {
     private static final Queue<Session> SESSIONS = new ConcurrentLinkedQueue<>();
 
     /**
-     *
-     * @param session
+     * Adds a session to the connected websockets.
+     * @param session The session
      */
     @OnWebSocketConnect
     public void connected(Session session) {
@@ -31,10 +29,10 @@ public class EchoWebSocket {
     }
 
     /**
-     *
-     * @param session
-     * @param statusCode
-     * @param reason
+     * Closes and removes session from connected websockets.
+     * @param session The session to close.
+     * @param statusCode The status to close it with.
+     * @param reason The reason to close it.
      */
     @OnWebSocketClose
     public void closed(Session session, int statusCode, String reason) {
@@ -42,10 +40,10 @@ public class EchoWebSocket {
     }
 
     /**
-     *
-     * @param session
-     * @param message
-     * @throws IOException
+     * Receives a message over the websocket.
+     * @param session The session it receives it from.
+     * @param message The message received.
+     * @throws IOException Could fail at sending it back.
      */
     @OnWebSocketMessage
     public void message(Session session, String message) throws IOException {
