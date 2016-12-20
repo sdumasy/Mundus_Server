@@ -2,7 +2,9 @@ package http;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import database.SessionQueries;
 import models.Player;
+import spark.Request;
 import validation.Validation;
 
 import java.util.HashMap;
@@ -34,6 +36,8 @@ public final class Routes {
         setupCreateSessionRoute();
         setupJoinSessionRoutes();
         setupGetScoreRoute();
+        setupInGameRoutes();
+        setupSessionManagementRoutes();
     }
 
     /**
@@ -56,7 +60,7 @@ public final class Routes {
         post("/token", (request, response) -> {
             String deviceID =request.attribute("deviceID");
             if (!hasToken(deviceID)) {
-                String token = Validation.createToken(deviceID.toString());
+                String token = Validation.createToken(deviceID);
 
                 JsonObject responseObject = new JsonObject();
                 responseObject.addProperty("token", token);
@@ -80,18 +84,14 @@ public final class Routes {
             }
         });
 
-        after(((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, "Response: " + response.raw());
-        }));
+        after(((request, response) -> Logger.getGlobal().log(Level.INFO, "Response: " + response.raw())));
     }
 
     /**
      * Setup the route that allows the creation of a new session.
      */
     private static void setupCreateSessionRoute() {
-        post("/session/create", (request, response) -> {
-            return createSession(request.attribute("deviceID"));
-        });
+        post("/session/create", (request, response) -> createSession(request.attribute("deviceID")));
     }
 
     /**
@@ -99,8 +99,7 @@ public final class Routes {
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
-            Player player = getNewPlayerOfSession(request.attribute("joinToken"));
-            addNewPlayer(player,request.attribute("deviceID"));
+            Player player = getNewPlayerOfSession(request.attribute("joinToken"),request.attribute("deviceID"));
 
             JsonObject responseObject = new JsonObject();
             responseObject.addProperty("sessionID", player.getSessionID());
@@ -111,21 +110,63 @@ public final class Routes {
     }
 
     /**
+     * Creates a player model for all in game requests.
+     */
+    private static void setupInGameRoutes() {
+        before("/session/:sessionID/*",(request, response) -> {
+            String playerID = request.attribute("playerID");
+            String deviceID = request.attribute("deviceID");
+            if(playerID != null && deviceID != null) {
+                request.attribute("player", new Player(playerID,request.params("sessionID"),deviceID));
+            }
+        });
+    }
+
+    /**
      * Setup the route that allows clients to get their scores.
      */
     private static void setupGetScoreRoute() {
-        get("/session/:sessionID/score", (request, response) -> {
-            String sessionID = request.params("sessionID");
-            String playerID = request.attribute("playerID");
-
-            // TODO: 17/12/16 Read Score from Database
-            // TODO: 17/12/16 Return correct values
+        post("/session/:sessionID/score", (request, response) -> {
+            Player player = request.attribute("player");
 
             JsonObject responseObject = new JsonObject();
-            responseObject.addProperty("playerID", playerID);
-            responseObject.addProperty("score", "");
+            responseObject.addProperty("playerID", player.getPlayerID());
+            responseObject.addProperty("score", player.getScore());
             return responseObject;
         });
+    }
+
+    /**
+     * Setup the routes to manage the sessions (play, pause, delete).
+     */
+    private static void setupSessionManagementRoutes() {
+        before("/session/:sessionID/manage/*",(request, response) -> {
+            if(!((Player) request.attribute("player")).isAdmin()) {
+                halt(403, "You are not an administrator.");
+            }
+        });
+
+        put("/session/:sessionID/manage/play",(request, response) -> requestSessionStatus(request,1));
+
+        put("/session/:sessionID/manage/pause",(request, response) -> requestSessionStatus(request, 2));
+
+        put("/session/:sessionID/manage/delete",(request, response) -> requestSessionStatus(request, 0));
+    }
+
+    /**
+     * Helper class for play/pause/delete session requests.
+     * @param request Request made.
+     * @param status Status to change the session to.
+     * @return SessionID and status.
+     */
+    private static JsonObject requestSessionStatus(Request request, int status) {
+        Player player = request.attribute("player");
+        SessionQueries.updateSessionStatus(player, status);
+
+        JsonObject responseObject = new JsonObject();
+        responseObject.addProperty("sessionID", player.getSessionID());
+        responseObject.addProperty("status", getSessionStatus(player));
+        return responseObject;
     }
 
     /**
