@@ -5,13 +5,17 @@ import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
+import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
 import static spark.Spark.halt;
 
 /**
- * Created by Thomas on 19-12-2016.
+ * Contains the sql queries for the sessions.
  */
 public final class SessionQueries {
 
@@ -27,26 +31,21 @@ public final class SessionQueries {
      * @return A JsonObject that contains the generated playerID, modToken and userToken
      */
     public static JsonObject createSession(String deviceID) {
-        String sessionID = generateUniqueID("SELECT session_id FROM session WHERE session_id='id_placeholder'");
-        String playerID = generateUniqueID("SELECT player_id FROM session_player WHERE player_id='id_placeholder'");
+        String sessionID = generateUniqueID("session", "session_id");
+        String playerID = generateUniqueID("session_player", "player_id");
 
-        String query = "INSERT INTO session (session_id, player_id, status, created) VALUES ('" + sessionID
-                + "','" + playerID + "','" + 1 + "','" + LocalDateTime.now() + "')";
-        Database.executeUpdateQuery(query);
+        String query = "INSERT INTO session (session_id, player_id, status, created) VALUES (?,?,?,?)";
+        Database.executeManipulationQuery(query,sessionID,playerID,1,LocalDateTime.now());
 
         String modToken = generateUniqueJoinToken();
-        query = "INSERT INTO session_token (join_token, session_id, role_id) VALUES ('" + modToken
-                + "','" + sessionID + "', '" + 1 + "')";
-        Database.executeUpdateQuery(query);
+        query = "INSERT INTO session_token (join_token, session_id, role_id) VALUES (?,?,?)";
+        Database.executeManipulationQuery(query,modToken,sessionID,1);
 
         String userToken = generateUniqueJoinToken();
-        query = "INSERT INTO session_token (join_token, session_id, role_id) VALUES ('" + userToken
-                + "','" + sessionID + "', '" + 2 + "')";
-        Database.executeUpdateQuery(query);
+        Database.executeManipulationQuery(query,generateUniqueJoinToken(),sessionID,2);
 
-        query = "INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES ('" + playerID
-                + "','" + deviceID + "','" + sessionID + "','" + 0 + "','" + 0 + "')";
-        Database.executeUpdateQuery(query);
+        query = "INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES (?,?,?,?,?)";
+        Database.executeManipulationQuery(query,playerID,deviceID,sessionID,0,0);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("modToken", modToken);
@@ -88,10 +87,9 @@ public final class SessionQueries {
                 + "' AND role_id='" + player.getRoleID() + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
         if (result.size() == 0) {
-            Database.executeUpdateQuery("INSERT INTO "
-                    + "session_player (player_id, device_id, session_id, role_id, score) VALUES ('"
-                    + player.getPlayerID() + "','" + player.getDeviceID() + "','"
-                    + player.getSessionID() + "','" + player.getRoleID() + "','" + +player.getScore() + "')");
+            query = "INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES (?,?,?,?,?)";
+            Database.executeManipulationQuery(query, player.getPlayerID(), player.getDeviceID(),
+                    player.getSessionID(), player.getRoleID(), player.getScore());
         } else {
             halt(HttpStatus.UNAUTHORIZED_401, "Player already created.");
         }
@@ -158,29 +156,30 @@ public final class SessionQueries {
      * @param player The player profile of the creator.
      * @param status The status to change is to.
      */
-    public static void updateSessionStatus(Player player, int status) {
-        String query = "UPDATE session SET status='" + status + "' WHERE session_id='" + player.getSessionID()
-                + "' AND player_id='" + player.getPlayerID() + "'";
+    public static boolean updateSessionStatus(Player player, int status) {
+        String query = "UPDATE session SET status= ? WHERE session_id= ? AND player_id= ? ";
         if (status != 0) {
             query += " AND NOT status='0'";
         }
-        Database.executeUpdateQuery(query);
+        return Database.executeManipulationQuery(query,status,player.getSessionID(),player.getPlayerID());
     }
 
     /**
      * Generates a unique UUID.
-     * @param query A query that contains the table and column that should be checked.
+     * @param table Table to find a new id in.
+     * @param column column name of the id.
      * @return A unique ID.
      */
-    public static String generateUniqueID(String query) {
-        while(true) {
-            String id = UUID.randomUUID().toString();
+    public static String generateUniqueID(String table, String column) {
+        String query = "SELECT " + column + " FROM " + table + " WHERE " + column + "='id_placeholder'";
+        String id;
+        List<Map<String, Object>> result;
+        do {
+            id = UUID.randomUUID().toString();
             query = query.replace("id_placeholder", id);
-            List<Map<String, Object>> result = executeSearchQuery(query);
-            if (result.size() == 0) {
-                return id;
-            }
-        }
+            result = executeSearchQuery(query);
+        } while (result.size() != 0);
+        return id;
     }
 
     /**
@@ -188,7 +187,7 @@ public final class SessionQueries {
      * @return The unique join token.
      */
     @SuppressWarnings("checkstyle:magicnumber") //Five is the length of our string.
-    public static String generateUniqueJoinToken() {
+    protected static String generateUniqueJoinToken() {
         while(true) {
             Random rand = new Random();
             String joinToken = Integer.toHexString(rand.nextInt()).substring(0, 5);
@@ -198,5 +197,30 @@ public final class SessionQueries {
                 return joinToken;
             }
         }
+    }
+
+    /**
+     * Inserts the Authorization token of a device requesting a token in the database.
+     *
+     * @param id    the UUID of the device
+     * @param token the generated authorization token for the device
+     * @return <code>true</code> if successfully added, otherwise <code>false</code>
+     */
+    public static boolean insertAuthorizationToken(String id, String token) {
+        String sql = "INSERT INTO `device` VALUES(?, ?)";
+        return executeManipulationQuery(sql, id, token);
+    }
+
+    public static String selectAuthorizationToken(String deviceID) {
+        String query = "SELECT auth_token FROM device WHERE device_id='" + deviceID + "'";
+        List<Map<String, Object>> result = executeSearchQuery(query);
+        if (result.size() == 1) {
+            return result.get(0).get("auth_token").toString();
+        } else if (result.size() == 0) {
+            return null;
+        } else {
+            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
+        }
+        return null;
     }
 }
