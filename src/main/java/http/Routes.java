@@ -31,6 +31,8 @@ public final class Routes {
      */
     public static void setupRoutes() {
         setupWebsocketRoutes();
+        get("/hello", (req, res) -> "Hello World"); //for debugging
+
         convertJson();
         setupTokenValidation();
         setupCreateSessionRoute();
