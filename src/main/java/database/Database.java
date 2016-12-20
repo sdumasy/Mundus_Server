@@ -21,7 +21,7 @@ public final class Database {
     private static Connection connection = null;
 
     private static String url =
-            "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm";
+            "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/z7vnfv6y27vhnelm?useSSL=false";
     private static String user = "yum29ckgulepk404";
     private static String password = "xp5oc6vwuz4tijx4";
 
@@ -58,15 +58,15 @@ public final class Database {
     /**
      * Edits values in the database with the supplied query.
      *
-     * @param query The query that will be executed.
+     * @param sql The query that will be executed.
      * @return The resultSet.
      */
-    public static List<Map<String, Object>> executeUpdateQuery(final String query) {
+    public static List<Map<String, Object>> executeUpdateQuery(final String sql) {
         List<Map<String, Object>> listOfMaps = null;
         try {
             openConnectionToDb();
             QueryRunner queryRunner = new QueryRunner();
-            listOfMaps = queryRunner.insert(connection, query, new MapListHandler());
+            listOfMaps = queryRunner.insert(connection, sql, new MapListHandler());
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -78,15 +78,15 @@ public final class Database {
     /**
      * Get values in the database with the supplied query.
      *
-     * @param query The query that will be executed.
+     * @param sql The query that will be executed.
      * @return A JSON object with the query results.
      */
-    public static List<Map<String, Object>> executeSearchQuery(String query) {
+    public static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
         List<Map<String, Object>> listOfMaps;
         try {
             openConnectionToDb();
             QueryRunner queryRunner = new QueryRunner();
-            listOfMaps = queryRunner.query(connection, query, new MapListHandler());
+            listOfMaps = queryRunner.query(connection, sql, new MapListHandler(), params);
         } catch (SQLException se) {
             throw new RuntimeException("Couldn't query the database.", se);
         } finally {
@@ -100,19 +100,15 @@ public final class Database {
      *
      * @param sql    the query template
      * @param params the values that should be inserted
-     * @return <code>true</code> if successfully inserted, otherwise <code>false</code>
+     * @return <code>true</code> if query has been successfully executed, otherwise <code>false</code>
      */
-    private static boolean executeManipulationQuery(String sql, Object... params) {
+    public static boolean executeManipulationQuery(String sql, Object... params) {
         boolean result;
         try {
             openConnectionToDb();
-            PreparedStatement statement = connection.prepareStatement(sql);
 
-            for (int i = 1; i <= params.length; i++) {
-                statement.setObject(i, params[i - 1]);
-            }
-
-            result = statement.executeUpdate() > 0;
+            QueryRunner runner = new QueryRunner();
+            result = runner.update(connection, sql, params) > 0;
 
         } catch (SQLException e) {
             throw new RuntimeException("Couldn't query the database.", e);
@@ -120,17 +116,5 @@ public final class Database {
             closeConnectionToDb();
         }
         return result;
-    }
-
-    /**
-     * Inserts the Authorization token of a device requesting a token in the database.
-     *
-     * @param id    the UUID of the device
-     * @param token the generated authorization token for the device
-     * @return <code>true</code> if successfully added, otherwise <code>false</code>
-     */
-    public static boolean insertAuthorizationToken(String id, String token) {
-        String sql = "INSERT INTO `device` VALUES(?, ?)";
-        return executeManipulationQuery(sql, id, token);
     }
 }

@@ -2,11 +2,14 @@ package http;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import database.SessionQueries;
 import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import validation.Validation;
+
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +27,8 @@ public final class Routes {
     /**
      * Private constructor.
      */
-    private Routes() { }
+    private Routes() {
+    }
 
     /**
      * Setup all route hooks.
@@ -45,8 +49,10 @@ public final class Routes {
      */
     private static void convertJson() {
         before(((request, response) -> {
-            HashMap<String, String> map = new Gson().fromJson(request.body(), HashMap.class);
-            for (String k:map.keySet()) {
+            Type type = new TypeToken<HashMap<String, String>>() {
+            }.getType();
+            HashMap<String, String> map = new Gson().fromJson(request.body(), type);
+            for (String k : map.keySet()) {
                 request.attribute(k, map.get(k));
             }
         }));
@@ -55,7 +61,6 @@ public final class Routes {
     /**
      * Setup the route for new tokens and intercept all other requests that don't come with a proper deviceID and token.
      */
-    @SuppressWarnings("checkstyle:magicnumber") // 401 is an error code.
     private static void setupTokenValidation() {
         post("/token", (request, response) -> {
             String deviceID = request.attribute("deviceID");
@@ -78,7 +83,7 @@ public final class Routes {
 
                 // TODO: 17/12/16 Check parameters for SQL injection
 
-                if(!authenticateDevice(request.attribute("deviceID"), request.attribute("token"))) {
+                if (!authenticateDevice(request.attribute("deviceID"), request.attribute("token"))) {
                     halt(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
                 }
             }
@@ -116,7 +121,7 @@ public final class Routes {
         before("/session/:sessionID/*", (request, response) -> {
             String playerID = request.attribute("playerID");
             String deviceID = request.attribute("deviceID");
-            if(playerID != null && deviceID != null) {
+            if (playerID != null && deviceID != null) {
                 request.attribute("player", new Player(playerID, request.params("sessionID"), deviceID));
             }
         });
@@ -141,7 +146,7 @@ public final class Routes {
      */
     private static void setupSessionManagementRoutes() {
         before("/session/:sessionID/manage/*", (request, response) -> {
-            if(!((Player) request.attribute("player")).isAdmin()) {
+            if (!((Player) request.attribute("player")).isAdmin()) {
                 halt(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
             }
         });
@@ -155,8 +160,9 @@ public final class Routes {
 
     /**
      * Helper class for play/pause/delete session requests.
+     *
      * @param request Request made.
-     * @param status Status to change the session to.
+     * @param status  Status to change the session to.
      * @return SessionID and status.
      */
     private static JsonObject requestSessionStatus(Request request, int status) {
