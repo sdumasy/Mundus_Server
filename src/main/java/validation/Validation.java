@@ -8,7 +8,7 @@ import static database.Database.executeSearchQuery;
 import static database.Database.executeUpdateQuery;
 
 /**
- * Created by Thomas on 18-12-2016.
+ * Validation of authentication token.
  */
 public final class Validation {
     /**
@@ -16,9 +16,15 @@ public final class Validation {
      */
     private Validation() { }
 
+    /**
+     * Checks whether the device has a registered token.
+     * @param deviceID The device of the token.
+     * @return Whether it already has a registered token.
+     */
     public static boolean hasToken(String deviceID) {
-        List<Map<String, Object>> result = executeSearchQuery("SELECT * FROM device WHERE device_id='" + deviceID + "'");
-        return result.size()>0;
+        String query = "SELECT * FROM device WHERE device_id='" + deviceID + "'";
+        List<Map<String, Object>> result = executeSearchQuery(query);
+        return result.size() > 0;
     }
 
     /**
