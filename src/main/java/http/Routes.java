@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import database.SessionQueries;
 import models.Player;
+import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import validation.Validation;
-
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +58,7 @@ public final class Routes {
     @SuppressWarnings("checkstyle:magicnumber") // 401 is an error code.
     private static void setupTokenValidation() {
         post("/token", (request, response) -> {
-            String deviceID =request.attribute("deviceID");
+            String deviceID = request.attribute("deviceID");
             if (!hasToken(deviceID)) {
                 String token = Validation.createToken(deviceID);
 
@@ -66,7 +66,7 @@ public final class Routes {
                 responseObject.addProperty("token", token);
                 return responseObject;
             } else {
-                halt(401, "Already have an authentication token.");
+                halt(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
             }
             return null;
         });
@@ -79,7 +79,7 @@ public final class Routes {
                 // TODO: 17/12/16 Check parameters for SQL injection
 
                 if(!authenticateDevice(request.attribute("deviceID"), request.attribute("token"))) {
-                    halt(401, "Invalid Token or deviceID.");
+                    halt(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
                 }
             }
         });
@@ -99,11 +99,11 @@ public final class Routes {
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
-            Player player = getNewPlayerOfSession(request.attribute("joinToken"),request.attribute("deviceID"));
+            Player player = getNewPlayerOfSession(request.attribute("joinToken"), request.attribute("deviceID"));
 
             JsonObject responseObject = new JsonObject();
             responseObject.addProperty("sessionID", player.getSessionID());
-            responseObject.addProperty("playerID",player.getPlayerID());
+            responseObject.addProperty("playerID", player.getPlayerID());
             responseObject.addProperty("role", player.getRole());
             return responseObject;
         });
@@ -113,11 +113,11 @@ public final class Routes {
      * Creates a player model for all in game requests.
      */
     private static void setupInGameRoutes() {
-        before("/session/:sessionID/*",(request, response) -> {
+        before("/session/:sessionID/*", (request, response) -> {
             String playerID = request.attribute("playerID");
             String deviceID = request.attribute("deviceID");
             if(playerID != null && deviceID != null) {
-                request.attribute("player", new Player(playerID,request.params("sessionID"),deviceID));
+                request.attribute("player", new Player(playerID, request.params("sessionID"), deviceID));
             }
         });
     }
@@ -140,17 +140,17 @@ public final class Routes {
      * Setup the routes to manage the sessions (play, pause, delete).
      */
     private static void setupSessionManagementRoutes() {
-        before("/session/:sessionID/manage/*",(request, response) -> {
+        before("/session/:sessionID/manage/*", (request, response) -> {
             if(!((Player) request.attribute("player")).isAdmin()) {
-                halt(403, "You are not an administrator.");
+                halt(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
             }
         });
 
-        put("/session/:sessionID/manage/play",(request, response) -> requestSessionStatus(request,1));
+        put("/session/:sessionID/manage/play", (request, response) -> requestSessionStatus(request, 1));
 
-        put("/session/:sessionID/manage/pause",(request, response) -> requestSessionStatus(request, 2));
+        put("/session/:sessionID/manage/pause", (request, response) -> requestSessionStatus(request, 2));
 
-        put("/session/:sessionID/manage/delete",(request, response) -> requestSessionStatus(request, 0));
+        put("/session/:sessionID/manage/delete", (request, response) -> requestSessionStatus(request, 0));
     }
 
     /**
