@@ -2,13 +2,13 @@ package database;
 
 import com.google.gson.JsonObject;
 import models.Player;
+import org.eclipse.jetty.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 import static database.Database.executeSearchQuery;
 import static spark.Spark.halt;
-import static spark.Spark.webSocket;
 
 /**
  * Created by Thomas on 19-12-2016.
@@ -61,18 +61,19 @@ public final class SessionQueries {
      * @param deviceID The device of the user joining the session.
      * @return The new player.
      */
-    public static Player getNewPlayerOfSession(String joinToken,String deviceID) {
+    @SuppressWarnings("checkstyle:magicnumber")
+    public static Player getNewPlayerOfSession(String joinToken, String deviceID) {
         String query = "SELECT join_token,session_id,role_id FROM session_token WHERE join_token='" + joinToken + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
-        if (result.size()==1) {
+        if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
-            Player player = Player.newPlayer(map.get("session_id").toString(),(int) map.get("role_id"),deviceID);
+            Player player = Player.newPlayer(map.get("session_id").toString(), (int) map.get("role_id"), deviceID);
             addNewPlayer(player);
             return player;
-        } else if (result.size()==0){
-            halt(401,"Invalid joinToken");
+        } else if (result.size() == 0) {
+            halt(HttpStatus.UNAUTHORIZED_401, "Invalid joinToken");
         } else {
-            halt(401,"Identical joinTokens in database");
+            halt(HttpStatus.UNAUTHORIZED_401, "Identical joinTokens in database");
         }
         return null;
     }
@@ -86,12 +87,13 @@ public final class SessionQueries {
                 + "' AND session_id='" + player.getSessionID()
                 + "' AND role_id='" + player.getRoleID() + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
-        if (result.size()==0) {
-            Database.executeUpdateQuery("INSERT INTO session_player (player_id, device_id, session_id, role_id, score) VALUES ('"
+        if (result.size() == 0) {
+            Database.executeUpdateQuery("INSERT INTO "
+                    + "session_player (player_id, device_id, session_id, role_id, score) VALUES ('"
                     + player.getPlayerID() + "','" + player.getDeviceID() + "','"
                     + player.getSessionID() + "','" + player.getRoleID() + "','" + +player.getScore() + "')");
         } else {
-            halt(401,"Player already created.");
+            halt(HttpStatus.UNAUTHORIZED_401, "Player already created.");
         }
     }
 
@@ -105,12 +107,12 @@ public final class SessionQueries {
                 + "' AND device_id='" + player.getDeviceID()
                 + "' AND session_id='" + player.getSessionID() + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
-        if (result.size()==1) {
+        if (result.size() == 1) {
             return result.get(0);
-        } else if (result.size()==0) {
-            halt(404, "No player found.");
+        } else if (result.size() == 0) {
+            halt(HttpStatus.UNAUTHORIZED_401, "No player found.");
         } else {
-            halt(500, "PlayerID not unique.");
+            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "PlayerID not unique.");
         }
         return null;
     }
@@ -141,12 +143,12 @@ public final class SessionQueries {
     public static Integer getSessionStatus(Player player) {
         String query = "SELECT status FROM session WHERE session_id='" + player.getSessionID() + "'";
         List<Map<String, Object>> result = executeSearchQuery(query);
-        if (result.size()==1) {
+        if (result.size() == 1) {
             return (int) result.get(0).get("status");
-        } else if (result.size()==0) {
-            halt(404, "No session found.");
+        } else if (result.size() == 0) {
+            halt(HttpStatus.NOT_FOUND_404, "No session found.");
         } else {
-            halt(500, "SessionID not unique.");
+            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "SessionID not unique.");
         }
         return null;
     }
@@ -156,10 +158,10 @@ public final class SessionQueries {
      * @param player The player profile of the creator.
      * @param status The status to change is to.
      */
-    public static void updateSessionStatus(Player player,int status) {
+    public static void updateSessionStatus(Player player, int status) {
         String query = "UPDATE session SET status='" + status + "' WHERE session_id='" + player.getSessionID()
                 + "' AND player_id='" + player.getPlayerID() + "'";
-        if (status != 0 ) {
+        if (status != 0) {
             query += " AND NOT status='0'";
         }
         Database.executeUpdateQuery(query);
