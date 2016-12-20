@@ -26,9 +26,7 @@ public final class Validation {
     public static boolean hasToken(String deviceID) {
         String sql = "SELECT COUNT(`device_id`) AS 'count' FROM `device` WHERE `device_id`= ?";
         List<Map<String, Object>> result = executeSearchQuery(sql, deviceID);
-
-        int count = Integer.valueOf(result.get(0).get("count").toString());
-        return result.size() > 0 && count == 1;
+        return isValid(result);
     }
 
     /**
@@ -36,14 +34,12 @@ public final class Validation {
      *
      * @param deviceID  the device ID
      * @param authToken the authentication token
-     * @return true if the token and deviceID match the ones stored in the database, false otherwise
+     * @return <code>true</code> if the token and deviceID match the ones stored in the database, <code>false</code> otherwise
      */
     public static boolean authenticateDevice(String deviceID, String authToken) {
         String sql = "SELECT COUNT(`device_id`) AS 'count' FROM `device` WHERE `device_id`= ? AND `auth_token` = ?";
         List<Map<String, Object>> result = executeSearchQuery(sql, deviceID, authToken);
-
-        int count = Integer.valueOf(result.get(0).get("count").toString());
-        return result.size() > 0 && count == 1;
+        return isValid(result);
     }
 
     /**
@@ -57,5 +53,16 @@ public final class Validation {
         String authToken = UUID.randomUUID().toString();
         executeManipulationQuery(sql, deviceID, authToken);
         return authToken;
+    }
+
+    /**
+     * Checks whether the count queries executed in this class have the desired result.
+     *
+     * @param data the list containing the count result
+     * @return <code>true</code> if the counter equals 1, <code>false</code> otherwise
+     */
+    private static boolean isValid(List<Map<String, Object>> data) {
+        int count = Integer.valueOf(data.get(0).get("count").toString());
+        return data.size() > 0 && count == 1;
     }
 }
