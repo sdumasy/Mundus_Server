@@ -32,7 +32,7 @@
     <orderEntry type="module-library">
       <library name="Maven: com.sun:tools:1.8">
         <CLASSES>
-          <root url="jar://C:/Program Files (x86)/Java/jdk1.8.0_101/jre/../lib/tools.jar!/" />
+          <root url="jar://C:/Program Files (x86)/Java/jdk1.8.0_101/lib/tools.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -44,5 +44,6 @@
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven:maven-model:2.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.plexus:plexus-utils:1.5.15" level="project" />
+    <orderEntry type="library" name="Maven: hsqldb:hsqldb:1.8.0.10" level="project" />
   </component>
 </module>
