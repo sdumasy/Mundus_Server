@@ -2,12 +2,13 @@ package http;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import database.SessionQueries;
 import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import validation.Validation;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,12 +45,15 @@ public final class Routes {
      * Convert the body from a request to attributes that can be accessed easily.
      */
     private static void convertJson() {
-        before(((request, response) -> {
+        before((request, response) -> {
             HashMap<String, String> map = new Gson().fromJson(request.body(), HashMap.class);
-            for (String k:map.keySet()) {
-                request.attribute(k, map.get(k));
+            Iterator it = map.keySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                request.attribute(pair.getKey().toString(), pair.getValue());
+                it.remove();
             }
-        }));
+        });
     }
 
     /**
@@ -84,7 +88,7 @@ public final class Routes {
             }
         });
 
-        after(((request, response) -> Logger.getGlobal().log(Level.INFO, "Response: " + response.raw())));
+        after((request, response) -> Logger.getGlobal().log(Level.INFO, "Response: " + response.raw()));
     }
 
     /**
@@ -161,7 +165,7 @@ public final class Routes {
      */
     private static JsonObject requestSessionStatus(Request request, int status) {
         Player player = request.attribute("player");
-        SessionQueries.updateSessionStatus(player, status);
+        updateSessionStatus(player, status);
 
         JsonObject responseObject = new JsonObject();
         responseObject.addProperty("sessionID", player.getSessionID());
