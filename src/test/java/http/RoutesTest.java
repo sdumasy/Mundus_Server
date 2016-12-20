@@ -15,7 +15,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import spark.Spark;
-import validation.Validation;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -23,14 +22,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 import static database.Database.executeUpdateQuery;
+import static database.SessionQueries.createSession;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static validation.Validation.createToken;
 
 /**
  * Created by Thomas on 15-12-2016.
  */
 public class RoutesTest {
     private String deviceID = "deviceID_42";
+    private String deviceID2 = "deviceID_43";
 
     @BeforeClass
     public static void beforeClass() {
@@ -48,7 +50,7 @@ public class RoutesTest {
      * @throws IOException Throws an exception if the request execution fails.
      */
     @Test
-    public void aNewTokenShouldBeCreated() throws IOException {
+    public void createNewTokenTest() throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
 
         HttpPost httpPost = new HttpPost("http://localhost:4567/token");
@@ -64,11 +66,11 @@ public class RoutesTest {
     }
 
     @Test
-    public void aSessionShouldBeCreated() throws IOException {
+    public void createSessionTest() throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
 
         HttpPost httpPost = new HttpPost("http://localhost:4567/session/create");
-        String token = Validation.createToken(deviceID);
+        String token = createToken(deviceID);
         String json = "{\"deviceID\" : \"" + deviceID + "\", \"token\" : \""+ token + "\"}";
 
         HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
@@ -81,12 +83,44 @@ public class RoutesTest {
         tearDownSession(jsonObject);
     }
 
+    @Test
+    public void joinSessionTest() throws IOException {
+        createToken(deviceID);
+        String token2 = createToken(deviceID2);
+        JsonObject jsonObject1 = createSession(deviceID);
+        String joinToken = jsonObject1.get("userToken").getAsString();
+
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost("http://localhost:4567/session/join");
+        String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \""+ token2 + "\", \"joinToken\" : \""
+                + joinToken + "\"}";
+
+        HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
+        httpPost.setEntity(entity);
+        HttpResponse response = httpClient.execute(httpPost);
+        JsonParser jsonParser = new JsonParser();
+        JsonObject jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
+
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+        tearDownExtraPlayer(jsonObject2);
+        tearDownSession(jsonObject1);
+    }
+
+    /**
+     * Delete the extra player that was added to the session.
+     * @param jsonObject A jsonObject that contains the required playerID.
+     */
+    protected void tearDownExtraPlayer(JsonObject jsonObject) {
+        String playerID = jsonObject.get("playerID").getAsString();
+        Database.executeUpdateQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
+    }
 
     /**
      * Delete the device and token from the database.
      */
     public void tearDown() {
         executeUpdateQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
+        executeUpdateQuery("DELETE FROM device WHERE device_id='" + deviceID2 + "';");
     }
 
     /**
