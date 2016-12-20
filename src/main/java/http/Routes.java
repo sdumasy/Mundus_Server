@@ -6,9 +6,8 @@ import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import validation.Validation;
+
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,11 +46,8 @@ public final class Routes {
     private static void convertJson() {
         before((request, response) -> {
             HashMap<String, String> map = new Gson().fromJson(request.body(), HashMap.class);
-            Iterator it = map.keySet().iterator();
-            while(it.hasNext()) {
-                Map.Entry pair = (Map.Entry) it.next();
-                request.attribute(pair.getKey().toString(), pair.getValue());
-                it.remove();
+            for (String k:map.keySet()) {
+                request.attribute(k, map.get(k));
             }
         });
     }
