@@ -32,8 +32,7 @@ public class Player {
      * @return A new player.
      */
     public static Player newPlayer(String sessionID, int roleID, String deviceID) {
-        Player player = new Player(generateUniqueID(
-                "SELECT player_id FROM session_player WHERE player_id='id_placeholder'"), sessionID, deviceID);
+        Player player = new Player(generateUniqueID("session_player", "player_id"), sessionID, deviceID);
         player.setRoleID(roleID);
         player.setScore(0);
         return player;

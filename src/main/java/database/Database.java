@@ -4,7 +4,6 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,7 @@ import java.util.logging.Logger;
 import static java.sql.DriverManager.getConnection;
 
 /**
- * Created by macbookpro on 03/12/2016.
+ * Connect and disconnect from server and executing queries.
  */
 public final class Database {
 
@@ -56,32 +55,12 @@ public final class Database {
     }
 
     /**
-     * Edits values in the database with the supplied query.
-     *
-     * @param sql The query that will be executed.
-     * @return The resultSet.
-     */
-    public static List<Map<String, Object>> executeUpdateQuery(final String sql) {
-        List<Map<String, Object>> listOfMaps = null;
-        try {
-            openConnectionToDb();
-            QueryRunner queryRunner = new QueryRunner();
-            listOfMaps = queryRunner.insert(connection, sql, new MapListHandler());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            closeConnectionToDb();
-        }
-        return listOfMaps;
-    }
-
-    /**
      * Get values in the database with the supplied query.
      *
      * @param sql The query that will be executed.
      * @return A JSON object with the query results.
      */
-    public static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
+    protected static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
         List<Map<String, Object>> listOfMaps;
         try {
             openConnectionToDb();
@@ -102,7 +81,7 @@ public final class Database {
      * @param params the values that should be inserted
      * @return <code>true</code> if query has been successfully executed, otherwise <code>false</code>
      */
-    public static boolean executeManipulationQuery(String sql, Object... params) {
+    protected static boolean executeManipulationQuery(String sql, Object... params) {
         boolean result;
         try {
             openConnectionToDb();

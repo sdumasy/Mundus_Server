@@ -7,6 +7,9 @@ import java.util.UUID;
 import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
 
+import static database.SessionQueries.insertAuthorizationToken;
+import static database.SessionQueries.selectAuthorizationToken;
+
 /**
  * Validation of authentication token.
  */
@@ -14,8 +17,7 @@ public final class Validation {
     /**
      * Private constructor.
      */
-    private Validation() {
-    }
+    private Validation() { }
 
     /**
      * Checks whether the device has a registered token.
@@ -24,9 +26,7 @@ public final class Validation {
      * @return Whether it already has a registered token.
      */
     public static boolean hasToken(String deviceID) {
-        String sql = "SELECT COUNT(`device_id`) AS 'count' FROM `device` WHERE `device_id`= ?";
-        List<Map<String, Object>> result = executeSearchQuery(sql, deviceID);
-        return isValid(result);
+        return selectAuthorizationToken(deviceID) != null;
     }
 
     /**
@@ -37,32 +37,6 @@ public final class Validation {
      * @return <code>true</code> if the token and deviceID match the ones stored in the database, <code>false</code> otherwise
      */
     public static boolean authenticateDevice(String deviceID, String authToken) {
-        String sql = "SELECT COUNT(`device_id`) AS 'count' FROM `device` WHERE `device_id`= ? AND `auth_token` = ?";
-        List<Map<String, Object>> result = executeSearchQuery(sql, deviceID, authToken);
-        return isValid(result);
+        String authTokenDB = selectAuthorizationToken(deviceID);
+        return authTokenDB != null && authTokenDB.equals(authToken);
     }
-
-    /**
-     * Generate a new token, then store it in the DB and return it.
-     *
-     * @param deviceID the device ID
-     * @return the newly generated authToken
-     */
-    public static String createToken(String deviceID) {
-        String sql = "INSERT INTO `device` VALUES(?, ?)";
-        String authToken = UUID.randomUUID().toString();
-        executeManipulationQuery(sql, deviceID, authToken);
-        return authToken;
-    }
-
-    /**
-     * Checks whether the count queries executed in this class have the desired result.
-     *
-     * @param data the list containing the count result
-     * @return <code>true</code> if the counter equals 1, <code>false</code> otherwise
-     */
-    private static boolean isValid(List<Map<String, Object>> data) {
-        int count = Integer.valueOf(data.get(0).get("count").toString());
-        return data.size() > 0 && count == 1;
-    }
-}
