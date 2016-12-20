@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import static database.Database.executeSearchQuery;
 import static database.Database.executeUpdateQuery;
+import static database.Database.insertAuthorizationToken;
 
 /**
  * Validation of authentication token.
@@ -47,8 +48,7 @@ public final class Validation {
      */
     public static String createToken(String deviceID) {
         String authToken = UUID.randomUUID().toString();
-        executeUpdateQuery("INSERT INTO device VALUES ('" + deviceID + "','" + authToken + "');");
-
+        insertAuthorizationToken(deviceID, authToken);
         return authToken;
     }
 }
