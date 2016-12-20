@@ -30,16 +30,19 @@ public final class Routes {
      * Setup all route hooks.
      */
     public static void setupRoutes() {
-        setupWebsocketRoutes();
-        get("/hello", (req, res) -> "Hello World"); //for debugging
+//        setupWebsocketRoutes();
+//        convertJson();
+        setHellodebug();
+//        setupTokenValidation();
+//        setupCreateSessionRoute();
+//        setupJoinSessionRoutes();
+//        setupGetScoreRoute();
+//        setupInGameRoutes();
+//        setupSessionManagementRoutes();
+    }
 
-        convertJson();
-        setupTokenValidation();
-        setupCreateSessionRoute();
-        setupJoinSessionRoutes();
-        setupGetScoreRoute();
-        setupInGameRoutes();
-        setupSessionManagementRoutes();
+    private static void setHellodebug() {
+        get("/hello", (req, res) -> "{\"name\":\"yyyy\"}");
     }
 
     /**
