@@ -4,6 +4,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -27,29 +28,27 @@ public final class Database {
     /**
      * Private constructor.
      */
-    private Database() { }
+    private Database() {
+    }
 
     /**
      * Open a connection with the storage DB.
-     * @return null
      */
-    protected static Connection openConnectionToDb() {
+    protected static void openConnectionToDb() {
         try {
             connection = getConnection(url, user, password);
         } catch (SQLException ex) {
             Logger.getGlobal().log(Level.SEVERE, ex.getMessage(), ex);
         }
-        return null;
     }
 
     /**
      * Close the connection with the remote database if it is open.
-     * @param con the connection
      */
-    protected static void closeConnectionToDb(Connection con) {
+    protected static void closeConnectionToDb() {
         try {
-            if (con != null) {
-                con.close();
+            if (connection != null) {
+                connection.close();
             }
         } catch (SQLException ex) {
             Logger.getGlobal().log(Level.WARNING, ex.getMessage(), ex);
@@ -58,6 +57,7 @@ public final class Database {
 
     /**
      * Edits values in the database with the supplied query.
+     *
      * @param query The query that will be executed.
      * @return The resultSet.
      */
@@ -70,29 +70,55 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeConnectionToDb(connection);
+            closeConnectionToDb();
         }
         return listOfMaps;
     }
 
     /**
      * Get values in the database with the supplied query.
+     *
      * @param query The query that will be executed.
      * @return A JSON object with the query results.
      */
     public static List<Map<String, Object>> executeSearchQuery(String query) {
-        List<Map<String, Object>> listOfMaps = null;
+        List<Map<String, Object>> listOfMaps;
         try {
             openConnectionToDb();
             QueryRunner queryRunner = new QueryRunner();
             listOfMaps = queryRunner.query(connection, query, new MapListHandler());
         } catch (SQLException se) {
             throw new RuntimeException("Couldn't query the database.", se);
-        }
-        finally {
-            closeConnectionToDb(connection);
+        } finally {
+            closeConnectionToDb();
         }
         return listOfMaps;
     }
 
+    /**
+     * Manipulates the data in the database with the supplied query and values.
+     *
+     * @param sql    the query template
+     * @param params the values that should be inserted
+     * @return <code>true</code> if successfully inserted, otherwise <code>false</code>
+     */
+    private static boolean executeManipulationQuery(String sql, Object... params) {
+        boolean result;
+        try {
+            openConnectionToDb();
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            for (int i = 1; i <= params.length; i++) {
+                statement.setObject(i, params[i - 1]);
+            }
+
+            result = statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Couldn't query the database.", e);
+        } finally {
+            closeConnectionToDb();
+        }
+        return result;
+    }
 }
