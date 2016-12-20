@@ -22,11 +22,16 @@ import static validation.Validation.hasToken;
 public class ValidationTest {
     private Connection connection;
 
-
+    /**
+     * Setup a device with a token.
+     */
     public void setup() {
         executeUpdateQuery("INSERT INTO device VALUES ('" + 42 + "','" + "true" + "');");
     }
 
+    /**
+     * Delete the device and token from the database.
+     */
     public void tearDown() {
         executeUpdateQuery("DELETE FROM device WHERE device_id='42';");
     }
@@ -91,10 +96,10 @@ public class ValidationTest {
 
     /**
      * Test whether constructor is private and does not raise any exceptions.
-     * @throws NoSuchMethodException
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws InstantiationException
+     * @throws NoSuchMethodException The method must be there.
+     * @throws IllegalAccessException The method must be accessible.
+     * @throws InvocationTargetException The method must be invocable
+     * @throws InstantiationException The method must be instantiationable.
      */
     @Test
     public void testConstructorIsPrivate() throws NoSuchMethodException, IllegalAccessException,

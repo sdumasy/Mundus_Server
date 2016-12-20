@@ -67,7 +67,7 @@ public class Player {
      * Allows the role of the player to be set.
      * @param roleID The role ID.
      */
-    protected void setRoleID(Integer roleID) {
+    public void setRoleID(Integer roleID) {
         this.roleID = roleID;
     }
 
@@ -106,7 +106,7 @@ public class Player {
      * Allows the score of the player to be set.
      * @param score The amount of points this player has scored.
      */
-    protected void setScore(Integer score) {
+    public void setScore(Integer score) {
         this.score = score;
     }
 

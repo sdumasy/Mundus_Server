@@ -52,6 +52,7 @@ public final class SessionQueries {
         jsonObject.addProperty("modToken", modToken);
         jsonObject.addProperty("userToken", userToken);
         jsonObject.addProperty("playerID", playerID);
+        jsonObject.addProperty("sessionID", sessionID);
         return jsonObject;
     }
 
@@ -82,7 +83,7 @@ public final class SessionQueries {
      * Adds a new player to a session.
      * @param player The player to be added to the database.
      */
-    private static void addNewPlayer(Player player) {
+    protected static void addNewPlayer(Player player) {
         String query = "SELECT * FROM session_player WHERE device_id='" + player.getDeviceID()
                 + "' AND session_id='" + player.getSessionID()
                 + "' AND role_id='" + player.getRoleID() + "'";
@@ -102,7 +103,7 @@ public final class SessionQueries {
      * @param player The player.
      * @return A map of the data.
      */
-    private static Map<String, Object> getPlayerData(Player player) {
+    protected static Map<String, Object> getPlayerData(Player player) {
         String query = "SELECT * FROM session_player WHERE player_id='" + player.getPlayerID()
                 + "' AND device_id='" + player.getDeviceID()
                 + "' AND session_id='" + player.getSessionID() + "'";
