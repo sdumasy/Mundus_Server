@@ -1,11 +1,11 @@
 package models;
 
 /**
- * Created by Ben on 19/12/16.
+ * Role of a player.
  */
 public enum Role {
     Admin(0), Moderator(1), User(2);
-    private int id;
+    public int id;
 
     /**
      * The role constructor.

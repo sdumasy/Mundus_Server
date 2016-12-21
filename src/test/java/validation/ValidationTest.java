@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
 
-import static database.Database.executeUpdateQuery;
+import static database.Database.executeManipulationQuery;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
@@ -26,14 +26,14 @@ public class ValidationTest {
      * Setup a device with a token.
      */
     public void setup() {
-        executeUpdateQuery("INSERT INTO device VALUES ('" + 42 + "','" + "true" + "');");
+        executeManipulationQuery("INSERT INTO device VALUES ('" + 42 + "','" + "true" + "');");
     }
 
     /**
      * Delete the device and token from the database.
      */
     public void tearDown() {
-        executeUpdateQuery("DELETE FROM device WHERE device_id='42';");
+        executeManipulationQuery("DELETE FROM device WHERE device_id='42';");
     }
 
     /**

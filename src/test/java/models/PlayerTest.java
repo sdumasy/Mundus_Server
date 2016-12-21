@@ -7,7 +7,7 @@ import static models.Role.getById;
 import static org.junit.Assert.*;
 
 /**
- * Created by Thomas on 20-12-2016.
+ * Test of the player class.
  */
 public class PlayerTest {
     private Player player;
@@ -70,7 +70,7 @@ public class PlayerTest {
     @Test
     public void getRole() {
         player.setRoleID(0);
-        assertEquals(player.getRole(), getById(0).toString());
+        assertEquals(player.getRole(), getById(0));
     }
 
     /**

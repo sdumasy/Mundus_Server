@@ -88,11 +88,11 @@ public class SessionQueriesTest {
      * Clean up a session after testing is done.
      */
     private void createSessionTearDown() {
-        Database.executeUpdateQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
-        Database.executeUpdateQuery("DELETE FROM session_token WHERE join_token='" + userToken + "';");
-        Database.executeUpdateQuery("DELETE FROM session_token WHERE join_token='" + modToken + "';");
-        Database.executeUpdateQuery("DELETE FROM session WHERE session_id='" + sessionID + "';");
-        Database.executeUpdateQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
+        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
+        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + userToken + "';");
+        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + modToken + "';");
+        Database.executeManipulationQuery("DELETE FROM session WHERE session_id='" + sessionID + "';");
+        Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
     }
 
     /**
@@ -111,9 +111,9 @@ public class SessionQueriesTest {
             assertEquals(verify.size(), 1);
 
         } finally {
-            Database.executeUpdateQuery("DELETE FROM session_player WHERE player_id='" + player.getPlayerID() + "';");
+            Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + player.getPlayerID() + "';");
             createSessionTearDown();
-            Database.executeUpdateQuery("DELETE FROM device WHERE device_id='" + localDevice + "';");
+            Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + localDevice + "';");
         }
     }
 
@@ -153,9 +153,9 @@ public class SessionQueriesTest {
      * Deletes the extra player and tears down the session.
      */
     private void addNewPlayerTearDown() {
-        Database.executeUpdateQuery("DELETE FROM session_player WHERE player_id='" + "playerID_42" + "';");
+        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + "playerID_42" + "';");
         createSessionTearDown();
-        Database.executeUpdateQuery("DELETE FROM device WHERE device_id='" + localDevice + "';");
+        Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + localDevice + "';");
     }
 
     /**
