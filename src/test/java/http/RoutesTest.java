@@ -21,7 +21,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
-import static database.Database.executeUpdateQuery;
+import static database.Database.executeManipulationQuery;
 import static database.SessionQueries.createSession;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -112,15 +112,15 @@ public class RoutesTest {
      */
     protected void tearDownExtraPlayer(JsonObject jsonObject) {
         String playerID = jsonObject.get("playerID").getAsString();
-        Database.executeUpdateQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
+        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
     }
 
     /**
      * Delete the device and token from the database.
      */
     public void tearDown() {
-        executeUpdateQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
-        executeUpdateQuery("DELETE FROM device WHERE device_id='" + deviceID2 + "';");
+        executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
+        executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID2 + "';");
     }
 
     /**
@@ -132,11 +132,11 @@ public class RoutesTest {
         String playerID = jsonObject.get("playerID").getAsString();
         String userToken = jsonObject.get("userToken").getAsString();
         String modToken = jsonObject.get("modToken").getAsString();
-        Database.executeUpdateQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
-        Database.executeUpdateQuery("DELETE FROM session_token WHERE join_token='" + userToken + "';");
-        Database.executeUpdateQuery("DELETE FROM session_token WHERE join_token='" + modToken + "';");
-        Database.executeUpdateQuery("DELETE FROM session WHERE session_id='" + sessionID + "';");
-        Database.executeUpdateQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
+        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
+        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + userToken + "';");
+        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + modToken + "';");
+        Database.executeManipulationQuery("DELETE FROM session WHERE session_id='" + sessionID + "';");
+        Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
     }
 
     /**

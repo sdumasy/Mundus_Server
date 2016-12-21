@@ -86,7 +86,7 @@ public final class SessionQueries {
      *
      * @param player The player to be added to the database.
      */
-    private static void addNewPlayer(Player player) {
+    protected static void addNewPlayer(Player player) {
         String query = "SELECT * FROM `session_player` WHERE `device_id` = ? AND `session_id` = ? AND `role_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, player.getDeviceID(), player.getSessionID(), player.getRoleID());
         if (result.size() == 0) {
@@ -104,7 +104,7 @@ public final class SessionQueries {
      * @param player The player.
      * @return A map of the data.
      */
-    private static Map<String, Object> getPlayerData(Player player) {
+    protected static Map<String, Object> getPlayerData(Player player) {
         String query = "SELECT * FROM `session_player` WHERE `player_id` = ? AND `device_id` = ? AND `session_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, player.getPlayerID(), player.getDeviceID(), player.getSessionID());
         if (result.size() == 1) {

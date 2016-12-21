@@ -60,7 +60,7 @@ public final class Database {
      * @param sql The query that will be executed.
      * @return A JSON object with the query results.
      */
-    protected static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
+    public static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
         List<Map<String, Object>> listOfMaps;
         try {
             openConnectionToDb();
@@ -81,7 +81,7 @@ public final class Database {
      * @param params the values that should be inserted
      * @return <code>true</code> if query has been successfully executed, otherwise <code>false</code>
      */
-    protected static boolean executeManipulationQuery(String sql, Object... params) {
+    public static boolean executeManipulationQuery(String sql, Object... params) {
         boolean result;
         try {
             openConnectionToDb();
