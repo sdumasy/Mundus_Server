@@ -50,6 +50,7 @@ public final class SessionQueries {
         Database.executeManipulationQuery(query, playerID, deviceID, sessionID, 0, 0);
 
         JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("sessionID", sessionID);
         jsonObject.addProperty("modToken", modToken);
         jsonObject.addProperty("userToken", userToken);
         jsonObject.addProperty("playerID", playerID);
