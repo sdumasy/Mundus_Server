@@ -9,8 +9,9 @@ import static database.SessionQueries.generateUniqueID;
  */
 public class Player {
 
-    private String playerID, sessionID, deviceID, roleName;
-    private Integer roleID, score;
+    private String playerID, sessionID, deviceID;
+    private Role role;
+    private Integer score;
 
     /**
      * Constructor for the player class.
@@ -68,30 +69,29 @@ public class Player {
      * @param roleID The role ID.
      */
     public void setRoleID(Integer roleID) {
-        this.roleID = roleID;
+        this.role = Role.getById(roleID);
     }
-
 
     /**
      * Gets the role ID.
      * @return The role ID.
      */
     public int getRoleID() {
-        if (roleID == null) {
-            roleID = SessionQueries.getRoleId(this);
+        if (role == null) {
+            getRole();
         }
-        return roleID;
+        return role.id;
     }
 
     /**
      * Gets the role ID by name.
-     * @return The role name.
+     * @return The role.
      */
-    public String getRole() {
-        if (roleName == null) {
-            roleName = Role.getById(getRoleID()).name();
+    public Role getRole() {
+        if (role == null) {
+            setRoleID(SessionQueries.getRoleId(this));
         }
-        return roleName;
+        return role;
     }
 
     /**

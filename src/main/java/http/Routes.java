@@ -106,7 +106,7 @@ public final class Routes {
             JsonObject responseObject = new JsonObject();
             responseObject.addProperty("sessionID", player.getSessionID());
             responseObject.addProperty("playerID", player.getPlayerID());
-            responseObject.addProperty("role", player.getRole());
+            responseObject.addProperty("role", player.getRole().name());
             return responseObject;
         });
     }
