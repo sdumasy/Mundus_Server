@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Mundus_Server" />
+        <module name="server-mundus" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Mundus_Server" target="1.5" />
+      <module name="server-mundus" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>
