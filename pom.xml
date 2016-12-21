@@ -174,7 +174,7 @@
                 <configuration>
                     <jdkVersion>1.8</jdkVersion>
                     <processTypes>
-                        <web>java $JAVA_OPTS -cp target/classes:target/dependency/* App</web>
+                        <web>java -jar target/${artifactId}-${project.version}-jar-with-dependencies.jar</web>
                     </processTypes>
                 </configuration>
             </plugin>
