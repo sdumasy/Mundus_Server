@@ -16,6 +16,12 @@ import static spark.Spark.halt;
  */
 public class PlayerQueries {
 
+    /**
+     * Private constructor.
+     */
+    private PlayerQueries() {
+        //empty on purpose
+    }
 
     /**
      * Checks whether a player exists in the database.

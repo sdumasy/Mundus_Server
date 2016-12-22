@@ -121,6 +121,10 @@ public class Player {
         return score;
     }
 
+    /**
+     * Return a JsonObject with all the player attributes.
+     * @return A JsonObject with all the player attributes.
+     */
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerID",getPlayerID());

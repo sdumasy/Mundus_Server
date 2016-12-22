@@ -45,10 +45,10 @@ public final class SessionQueries {
         Database.executeManipulationQuery(query, modToken, sessionID, 1);
 
         String userToken = generateUniqueJoinToken();
-        Database.executeManipulationQuery(query, generateUniqueJoinToken(), sessionID, 2);
+        Database.executeManipulationQuery(query, userToken, sessionID, 2);
 
         query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?)";
-        Database.executeManipulationQuery(query, playerID, device.getToken(), sessionID, 0, 0);
+        Database.executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("sessionID", sessionID);
@@ -104,6 +104,7 @@ public final class SessionQueries {
      *
      * @param player The player profile of the creator.
      * @param status The status to change is to.
+     * @return A boolean value indicating succes.
      */
     public static boolean updateSessionStatus(Player player, int status) {
         String query = "UPDATE `session` SET `status` = ? WHERE `session_id` = ? AND `player_id` = ? ";
@@ -125,6 +126,11 @@ public final class SessionQueries {
         return executeManipulationQuery(sql, id, token);
     }
 
+    /**
+     * Get a device token by ID.
+     * @param deviceID The device which token should be recovered
+     * @return The token
+     */
     public static String selectAuthorizationToken(String deviceID) {
         String query = "SELECT `auth_token` FROM `device` WHERE `device_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, deviceID);

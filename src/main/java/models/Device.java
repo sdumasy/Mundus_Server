@@ -47,7 +47,7 @@ public class Device {
 
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("deviceID",deviceID);
+        jsonObject.addProperty("deviceID", deviceID);
         jsonObject.addProperty("token", token);
         return jsonObject;
     }
