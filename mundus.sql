@@ -5,120 +5,108 @@
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE=`TRADITIONAL,ALLOW_INVALID_DATES`;
 
 -- -----------------------------------------------------
--- Schema mundus
+-- Table `device`
 -- -----------------------------------------------------
+CREATE TABLE `device` (
+  `device_id` VARCHAR(45) NOT NULL,
+  `auth_token` VARCHAR(45) NOT NULL,
+  UNIQUE INDEX `token_UNIQUE` (`auth_token` ASC),
+  PRIMARY KEY (`device_id`),
+  UNIQUE INDEX `user_jd_UNIQUE` (`device_id` ASC));
 
--- -----------------------------------------------------
--- Schema mundus
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS 'mundus' DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
-USE 'mundus' ;
-
--- -----------------------------------------------------
--- Table 'mundus'.'device'
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS 'mundus'.'device' (
-  'device_id' VARCHAR(45) NOT NULL,
-  'auth_token' VARCHAR(45) NOT NULL,
-  UNIQUE INDEX 'token_UNIQUE' ('auth_token' ASC),
-  PRIMARY KEY ('device_id'),
-  UNIQUE INDEX 'user_jd_UNIQUE' ('device_id' ASC))
-ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table 'mundus'.'role'
+-- Table `role`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS 'mundus'.'role' (
-  'role_id' INT(1) NOT NULL,
-  'name' VARCHAR(45) NULL,
-  PRIMARY KEY ('role_id'),
-  UNIQUE INDEX 'id_UNIQUE' ('role_id' ASC))
-ENGINE = InnoDB;
+CREATE TABLE `role` (
+  `role_id` INT(1) NOT NULL,
+  `name` VARCHAR(45) NULL,
+  PRIMARY KEY (`role_id`),
+  UNIQUE INDEX `id_UNIQUE` (`role_id` ASC));
 
 
+
 -- -----------------------------------------------------
--- Table 'mundus'.'session_player'
+-- Table `session_player`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS 'mundus'.'session_player' (
-  'player_id' VARCHAR(45) NOT NULL,
-  'device_id' VARCHAR(45) NOT NULL,
-  'session_id' VARCHAR(45) NOT NULL,
-  'role_id' INT NOT NULL,
-  'score' INT(5) NOT NULL,
-  PRIMARY KEY ('player_id'),
-  UNIQUE INDEX 'player_id_UNIQUE' ('player_id' ASC),
-  INDEX 'fk_session_id_idx' ('session_id' ASC),
-  INDEX 'fk_session_device_id_idx' ('device_id' ASC),
-  INDEX 'fk_session_player_role_id_idx' ('role_id' ASC),
-  CONSTRAINT 'fk_session_id'
-    FOREIGN KEY ('session_id')
-    REFERENCES 'mundus'.'session' ('session_id')
+CREATE TABLE `session_player` (
+  `player_id` VARCHAR(45) NOT NULL,
+  `device_id` VARCHAR(45) NOT NULL,
+  `session_id` VARCHAR(45) NOT NULL,
+  `role_id` INT NOT NULL,
+  `score` INT(5) NOT NULL,
+  PRIMARY KEY (`player_id`),
+  UNIQUE INDEX `player_id_UNIQUE` (`player_id` ASC),
+  INDEX `fk_session_id_idx` (`session_id` ASC),
+  INDEX `fk_session_device_id_idx` (`device_id` ASC),
+  INDEX `fk_session_player_role_id_idx` (`role_id` ASC),
+  CONSTRAINT `fk_session_id`
+  FOREIGN KEY (`session_id`)
+  REFERENCES `session` (`session_id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT 'fk_session_device_id'
-    FOREIGN KEY ('device_id')
-    REFERENCES 'mundus'.'device' ('device_id')
+  CONSTRAINT `fk_session_device_id`
+  FOREIGN KEY (`device_id`)
+  REFERENCES `device` (`device_id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT 'fk_session_player_role_id'
-    FOREIGN KEY ('role_id')
-    REFERENCES 'mundus'.'role' ('role_id')
+  CONSTRAINT `fk_session_player_role_id`
+  FOREIGN KEY (`role_id`)
+  REFERENCES `role` (`role_id`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+    ON UPDATE CASCADE);
+
 
 
 -- -----------------------------------------------------
--- Table 'mundus'.'session'
+-- Table `session`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS 'mundus'.'session' (
-  'session_id' VARCHAR(45) NOT NULL,
-  'player_id' VARCHAR(45) NOT NULL,
-  'status' INT(1) NULL,
-  'created' DATETIME NULL,
-  UNIQUE INDEX 'uid_UNIQUE' ('player_id' ASC),
-  PRIMARY KEY ('session_id'),
-  UNIQUE INDEX 'id_UNIQUE' ('session_id' ASC),
-  CONSTRAINT 'fk_session_player_id'
-    FOREIGN KEY ('player_id')
-    REFERENCES 'mundus'.'session_player' ('player_id')
+CREATE TABLE `session` (
+  `session_id` VARCHAR(45) NOT NULL,
+  `player_id` VARCHAR(45) NOT NULL,
+  `status` INT(1) NULL,
+  `created` DATETIME NULL,
+  UNIQUE INDEX `uid_UNIQUE` (`player_id` ASC),
+  PRIMARY KEY (`session_id`),
+  UNIQUE INDEX `id_UNIQUE` (`session_id` ASC),
+  CONSTRAINT `fk_session_player_id`
+  FOREIGN KEY (`player_id`)
+  REFERENCES `session_player` (`player_id`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+    ON UPDATE CASCADE);
+
 
 
 -- -----------------------------------------------------
--- Table 'mundus'.'session_token'
+-- Table `session_token`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS 'mundus'.'session_token' (
-  'join_token' VARCHAR(45) NOT NULL,
-  'session_id' VARCHAR(45) NOT NULL,
-  'role_id' INT NOT NULL,
-  PRIMARY KEY ('join_token'),
-  UNIQUE INDEX 'token_UNIQUE' ('join_token' ASC),
-  INDEX 'fk_token_session_id_idx' ('session_id' ASC),
-  INDEX 'fk_token_session_role_id_idx' ('role_id' ASC),
-  CONSTRAINT 'fk_token_session_id'
-    FOREIGN KEY ('session_id')
-    REFERENCES 'mundus'.'session' ('session_id')
+CREATE TABLE `session_token` (
+  `join_token` VARCHAR(45) NOT NULL,
+  `session_id` VARCHAR(45) NOT NULL,
+  `role_id` INT NOT NULL,
+  PRIMARY KEY (`join_token`),
+  UNIQUE INDEX `token_UNIQUE` (`join_token` ASC),
+  INDEX `fk_token_session_id_idx` (`session_id` ASC),
+  INDEX `fk_token_session_role_id_idx` (`role_id` ASC),
+  CONSTRAINT `fk_token_session_id`
+  FOREIGN KEY (`session_id`)
+  REFERENCES `session` (`session_id`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT 'fk_token_session_role_id'
-    FOREIGN KEY ('role_id')
-    REFERENCES 'mundus'.'role' ('role_id')
+  CONSTRAINT `fk_token_session_role_id`
+  FOREIGN KEY (`role_id`)
+  REFERENCES `role` (`role_id`)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+    ON UPDATE CASCADE);
 
-CREATE USER 'mundus' IDENTIFIED BY 'ExpeditionMundus';
 
-GRANT SELECT ON TABLE 'mundus'.* TO 'mundus';
-GRANT SELECT, INSERT, TRIGGER ON TABLE 'mundus'.* TO 'mundus';
-GRANT SELECT, INSERT, TRIGGER, UPDATE, DELETE ON TABLE 'mundus'.* TO 'mundus';
+GRANT SELECT ON TABLE * TO `mundus`;
+GRANT SELECT, INSERT, TRIGGER ON TABLE * TO `mundus`;
+GRANT SELECT, INSERT, TRIGGER, UPDATE, DELETE ON TABLE * TO `mundus`;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
