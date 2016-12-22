@@ -117,8 +117,8 @@ public final class Routes {
             Device device = request.attribute("device");
             if (playerID != null && device != null) {
                 Player player = Player.getPlayer(playerID);
-                if (player.getDevice().equals(device) &&
-                        player.getSessionID().equals(request.params("sessionID"))) {
+                if (player.getDevice().equals(device)
+                        && player.getSessionID().equals(request.params("sessionID"))) {
                     request.attribute("player", player);
                 } else {
                     halt(HttpStatus.UNAUTHORIZED_401, "Invalid deviceID,sessionID, or playerID.");

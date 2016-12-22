@@ -5,16 +5,18 @@ import http.Routes;
 import static spark.Spark.port;
 
 /**
- * Created by macbookpro on 29/11/2016.
+ * The App itself.
  */
 public final class App {
     /**
      * Private constructor.
      */
-    private App() { }
+    private App() {
+    }
 
     /**
      * Main method.
+     *
      * @param args Runtime args.
      */
     public static void main(String[] args) {
@@ -24,6 +26,7 @@ public final class App {
 
     /**
      * Get the assigned Heroku port, or the default if there is none.
+     *
      * @return The port number.
      */
     @SuppressWarnings("checkstyle:magicnumber") //4567 is a port number

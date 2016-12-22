@@ -14,7 +14,7 @@ import static spark.Spark.halt;
 /**
  * Queries needed for teh Player class.
  */
-public class PlayerQueries {
+public final class PlayerQueries {
 
     /**
      * Private constructor.
@@ -25,6 +25,7 @@ public class PlayerQueries {
 
     /**
      * Checks whether a player exists in the database.
+     *
      * @param player The player to be checked.
      * @return Returns if the player exists.
      */
@@ -44,6 +45,7 @@ public class PlayerQueries {
 
     /**
      * Checks whether a playerID exists in the database.
+     *
      * @param playerID The playerID to be checked.
      * @return Returns if the playerID exists.
      */
@@ -62,6 +64,7 @@ public class PlayerQueries {
 
     /**
      * Adds a new player to the database.
+     *
      * @param player The player to be added to the database.
      * @return whether the player was successfully added.
      */

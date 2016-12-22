@@ -16,6 +16,15 @@ public class Player {
     private Role role;
     private Integer score;
 
+    /**
+     * Constructor for player.
+     *
+     * @param playerID  The id for the player.
+     * @param sessionID The session ID of the player.
+     * @param device    The device of the player.
+     * @param role      The role of the player.
+     * @param score     The score of the player.
+     */
     public Player(String playerID, String sessionID, Device device, Role role, Integer score) {
         this.playerID = playerID;
         this.sessionID = sessionID;
@@ -26,6 +35,7 @@ public class Player {
 
     /**
      * Gets a player from the database.
+     *
      * @param playerID The player ID.
      * @return The Player.
      */
@@ -35,9 +45,11 @@ public class Player {
 
     /**
      * Creates a newPlayer.
+     *
      * @param sessionID Players session.
-     * @param roleID Players role.
-     * @param device Players device.
+     * @param roleID    Players role.
+     * @param device    Players device.
+     * @param score     The score of the player.
      * @return A new player.
      */
     public static Player newPlayer(String sessionID, int roleID, Device device, int score) {
@@ -51,6 +63,7 @@ public class Player {
 
     /**
      * Gets the player ID.
+     *
      * @return The player ID.
      */
     public String getPlayerID() {
@@ -59,6 +72,7 @@ public class Player {
 
     /**
      * Gets the session ID.
+     *
      * @return The session ID.
      */
     public String getSessionID() {
@@ -67,6 +81,7 @@ public class Player {
 
     /**
      * Gets the device ID.
+     *
      * @return The device ID.
      */
     public Device getDevice() {
@@ -74,15 +89,8 @@ public class Player {
     }
 
     /**
-     * Allows the role of the player to be set.
-     * @param roleID The role ID.
-     */
-    public void setRoleID(Integer roleID) {
-        this.role = Role.getById(roleID);
-    }
-
-    /**
      * Gets the role ID.
+     *
      * @return The role ID.
      */
     public int getRoleID() {
@@ -90,7 +98,17 @@ public class Player {
     }
 
     /**
+     * Allows the role of the player to be set.
+     *
+     * @param roleID The role ID.
+     */
+    public void setRoleID(Integer roleID) {
+        this.role = Role.getById(roleID);
+    }
+
+    /**
      * Gets the role ID by name.
+     *
      * @return The role.
      */
     public Role getRole() {
@@ -99,6 +117,7 @@ public class Player {
 
     /**
      * Returns whether this player is an admin or not.
+     *
      * @return The boolean value.
      */
     public boolean isAdmin() {
@@ -106,15 +125,8 @@ public class Player {
     }
 
     /**
-     * Allows the score of the player to be set.
-     * @param score The amount of points this player has scored.
-     */
-    public void setScore(Integer score) {
-        this.score = score;
-    }
-
-    /**
      * Gets the score.
+     *
      * @return The score.
      */
     public int getScore() {
@@ -122,15 +134,25 @@ public class Player {
     }
 
     /**
+     * Allows the score of the player to be set.
+     *
+     * @param score The amount of points this player has scored.
+     */
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+
+    /**
      * Return a JsonObject with all the player attributes.
+     *
      * @return A JsonObject with all the player attributes.
      */
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("playerID",getPlayerID());
-        jsonObject.addProperty("sessionID",sessionID);
-        jsonObject.addProperty("role",role.name());
-        jsonObject.addProperty("score",score);
+        jsonObject.addProperty("playerID", getPlayerID());
+        jsonObject.addProperty("sessionID", sessionID);
+        jsonObject.addProperty("role", role.name());
+        jsonObject.addProperty("score", score);
         return jsonObject;
     }
 }

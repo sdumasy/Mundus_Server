@@ -11,7 +11,7 @@ import static database.SessionQueries.insertAuthorizationToken;
 /**
  * Creates unique tokens.
  */
-public class CreateUniqueIDs {
+public final class CreateUniqueIDs {
 
     /**
      * Private constructor.
@@ -22,6 +22,7 @@ public class CreateUniqueIDs {
 
     /**
      * Generate a new token, then store it in the DB and return it.
+     *
      * @param deviceID the device ID
      * @return the newly generated authToken
      */
