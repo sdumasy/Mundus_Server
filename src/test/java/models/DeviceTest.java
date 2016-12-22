@@ -9,10 +9,7 @@ import org.junit.Test;
 import static database.Database.executeManipulationQuery;
 import static junit.framework.TestCase.assertNotNull;
 import static models.Device.newDevice;
-import static models.Role.Admin;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by Thomas on 22-12-2016.
@@ -50,15 +47,6 @@ public class DeviceTest {
     @Test
     public void getTokenTest() {
         assertEquals(token, device.getToken());
-    }
-
-    @Test
-    public void addAndGetPlayerTest() throws Exception {
-        assertEquals(0, device.getPlayers().size());
-
-        device.addPlayer(new Player("", "", deviceID, Admin, 0));
-
-        assertEquals(1, device.getPlayers().size());
     }
 
 
