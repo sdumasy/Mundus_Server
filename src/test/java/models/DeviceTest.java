@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import static database.Database.executeManipulationQuery;
 import static junit.framework.TestCase.assertNotNull;
+import static models.Device.getDevice;
 import static models.Device.newDevice;
 import static org.junit.Assert.*;
 
@@ -37,6 +38,29 @@ public class DeviceTest {
         assertNotNull(newDevice.getToken());
 
         executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
+    }
+
+    @Test
+    public void newDeviceNullTest() {
+        DatabaseTest.setupDevice();
+        Device newDevice = newDevice(DatabaseTest.DEVICE_ID);
+
+        assertNull(newDevice);
+        DatabaseTest.cleanDatabase();
+    }
+
+    @Test
+    public void getDeviceTest() {
+        DatabaseTest.setupDevice();
+        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
+
+        assertEquals(device, getDevice(DatabaseTest.DEVICE_ID));
+        DatabaseTest.cleanDatabase();
+    }
+
+    @Test
+    public void getDeviceNullTest() {
+        assertNull(getDevice("Non existing device"));
     }
 
     @Test
@@ -71,4 +95,26 @@ public class DeviceTest {
         assertEquals(token, jsonObject.get("token").getAsString());
     }
 
+    @Test
+    public void equalsSelfTest() throws Exception {
+        assertEquals(device, device);
+    }
+
+    @Test
+    public void equalsSameTest() throws Exception {
+        Device device2 = new Device(deviceID, token);
+        assertEquals(device, device2);
+    }
+
+    @Test
+    public void equalsOtherTest() throws Exception {
+        Device device2 = new Device(deviceID, "other");
+        assertNotEquals(device, device2);
+    }
+
+    @Test
+    public void equalsOtherTest2() throws Exception {
+        Device device2 = new Device("other", token);
+        assertNotEquals(device, device2);
+    }
 }

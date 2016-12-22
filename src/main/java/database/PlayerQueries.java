@@ -87,7 +87,7 @@ public class PlayerQueries {
         List<Map<String, Object>> result = executeSearchQuery(query, playerID);
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
-            return new Player(map.get("playerID").toString(), map.get("session_id").toString(),
+            return new Player(map.get("player_id").toString(), map.get("session_id").toString(),
                     Device.getDevice(map.get("device_id").toString()),
                     Role.getById((int) map.get("role_id")), (int) map.get("score"));
         } else if (result.size() == 0) {

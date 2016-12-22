@@ -23,6 +23,7 @@ public class Device {
             return null;
         }
     }
+
     public static Device getDevice(String deviceID) {
         String token = selectAuthorizationToken(deviceID);
         if (token != null) {
