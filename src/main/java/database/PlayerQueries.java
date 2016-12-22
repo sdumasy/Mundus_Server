@@ -3,6 +3,7 @@ package database;
 import models.Device;
 import models.Player;
 import models.Role;
+import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.List;
@@ -29,10 +30,10 @@ public final class PlayerQueries {
      * @param player The player to be checked.
      * @return Returns if the player exists.
      */
-    public static boolean playerExists(Player player) {
+    protected static boolean playerExists(Player player) {
         String query = "SELECT * FROM `session_player` WHERE `device_id` = ? AND `session_id` = ? AND `role_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, player.getDevice().getDeviceID(),
-                player.getSessionID(), player.getRoleID());
+                player.getSession().getSessionID(), player.getRoleID());
         if (result.size() == 0) {
             return false;
         } else if (result.size() == 1) {
@@ -49,7 +50,7 @@ public final class PlayerQueries {
      * @param playerID The playerID to be checked.
      * @return Returns if the playerID exists.
      */
-    public static boolean playerIDExists(String playerID) {
+    protected static boolean playerIDExists(String playerID) {
         String query = "SELECT * FROM `session_player` WHERE `player_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, playerID);
         if (result.size() == 0) {
@@ -72,7 +73,7 @@ public final class PlayerQueries {
         if (!playerExists(player) && !playerIDExists(player.getPlayerID())) {
             String query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?)";
             return Database.executeManipulationQuery(query, player.getPlayerID(), player.getDevice().getDeviceID(),
-                    player.getSessionID(), player.getRoleID(), player.getScore());
+                    player.getSession().getSessionID(), player.getRoleID(), player.getScore());
         } else {
             halt(HttpStatus.UNAUTHORIZED_401, "Player already created.");
             return false;
@@ -90,7 +91,7 @@ public final class PlayerQueries {
         List<Map<String, Object>> result = executeSearchQuery(query, playerID);
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
-            return new Player(map.get("player_id").toString(), map.get("session_id").toString(),
+            return new Player(map.get("player_id").toString(), Session.getSession(map.get("session_id").toString()),
                     Device.getDevice(map.get("device_id").toString()),
                     Role.getById((int) map.get("role_id")), (int) map.get("score"));
         } else if (result.size() == 0) {

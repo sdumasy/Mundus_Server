@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import database.SessionQueries;
 import models.Device;
 import models.Player;
+import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 
@@ -14,7 +15,8 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static database.SessionQueries.*;
+import static database.SessionQueries.createSession;
+import static database.SessionQueries.playerJoinSession;
 import static spark.Spark.*;
 
 /**
@@ -47,11 +49,11 @@ public final class Routes {
      */
     private static void convertJson() {
         before(((request, response) -> {
-            Type type = new TypeToken<HashMap<String, String>>() {
+            Type type = new TypeToken<HashMap<String, Object>>() {
             }.getType();
-            HashMap<String, String> map = new Gson().fromJson(request.body(), type);
+            HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
             for (String k : map.keySet()) {
-                request.attribute(k, map.get(k));
+                request.attribute(k, map.get(k).toString());
             }
         }));
     }
@@ -118,11 +120,16 @@ public final class Routes {
             if (playerID != null && device != null) {
                 Player player = Player.getPlayer(playerID);
                 if (player.getDevice().equals(device)
-                        && player.getSessionID().equals(request.params("sessionID"))) {
+                        && player.getSession().getSessionID().equals(request.params("sessionID"))) {
                     request.attribute("player", player);
                 } else {
                     halt(HttpStatus.UNAUTHORIZED_401, "Invalid deviceID,sessionID, or playerID.");
                 }
+                if (player.getSession().getStatus() != 1) {
+                    halt(HttpStatus.LOCKED_423, "Session is paused or stopped.");
+                }
+            } else {
+                halt(HttpStatus.BAD_REQUEST_400, "Invalid playerID or deviceID.");
             }
         });
     }
@@ -151,11 +158,11 @@ public final class Routes {
             }
         });
 
-        put("/session/:sessionID/manage/play", (request, response) -> requestSessionStatus(request, 1));
+        put("/session/:sessionID/play", (request, response) -> updateSessionStatus(request, 1));
 
-        put("/session/:sessionID/manage/pause", (request, response) -> requestSessionStatus(request, 2));
+        put("/session/:sessionID/pause", (request, response) -> updateSessionStatus(request, 2));
 
-        put("/session/:sessionID/manage/delete", (request, response) -> requestSessionStatus(request, 0));
+        delete("/session/:sessionID/delete", (request, response) -> updateSessionStatus(request, 0));
     }
 
     /**
@@ -165,14 +172,11 @@ public final class Routes {
      * @param status  Status to change the session to.
      * @return SessionID and status.
      */
-    private static JsonObject requestSessionStatus(Request request, int status) {
+    private static JsonObject updateSessionStatus(Request request, int status) {
         Player player = request.attribute("player");
         SessionQueries.updateSessionStatus(player, status);
 
-        JsonObject responseObject = new JsonObject();
-        responseObject.addProperty("sessionID", player.getSessionID());
-        responseObject.addProperty("status", getSessionStatus(player));
-        return responseObject;
+        return Session.getSession(player.getSession().getSessionID()).toJson();
     }
 
     /**

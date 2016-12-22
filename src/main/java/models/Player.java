@@ -11,7 +11,8 @@ import static database.PlayerQueries.addNewPlayer;
  */
 public class Player {
 
-    private String playerID, sessionID;
+    private String playerID;
+    private Session session;
     private Device device;
     private Role role;
     private Integer score;
@@ -20,14 +21,14 @@ public class Player {
      * Constructor for player.
      *
      * @param playerID  The id for the player.
-     * @param sessionID The session ID of the player.
+     * @param session The session of the player.
      * @param device    The device of the player.
      * @param role      The role of the player.
      * @param score     The score of the player.
      */
-    public Player(String playerID, String sessionID, Device device, Role role, Integer score) {
+    public Player(String playerID, Session session, Device device, Role role, Integer score) {
         this.playerID = playerID;
-        this.sessionID = sessionID;
+        this.session = session;
         this.device = device;
         this.role = role;
         this.score = score;
@@ -46,15 +47,15 @@ public class Player {
     /**
      * Creates a newPlayer.
      *
-     * @param sessionID Players session.
+     * @param session   Players session.
      * @param roleID    Players role.
      * @param device    Players device.
      * @param score     The score of the player.
      * @return A new player.
      */
-    public static Player newPlayer(String sessionID, int roleID, Device device, int score) {
+    public static Player newPlayer(Session session, int roleID, Device device, int score) {
         Player player = new Player(generateUniqueID("session_player", "player_id"),
-                sessionID, device, Role.getById(roleID), score);
+                session, device, Role.getById(roleID), score);
         if (addNewPlayer(player)) {
             return player;
         }
@@ -71,12 +72,12 @@ public class Player {
     }
 
     /**
-     * Gets the session ID.
+     * Gets the session.
      *
-     * @return The session ID.
+     * @return The session.
      */
-    public String getSessionID() {
-        return sessionID;
+    public Session getSession() {
+        return session;
     }
 
     /**
@@ -94,7 +95,7 @@ public class Player {
      * @return The role ID.
      */
     public int getRoleID() {
-        return role.id;
+        return role.getId();
     }
 
     /**
@@ -102,7 +103,7 @@ public class Player {
      *
      * @param roleID The role ID.
      */
-    public void setRoleID(Integer roleID) {
+    protected void setRoleID(Integer roleID) {
         this.role = Role.getById(roleID);
     }
 
@@ -111,7 +112,7 @@ public class Player {
      *
      * @return The role.
      */
-    public Role getRole() {
+    protected Role getRole() {
         return role;
     }
 
@@ -138,7 +139,7 @@ public class Player {
      *
      * @param score The amount of points this player has scored.
      */
-    public void setScore(Integer score) {
+    protected void setScore(Integer score) {
         this.score = score;
     }
 
@@ -150,7 +151,7 @@ public class Player {
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerID", getPlayerID());
-        jsonObject.addProperty("sessionID", sessionID);
+        jsonObject.addProperty("sessionID", session.toJson().toString());
         jsonObject.addProperty("role", role.name());
         jsonObject.addProperty("score", score);
         return jsonObject;

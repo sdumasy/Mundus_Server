@@ -6,8 +6,15 @@ import models.Player;
 import java.util.Map;
 
 /**
- * Created by Ben on 22/12/16.
+ * Interface for the methods the user should implement.
  */
 public interface Implementation {
+    /**
+     * A method that is called when the corresponding path is called.
+     *
+     * @param player The Player who makes the call.
+     * @param map    A map of the given data in the body.
+     * @return A Json response.
+     */
     JsonObject handle(Player player, Map<String, Object> map);
 }

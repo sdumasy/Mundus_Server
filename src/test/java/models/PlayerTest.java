@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import spark.HaltException;
 
+import java.time.LocalDateTime;
+
 import static database.Database.executeManipulationQuery;
 import static models.Player.getPlayer;
 import static models.Role.Admin;
@@ -19,15 +21,15 @@ import static org.junit.Assert.*;
  * Test of the player class.
  */
 public class PlayerTest {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
     private Player player;
     private Device device;
+    private Session session;
     private String deviceID = "deviceID_42";
     private String token = "token_42";
     private String playerID = "playerID_42";
     private String sessionID = "sessionID_42";
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void clean() {
@@ -39,8 +41,9 @@ public class PlayerTest {
      */
     @Before
     public void setupPlayer() {
+        session = new Session(sessionID, playerID, 1, LocalDateTime.now());
         device = new Device(deviceID, token);
-        player = new Player(playerID, sessionID, device, Admin, 42);
+        player = new Player(playerID, session, device, Admin, 42);
     }
 
     /**
@@ -51,10 +54,11 @@ public class PlayerTest {
         DatabaseTest.setupDevice();
         DatabaseTest.setupSession();
 
-        Player newPlayer = Player.newPlayer(DatabaseTest.SESSION_ID, 2,
+        Player newPlayer = Player.newPlayer(
+                new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()), 2,
                 new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42);
         assertEquals(newPlayer.getDevice().getDeviceID(), DatabaseTest.DEVICE_ID);
-        assertEquals(newPlayer.getSessionID(), DatabaseTest.SESSION_ID);
+        assertEquals(newPlayer.getSession().getSessionID(), DatabaseTest.SESSION_ID);
         assertEquals(newPlayer.getRoleID(), 2);
 
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + newPlayer.getPlayerID() + "';");
@@ -70,7 +74,8 @@ public class PlayerTest {
         DatabaseTest.setupSession();
         try {
             exception.expect(HaltException.class);
-            Player newPlayer = Player.newPlayer(DatabaseTest.SESSION_ID, 0,
+            Player newPlayer = Player.newPlayer(
+                    new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()), 0,
                     new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42);
         } finally {
             DatabaseTest.cleanDatabase();
@@ -91,7 +96,7 @@ public class PlayerTest {
      */
     @Test
     public void getSessionIDTest() {
-        assertEquals(player.getSessionID(), "sessionID_42");
+        assertEquals(player.getSession().getSessionID(), "sessionID_42");
     }
 
     /**
@@ -168,9 +173,10 @@ public class PlayerTest {
         DatabaseTest.setupDevice();
         DatabaseTest.setupSession();
 
-        Player player = new Player(DatabaseTest.PLAYER_ID, DatabaseTest.SESSION_ID,
+        Player player = new Player(DatabaseTest.PLAYER_ID,
+                new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()),
                 new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), Admin, 0);
-        assertEquals(player.getSessionID(), getPlayer(DatabaseTest.PLAYER_ID).getSessionID());
+        assertEquals(player.getSession().getSessionID(), getPlayer(DatabaseTest.PLAYER_ID).getSession().getSessionID());
         assertEquals(player.getDevice().getDeviceID(), getPlayer(DatabaseTest.PLAYER_ID).getDevice().getDeviceID());
         assertEquals(player.getRole(), getPlayer(DatabaseTest.PLAYER_ID).getRole());
         assertEquals(player.getScore(), getPlayer(DatabaseTest.PLAYER_ID).getScore());

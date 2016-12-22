@@ -181,7 +181,7 @@
 //    public void getSessionStatusTest() {
 //        try {
 //            Player player = addNewPlayerSetup();
-//            assertEquals(1, (int) getSessionStatus(player));
+//            assertEquals(1, (int) getSession(player));
 //        } finally {
 //            addNewPlayerTearDown();
 //        }
@@ -198,7 +198,7 @@
 //            player.setRoleID(0);
 //            player.setScore(42);
 //            updateSessionStatus(player, 2);
-//            assertEquals(2, (int) getSessionStatus(player));
+//            assertEquals(2, (int) getSession(player));
 //        } finally {
 //            createSessionTearDown();
 //        }

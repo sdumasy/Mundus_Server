@@ -18,6 +18,12 @@ public final class Aldo {
         // Empty on purpose.
     }
 
+    /**
+     * Converts a route defined by the user to a route that spark understands.
+     *
+     * @param implementation The defined route
+     * @return The spark route.
+     */
     protected static Route toRoute(Implementation implementation) {
         return (request, response) -> {
             Player player = request.attribute("player");
@@ -27,7 +33,13 @@ public final class Aldo {
         };
     }
 
+    /**
+     * A post request.
+     *
+     * @param path           The path of the post request.
+     * @param implementation The implementation by the user.
+     */
     public static void post(String path, Implementation implementation) {
-                Spark.post("/session/:sessionID" +path, toRoute(implementation));
+        Spark.post("/session/:sessionID" + path, toRoute(implementation));
     }
 }

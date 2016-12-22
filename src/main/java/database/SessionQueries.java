@@ -3,6 +3,7 @@ package database;
 import com.google.gson.JsonObject;
 import models.Device;
 import models.Player;
+import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.time.LocalDateTime;
@@ -71,7 +72,8 @@ public final class SessionQueries {
         List<Map<String, Object>> result = executeSearchQuery(query, joinToken);
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
-            return Player.newPlayer(map.get("session_id").toString(), (int) map.get("role_id"), device, 0);
+            return Player.newPlayer(Session.getSession(map.get("session_id").toString()),
+                    (int) map.get("role_id"), device, 0);
         } else if (result.size() == 0) {
             halt(HttpStatus.UNAUTHORIZED_401, "Invalid joinToken");
         } else {
@@ -81,16 +83,18 @@ public final class SessionQueries {
     }
 
     /**
-     * Gets the session status.
+     * Gets the session by ID.
      *
-     * @param player Player profile of a player is the session.
-     * @return Session status.
+     * @param sessionID Id of the session.
+     * @return The session.
      */
-    public static Integer getSessionStatus(Player player) {
-        String query = "SELECT `status` FROM `session` WHERE `session_id` = ?";
-        List<Map<String, Object>> result = executeSearchQuery(query, player.getSessionID());
+    public static Session getSession(String sessionID) {
+        String query = "SELECT * FROM `session` WHERE `session_id` = ?";
+        List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
         if (result.size() == 1) {
-            return (int) result.get(0).get("status");
+            Map<String, Object> map = result.get(0);
+            return new Session(sessionID, map.get("player_id").toString(), (Integer) map.get("status"),
+                    LocalDateTime.parse(map.get("created").toString()));
         } else if (result.size() == 0) {
             halt(HttpStatus.NOT_FOUND_404, "No session found.");
         } else {
@@ -111,7 +115,8 @@ public final class SessionQueries {
         if (status != 0) {
             query += " AND NOT `status` = 0";
         }
-        return Database.executeManipulationQuery(query, status, player.getSessionID(), player.getPlayerID());
+        return Database.executeManipulationQuery(query, status, player.getSession().getSessionID(),
+                player.getPlayerID());
     }
 
     /**
