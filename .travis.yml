@@ -10,4 +10,4 @@ services:
 
 before_script:
   - mysql -u root -e 'CREATE DATABASE mundus;'
-  - mysql -u root mundus < tests/testbase.sql
+  - mysql -u root mundus < mundus.sql
