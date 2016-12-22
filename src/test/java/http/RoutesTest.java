@@ -47,6 +47,7 @@ public class RoutesTest {
 
     /**
      * Test the route that generates a token for a new device.
+     *
      * @throws IOException Throws an exception if the request execution fails.
      */
     @Test
@@ -105,21 +106,27 @@ public class RoutesTest {
 
             HttpClient httpClient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/join");
-            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
-                    + joinToken + "\"}";
+//            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
+//                    + joinToken + "\"}";
 
-            HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("deviceID", deviceID2);
+            jsonObject.addProperty("token", token2);
+            jsonObject.addProperty("joinToken", joinToken);
+
+            HttpEntity entity = new ByteArrayEntity(jsonObject.toString().getBytes("UTF-8"));
             httpPost.setEntity(entity);
             HttpResponse response = httpClient.execute(httpPost);
             JsonParser jsonParser = new JsonParser();
+
             jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
 
             assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
         } finally {
-            if(jsonObject2 != null) {
+            if (jsonObject2 != null) {
                 tearDownExtraPlayer(jsonObject2);
             }
-            if(jsonObject1 != null) {
+            if (jsonObject1 != null) {
                 tearDownSession(jsonObject1);
             }
             tearDown();
@@ -129,6 +136,7 @@ public class RoutesTest {
 
     /**
      * Delete the extra player that was added to the session.
+     *
      * @param jsonObject A jsonObject that contains the required playerID.
      */
     protected void tearDownExtraPlayer(JsonObject jsonObject) {
@@ -146,6 +154,7 @@ public class RoutesTest {
 
     /**
      * Tear down a session after it has been created via a route
+     *
      * @param jsonObject A JsonObject containing all session information
      */
     public void tearDownSession(JsonObject jsonObject) {
@@ -162,10 +171,11 @@ public class RoutesTest {
 
     /**
      * Test whether constructor is private and does not raise any exceptions.
-     * @throws NoSuchMethodException The method must be there.
-     * @throws IllegalAccessException The method must be accessible.
+     *
+     * @throws NoSuchMethodException     The method must be there.
+     * @throws IllegalAccessException    The method must be accessible.
      * @throws InvocationTargetException The method must be invocable
-     * @throws InstantiationException The method must be instantiationable.
+     * @throws InstantiationException    The method must be instantiationable.
      */
     @Test
     public void testConstructorIsPrivate() throws NoSuchMethodException, IllegalAccessException,

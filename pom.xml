@@ -131,7 +131,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>deploy</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
@@ -173,8 +173,9 @@
                 <version>1.1.2</version>
                 <configuration>
                     <jdkVersion>1.8</jdkVersion>
+                    <appName>expeditionmundus</appName>
                     <processTypes>
-                        <web>java -jar target/${artifactId}-${project.version}-jar-with-dependencies.jar</web>
+                        <web>java $JAVA_OPTS -cp target/classes:target/dependency/* App</web>
                     </processTypes>
                 </configuration>
             </plugin>
