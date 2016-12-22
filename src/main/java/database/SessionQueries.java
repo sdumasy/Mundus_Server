@@ -62,7 +62,7 @@ public final class SessionQueries {
      * Creates and adds a new player of the session corresponding with the join token.
      *
      * @param joinToken The join token of the session to join.
-     * @param device  The device of the user joining the session.
+     * @param device    The device of the user joining the session.
      * @return The new player.
      */
     @SuppressWarnings("checkstyle:magicnumber")
@@ -128,6 +128,7 @@ public final class SessionQueries {
 
     /**
      * Get a device token by ID.
+     *
      * @param deviceID The device which token should be recovered
      * @return The token
      */

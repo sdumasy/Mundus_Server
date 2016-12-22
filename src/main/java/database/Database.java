@@ -57,7 +57,7 @@ public final class Database {
     /**
      * Get values in the database with the supplied query.
      *
-     * @param sql The query that will be executed.
+     * @param sql    The query that will be executed.
      * @param params Optional parameters.
      * @return A JSON object with the query results.
      */

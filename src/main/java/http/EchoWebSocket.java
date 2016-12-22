@@ -21,6 +21,7 @@ public class EchoWebSocket {
 
     /**
      * Adds a session to the connected websockets.
+     *
      * @param session The session
      */
     @OnWebSocketConnect
@@ -30,9 +31,10 @@ public class EchoWebSocket {
 
     /**
      * Closes and removes session from connected websockets.
-     * @param session The session to close.
+     *
+     * @param session    The session to close.
      * @param statusCode The status to close it with.
-     * @param reason The reason to close it.
+     * @param reason     The reason to close it.
      */
     @OnWebSocketClose
     public void closed(Session session, int statusCode, String reason) {
@@ -41,6 +43,7 @@ public class EchoWebSocket {
 
     /**
      * Receives a message over the websocket.
+     *
      * @param session The session it receives it from.
      * @param message The message received.
      * @throws IOException Could fail at sending it back.
