@@ -22,19 +22,7 @@
 //public class ValidationTest {
 //    private Connection connection;
 //
-//    /**
-//     * Setup a device with a token.
-//     */
-//    public void setup() {
-//        executeManipulationQuery("INSERT INTO device VALUES ('" + 42 + "','" + "true" + "');");
-//    }
 //
-//    /**
-//     * Delete the device and token from the database.
-//     */
-//    public void tearDown() {
-//        executeManipulationQuery("DELETE FROM device WHERE device_id='42';");
-//    }
 //
 //    /**
 //     * Test a successful authentication.

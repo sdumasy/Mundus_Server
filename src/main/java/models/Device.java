@@ -40,8 +40,8 @@ public class Device {
     }
 
     public void addPlayer(Player player) {
-        if (player.getDeviceID()==deviceID) {
-            players.put(player.getPlayerID(),player);
+        if (player.getDeviceID() == deviceID) {
+            players.put(player.getPlayerID(), player);
         } else {
             halt(HttpStatus.UNAUTHORIZED_401, "DeviceID does not correspond with players deviceID.");
         }
@@ -58,7 +58,7 @@ public class Device {
 
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("deviceID",deviceID);
+        jsonObject.addProperty("deviceID", deviceID);
         jsonObject.addProperty("token", token);
         return jsonObject;
     }

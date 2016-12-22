@@ -15,6 +15,12 @@ import static spark.Spark.halt;
  */
 public class PlayerQueries {
 
+    /**
+     * Private constructor.
+     */
+    private PlayerQueries() {
+        //empty on purpose
+    }
 
     /**
      * Checks whether a player exists in the database.
@@ -24,7 +30,7 @@ public class PlayerQueries {
     public static boolean playerExists(Player player) {
         String query = "SELECT * FROM `session_player` WHERE `device_id` = ? AND `session_id` = ? AND `role_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, player.getDeviceID(), player.getSessionID(),
-                player.getRoleID(), player.getPlayerID());
+                player.getRoleID());
         if (result.size() == 0) {
             return false;
         } else if (result.size() == 1) {
@@ -41,7 +47,7 @@ public class PlayerQueries {
      * @return Returns if the playerID exists.
      */
     public static boolean playerIDExists(String playerID) {
-        String query = "SELECT * FROM `session_player` WHERE (`device_id` = ? AND `player_id = ?";
+        String query = "SELECT * FROM `session_player` WHERE `player_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, playerID);
         if (result.size() == 0) {
             return false;
@@ -80,8 +86,8 @@ public class PlayerQueries {
         List<Map<String, Object>> result = executeSearchQuery(query, playerID);
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
-            return new Player(map.get("playerID").toString(), map.get("device_id").toString(),
-                    map.get("session_id").toString(), Role.getById((int) map.get("role_id")), (int) map.get("score"));
+            return new Player(map.get("player_id").toString(), map.get("session_id").toString(),
+                    map.get("device_id").toString(), Role.getById((int) map.get("role_id")), (int) map.get("score"));
         } else if (result.size() == 0) {
             halt(HttpStatus.UNAUTHORIZED_401, "No player found.");
         } else {

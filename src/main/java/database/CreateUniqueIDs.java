@@ -9,9 +9,16 @@ import static database.Database.executeSearchQuery;
 import static database.SessionQueries.insertAuthorizationToken;
 
 /**
- * Creates unique tokens
+ * Creates unique tokens.
  */
 public class CreateUniqueIDs {
+
+    /**
+     * Private constructor.
+     */
+    private CreateUniqueIDs() {
+        //empty on purpose
+    }
 
     /**
      * Generate a new token, then store it in the DB and return it.
@@ -52,7 +59,7 @@ public class CreateUniqueIDs {
         while (true) {
             Random rand = new Random();
             String joinToken = Integer.toHexString(rand.nextInt()).substring(0, 5);
-            String sql= "SELECT `join_token` FROM `session_token` WHERE `join_token` = ?";
+            String sql = "SELECT `join_token` FROM `session_token` WHERE `join_token` = ?";
             List<Map<String, Object>> result =
                     executeSearchQuery(sql, joinToken);
             if (result.size() == 0) {

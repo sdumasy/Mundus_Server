@@ -84,16 +84,6 @@
 //        sessionID = jsonObject.get("sessionID").getAsString();
 //    }
 //
-//    /**
-//     * Clean up a session after testing is done.
-//     */
-//    private void createSessionTearDown() {
-//        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
-//        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + userToken + "';");
-//        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + modToken + "';");
-//        Database.executeManipulationQuery("DELETE FROM session WHERE session_id='" + sessionID + "';");
-//        Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
-//    }
 //
 //    /**
 //     * Test adding a new player to a running session.
