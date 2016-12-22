@@ -11,14 +11,15 @@ import static database.PlayerQueries.addNewPlayer;
  */
 public class Player {
 
-    private String playerID, sessionID, deviceID;
+    private String playerID, sessionID;
+    private Device device;
     private Role role;
     private Integer score;
 
-    public Player(String playerID, String sessionID, String deviceID, Role role, Integer score) {
+    public Player(String playerID, String sessionID, Device device, Role role, Integer score) {
         this.playerID = playerID;
         this.sessionID = sessionID;
-        this.deviceID = deviceID;
+        this.device = device;
         this.role = role;
         this.score = score;
     }
@@ -36,14 +37,16 @@ public class Player {
      * Creates a newPlayer.
      * @param sessionID Players session.
      * @param roleID Players role.
-     * @param deviceID Players deviceID.
+     * @param device Players device.
      * @return A new player.
      */
-    public static Player newPlayer(String sessionID, int roleID, String deviceID, int score) {
+    public static Player newPlayer(String sessionID, int roleID, Device device, int score) {
         Player player = new Player(generateUniqueID("session_player", "player_id"),
-                sessionID, deviceID, Role.getById(roleID), score);
-        addNewPlayer(player);
-        return player;
+                sessionID, device, Role.getById(roleID), score);
+        if (addNewPlayer(player)) {
+            return player;
+        }
+        return null;
     }
 
     /**
@@ -66,8 +69,8 @@ public class Player {
      * Gets the device ID.
      * @return The device ID.
      */
-    public String getDeviceID() {
-        return deviceID;
+    public Device getDevice() {
+        return device;
     }
 
     /**

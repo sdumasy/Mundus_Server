@@ -62,16 +62,16 @@ public final class SessionQueries {
      * Creates and adds a new player of the session corresponding with the join token.
      *
      * @param joinToken The join token of the session to join.
-     * @param deviceID  The device of the user joining the session.
+     * @param device  The device of the user joining the session.
      * @return The new player.
      */
     @SuppressWarnings("checkstyle:magicnumber")
-    public static Player playerJoinSession(String joinToken, String deviceID) {
+    public static Player playerJoinSession(String joinToken, Device device) {
         String query = "SELECT `join_token`, `session_id`, `role_id` FROM `session_token` WHERE `join_token` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, joinToken);
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
-            return Player.newPlayer(map.get("session_id").toString(), (int) map.get("role_id"), deviceID, 0);
+            return Player.newPlayer(map.get("session_id").toString(), (int) map.get("role_id"), device, 0);
         } else if (result.size() == 0) {
             halt(HttpStatus.UNAUTHORIZED_401, "Invalid joinToken");
         } else {
@@ -120,7 +120,7 @@ public final class SessionQueries {
      * @param token the generated authorization token for the device
      * @return <code>true</code> if successfully added, otherwise <code>false</code>
      */
-    public static boolean insertAuthorizationToken(String id, String token) {
+    protected static boolean insertAuthorizationToken(String id, String token) {
         String sql = "INSERT INTO `device` VALUES(?, ?)";
         return executeManipulationQuery(sql, id, token);
     }

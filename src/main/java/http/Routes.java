@@ -98,13 +98,13 @@ public final class Routes {
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
-            Player player = playerJoinSession(request.attribute("joinToken"), request.attribute("deviceID"));
-
-            JsonObject responseObject = new JsonObject();
-            responseObject.addProperty("sessionID", player.getSessionID());
-            responseObject.addProperty("playerID", player.getPlayerID());
-            responseObject.addProperty("role", player.getRole().name());
-            return responseObject;
+            Player player = playerJoinSession(request.attribute("joinToken"), request.attribute("device"));
+            if (player != null) {
+                return player.toJson();
+            } else {
+                halt(HttpStatus.UNAUTHORIZED_401, "Could not add you to the session.");
+                return null;
+            }
         });
     }
 
@@ -114,10 +114,10 @@ public final class Routes {
     private static void setupInGameRoutes() {
         before("/session/:sessionID/*", (request, response) -> {
             String playerID = request.attribute("playerID");
-            String deviceID = request.attribute("deviceID");
-            if (playerID != null && deviceID != null) {
+            Device device = request.attribute("device");
+            if (playerID != null && device != null) {
                 Player player = Player.getPlayer(playerID);
-                if (player.getDeviceID().equals(deviceID) &&
+                if (player.getDevice().equals(device) &&
                         player.getSessionID().equals(request.params("sessionID"))) {
                     request.attribute("player", player);
                 } else {
