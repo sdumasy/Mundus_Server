@@ -1,8 +1,10 @@
 package models;
 
-import database.SessionQueries;
+import com.google.gson.JsonObject;
+import database.PlayerQueries;
 
-import static database.SessionQueries.generateUniqueID;
+import static database.CreateUniqueIDs.generateUniqueID;
+import static database.PlayerQueries.addNewPlayer;
 
 /**
  * Model of the player.
@@ -13,16 +15,21 @@ public class Player {
     private Role role;
     private Integer score;
 
-    /**
-     * Constructor for the player class.
-     * @param playerID A player ID.
-     * @param sessionID A session ID.
-     * @param deviceID A device ID.
-     */
-    public Player(String playerID, String sessionID, String deviceID) {
+    public Player(String playerID, String sessionID, String deviceID, Role role, Integer score) {
         this.playerID = playerID;
         this.sessionID = sessionID;
         this.deviceID = deviceID;
+        this.role = role;
+        this.score = score;
+    }
+
+    /**
+     * Gets a player from the database.
+     * @param playerID The player ID.
+     * @return The Player.
+     */
+    public static Player getPlayer(String playerID) {
+        return PlayerQueries.getPlayer(playerID);
     }
 
     /**
@@ -32,10 +39,10 @@ public class Player {
      * @param deviceID Players deviceID.
      * @return A new player.
      */
-    public static Player newPlayer(String sessionID, int roleID, String deviceID) {
-        Player player = new Player(generateUniqueID("session_player", "player_id"), sessionID, deviceID);
-        player.setRoleID(roleID);
-        player.setScore(0);
+    public static Player newPlayer(String sessionID, int roleID, String deviceID, int score) {
+        Player player = new Player(generateUniqueID("session_player", "player_id"),
+                sessionID, deviceID, Role.getById(roleID), score);
+        addNewPlayer(player);
         return player;
     }
 
@@ -76,9 +83,6 @@ public class Player {
      * @return The role ID.
      */
     public int getRoleID() {
-        if (role == null) {
-            getRole();
-        }
         return role.id;
     }
 
@@ -87,9 +91,6 @@ public class Player {
      * @return The role.
      */
     public Role getRole() {
-        if (role == null) {
-            setRoleID(SessionQueries.getRoleId(this));
-        }
         return role;
     }
 
@@ -114,9 +115,15 @@ public class Player {
      * @return The score.
      */
     public int getScore() {
-        if (score == null) {
-            score = SessionQueries.getScore(this);
-        }
         return score;
+    }
+
+    public JsonObject toJson() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("playerID",getPlayerID());
+        jsonObject.addProperty("sessionID",sessionID);
+        jsonObject.addProperty("role",role.name());
+        jsonObject.addProperty("score",score);
+        return jsonObject;
     }
 }

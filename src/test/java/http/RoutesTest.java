@@ -2,7 +2,6 @@ package http;
 
 import application.App;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import database.Database;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -22,10 +21,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 import static database.Database.executeManipulationQuery;
-import static database.SessionQueries.createSession;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static validation.Validation.createToken;
+//import static validation.Validation.createToken;
 
 /**
  * Created by Thomas on 15-12-2016.
@@ -94,45 +92,45 @@ public class RoutesTest {
 //        }
     }
 
-    @Test
-    public void joinSessionTest() throws IOException {
-        JsonObject jsonObject1 = null;
-        JsonObject jsonObject2 = null;
-        try {
-            createToken(deviceID);
-            String token2 = createToken(deviceID2);
-            jsonObject1 = createSession(deviceID);
-            String joinToken = jsonObject1.get("userToken").getAsString();
-
-            HttpClient httpClient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/join");
-//            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
-//                    + joinToken + "\"}";
-
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("deviceID", deviceID2);
-            jsonObject.addProperty("token", token2);
-            jsonObject.addProperty("joinToken", joinToken);
-
-            HttpEntity entity = new ByteArrayEntity(jsonObject.toString().getBytes("UTF-8"));
-            httpPost.setEntity(entity);
-            HttpResponse response = httpClient.execute(httpPost);
-            JsonParser jsonParser = new JsonParser();
-
-            jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
-
-            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
-        } finally {
-            if (jsonObject2 != null) {
-                tearDownExtraPlayer(jsonObject2);
-            }
-            if (jsonObject1 != null) {
-                tearDownSession(jsonObject1);
-            }
-            tearDown();
-        }
-
-    }
+//    @Test
+//    public void joinSessionTest() throws IOException {
+//        JsonObject jsonObject1 = null;
+//        JsonObject jsonObject2 = null;
+//        try {
+//            createToken(deviceID);
+//            String token2 = createToken(deviceID2);
+//            jsonObject1 = createSession(deviceID);
+//            String joinToken = jsonObject1.get("userToken").getAsString();
+//
+//            HttpClient httpClient = HttpClients.createDefault();
+//            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/join");
+////            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
+////                    + joinToken + "\"}";
+//
+//            JsonObject jsonObject = new JsonObject();
+//            jsonObject.addProperty("deviceID", deviceID2);
+//            jsonObject.addProperty("token", token2);
+//            jsonObject.addProperty("joinToken", joinToken);
+//
+//            HttpEntity entity = new ByteArrayEntity(jsonObject.toString().getBytes("UTF-8"));
+//            httpPost.setEntity(entity);
+//            HttpResponse response = httpClient.execute(httpPost);
+//            JsonParser jsonParser = new JsonParser();
+//
+//            jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
+//
+//            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+//        } finally {
+//            if (jsonObject2 != null) {
+//                tearDownExtraPlayer(jsonObject2);
+//            }
+//            if (jsonObject1 != null) {
+//                tearDownSession(jsonObject1);
+//            }
+//            tearDown();
+//        }
+//
+//    }
 
     /**
      * Delete the extra player that was added to the session.

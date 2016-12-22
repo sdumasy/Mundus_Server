@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import database.SessionQueries;
+import models.Device;
 import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
-import validation.Validation;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -16,8 +16,6 @@ import java.util.logging.Logger;
 
 import static database.SessionQueries.*;
 import static spark.Spark.*;
-import static validation.Validation.authenticateDevice;
-import static validation.Validation.hasToken;
 
 /**
  * Declares the API routes.
@@ -63,28 +61,24 @@ public final class Routes {
      */
     private static void setupTokenValidation() {
         post("/token", (request, response) -> {
-            String deviceID = request.attribute("deviceID");
-            if (!hasToken(deviceID)) {
-                String token = Validation.createToken(deviceID);
-
-                JsonObject responseObject = new JsonObject();
-                responseObject.addProperty("token", token);
-                return responseObject;
+            Device device = Device.newDevice(request.attribute("deviceID"));
+            if (device != null) {
+                return device.toJson();
             } else {
                 halt(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
+                return null;
             }
-            return null;
         });
 
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri()
                     + ", body: " + request.body());
             if (!request.uri().equals("/token")) {
-
-                // TODO: 17/12/16 Check parameters for SQL injection
-
-                if (!authenticateDevice(request.attribute("deviceID"), request.attribute("token"))) {
+                Device device = new Device(request.attribute("deviceID"), request.attribute("token"));
+                if (!device.authenticate()) {
                     halt(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
+                } else {
+                    request.attribute("device", device);
                 }
             }
         });
@@ -96,7 +90,7 @@ public final class Routes {
      * Setup the route that allows the creation of a new session.
      */
     private static void setupCreateSessionRoute() {
-        post("/session/create", (request, response) -> createSession(request.attribute("deviceID")));
+        post("/session/create", (request, response) -> createSession(request.attribute("device")));
     }
 
     /**
@@ -104,7 +98,7 @@ public final class Routes {
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
-            Player player = getNewPlayerOfSession(request.attribute("joinToken"), request.attribute("deviceID"));
+            Player player = playerJoinSession(request.attribute("joinToken"), request.attribute("deviceID"));
 
             JsonObject responseObject = new JsonObject();
             responseObject.addProperty("sessionID", player.getSessionID());
@@ -122,7 +116,13 @@ public final class Routes {
             String playerID = request.attribute("playerID");
             String deviceID = request.attribute("deviceID");
             if (playerID != null && deviceID != null) {
-                request.attribute("player", new Player(playerID, request.params("sessionID"), deviceID));
+                Player player = Player.getPlayer(playerID);
+                if (player.getDeviceID().equals(deviceID) &&
+                        player.getSessionID().equals(request.params("sessionID"))) {
+                    request.attribute("player", player);
+                } else {
+                    halt(HttpStatus.UNAUTHORIZED_401, "Invalid deviceID,sessionID, or playerID.");
+                }
             }
         });
     }
