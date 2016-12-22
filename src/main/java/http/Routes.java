@@ -12,6 +12,7 @@ import spark.Request;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,8 +53,8 @@ public final class Routes {
             Type type = new TypeToken<HashMap<String, Object>>() {
             }.getType();
             HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
-            for (String k : map.keySet()) {
-                request.attribute(k, map.get(k).toString());
+            for (Map.Entry<String, Object> e : map.entrySet()) {
+                request.attribute(e.getKey(), e.getValue().toString());
             }
         }));
     }

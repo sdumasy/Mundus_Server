@@ -6,6 +6,7 @@ import models.Player;
 import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public final class SessionQueries {
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
             return new Session(sessionID, map.get("player_id").toString(), (Integer) map.get("status"),
-                    LocalDateTime.parse(map.get("created").toString()));
+                    Timestamp.valueOf(map.get("created").toString()).toLocalDateTime());
         } else if (result.size() == 0) {
             halt(HttpStatus.NOT_FOUND_404, "No session found.");
         } else {
