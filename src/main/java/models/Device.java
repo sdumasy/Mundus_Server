@@ -11,7 +11,6 @@ import static database.SessionQueries.selectAuthorizationToken;
 public class Device {
     private String deviceID, token;
 
-
     /**
      * Constructor of device.
      *
