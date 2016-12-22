@@ -72,12 +72,7 @@ CREATE TABLE `session` (
   `created` DATETIME NULL,
   UNIQUE INDEX `uid_UNIQUE` (`player_id` ASC),
   PRIMARY KEY (`session_id`),
-  UNIQUE INDEX `id_UNIQUE` (`session_id` ASC),
-  CONSTRAINT `fk_session_player_id`
-  FOREIGN KEY (`player_id`)
-  REFERENCES `session_player` (`player_id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE);
+  UNIQUE INDEX `id_UNIQUE` (`session_id` ASC));
 
 
 
