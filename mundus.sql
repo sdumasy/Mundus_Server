@@ -98,6 +98,12 @@ CREATE TABLE `session_token` (
     ON DELETE RESTRICT
     ON UPDATE CASCADE);
 
+
+INSERT INTO `role` (`role_id`, `name`) VALUES(0, `Admin`);
+INSERT INTO `role` (`role_id`, `name`) VALUES (1, `Moderator`);
+INSERT INTO `role` (`role_id`, `name`) VALUES (2, `User`);
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
