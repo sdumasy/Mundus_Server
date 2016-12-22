@@ -1,5 +1,6 @@
 package database;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.lang.reflect.Constructor;
@@ -14,7 +15,6 @@ import static org.junit.Assert.assertTrue;
  * Created by Thomas on 20-12-2016.
  */
 public class DatabaseTest {
-
     public static final String DEVICE_ID = "deviceID_42";
     public static final String SESSION_ID = "sessionID_42";
     public static final String PLAYER_ID = "playerID_42";
@@ -22,6 +22,12 @@ public class DatabaseTest {
     public static final String USER_JOIN_ID = "user42";
     public static final String MOD_JOIN_ID = "mod42";
     public static final String TOKEN = "token_42";
+
+
+    @BeforeClass
+    public static void clean() {
+        cleanDatabase();
+    }
 
     public static void cleanDatabase() {
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID_2 + "';");

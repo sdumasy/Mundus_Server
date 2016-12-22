@@ -4,3 +4,10 @@ notifications:
 
 jdk:
   - oraclejdk8
+
+services:
+  - mysql
+
+before_script:
+  - mysql -u root -e 'CREATE DATABASE mundus;'
+  - mysql -u root mundus < tests/testbase.sql
