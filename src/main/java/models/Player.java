@@ -11,7 +11,7 @@ import static database.PlayerQueries.addNewPlayer;
  */
 public class Player {
 
-    private String playerID;
+    private String playerID, username;
     private Session session;
     private Device device;
     private Role role;
@@ -25,14 +25,15 @@ public class Player {
      * @param device    The device of the player.
      * @param role      The role of the player.
      * @param score     The score of the player.
+     * @param username  The username of the player.
      */
-    public Player(String playerID, Session session, Device device, Role role, Integer score) {
+    public Player(String playerID, Session session, Device device, Role role, Integer score, String username) {
         this.playerID = playerID;
         this.session = session;
         this.device = device;
         this.role = role;
         this.score = score;
-        // TODO: 23/12/16 Add username
+        this.username = username;
     }
 
     /**
@@ -46,17 +47,29 @@ public class Player {
     }
 
     /**
+     * Gets a player from the database based of session and username.
+     *
+     * @param sessionID The sessionID.
+     * @param username  The username.
+     * @return The player.
+     */
+    public static Player getPlayer(String sessionID, String username) {
+        return PlayerQueries.getPlayer(sessionID, username);
+    }
+
+    /**
      * Creates a newPlayer.
      *
      * @param session   Players session.
      * @param roleID    Players role.
      * @param device    Players device.
      * @param score     The score of the player.
+     * @param username  The username of the player.
      * @return A new player.
      */
-    public static Player newPlayer(Session session, int roleID, Device device, int score) {
+    public static Player newPlayer(Session session, int roleID, Device device, int score, String username) {
         Player player = new Player(generateUniqueID("session_player", "player_id"),
-                session, device, Role.getById(roleID), score);
+                session, device, Role.getById(roleID), score, username);
         if (addNewPlayer(player)) {
             return player;
         }
@@ -109,6 +122,15 @@ public class Player {
     }
 
     /**
+     * Gets the username.
+     *
+     * @return The username.
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
      * Gets the role ID by name.
      *
      * @return The role.
@@ -155,6 +177,7 @@ public class Player {
         jsonObject.addProperty("sessionID", session.toJson().toString());
         jsonObject.addProperty("role", role.name());
         jsonObject.addProperty("score", score);
+        jsonObject.addProperty("username", username);
         return jsonObject;
     }
 }

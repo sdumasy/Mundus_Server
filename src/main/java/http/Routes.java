@@ -102,7 +102,8 @@ public final class Routes {
      */
     private static void setupJoinSessionRoutes() {
         post("/session/join", (request, response) -> {
-            Player player = playerJoinSession(request.attribute("joinToken"), request.attribute("device"));
+            Player player = playerJoinSession(request.attribute("joinToken"),
+                    request.attribute("device"), request.attribute("username"));
             if (player != null) {
                 return player.toJson();
             } else {
@@ -187,7 +188,5 @@ public final class Routes {
     private static void setupWebsocketRoutes() {
         webSocket("/echo", EchoWebSocket.class);
     }
-
-
 }
 

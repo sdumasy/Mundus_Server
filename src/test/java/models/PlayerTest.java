@@ -30,6 +30,7 @@ public class PlayerTest {
     private String token = "token_42";
     private String playerID = "playerID_42";
     private String sessionID = "sessionID_42";
+    private String username = "username_42";
 
     @BeforeClass
     public static void clean() {
@@ -43,7 +44,7 @@ public class PlayerTest {
     public void setupPlayer() {
         session = new Session(sessionID, playerID, 1, LocalDateTime.now());
         device = new Device(deviceID, token);
-        player = new Player(playerID, session, device, Admin, 42);
+        player = new Player(playerID, session, device, Admin, 42, username);
     }
 
     /**
@@ -56,7 +57,7 @@ public class PlayerTest {
 
         Player newPlayer = Player.newPlayer(
                 new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()), 2,
-                new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42);
+                new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42, DatabaseTest.USERNAME);
         assertEquals(newPlayer.getDevice().getDeviceID(), DatabaseTest.DEVICE_ID);
         assertEquals(newPlayer.getSession().getSessionID(), DatabaseTest.SESSION_ID);
         assertEquals(newPlayer.getRoleID(), 2);
@@ -76,7 +77,7 @@ public class PlayerTest {
             exception.expect(HaltException.class);
             Player newPlayer = Player.newPlayer(
                     new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()), 0,
-                    new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42);
+                    new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42, DatabaseTest.USERNAME);
         } finally {
             DatabaseTest.cleanDatabase();
         }
@@ -163,6 +164,7 @@ public class PlayerTest {
         assertEquals(player.getSession().toJson().toString(), jsonObject.get("sessionID").getAsString());
         assertEquals("Admin", jsonObject.get("role").getAsString());
         assertEquals("42", jsonObject.get("score").getAsString());
+        assertEquals("username_42", jsonObject.get("username").getAsString());
     }
 
     /**
@@ -175,11 +177,12 @@ public class PlayerTest {
 
         Player player = new Player(DatabaseTest.PLAYER_ID,
                 new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()),
-                new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), Admin, 0);
+                new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), Admin, 0, DatabaseTest.ADMIN_USERNAME);
         assertEquals(player.getSession().getSessionID(), getPlayer(DatabaseTest.PLAYER_ID).getSession().getSessionID());
         assertEquals(player.getDevice().getDeviceID(), getPlayer(DatabaseTest.PLAYER_ID).getDevice().getDeviceID());
         assertEquals(player.getRole(), getPlayer(DatabaseTest.PLAYER_ID).getRole());
         assertEquals(player.getScore(), getPlayer(DatabaseTest.PLAYER_ID).getScore());
+        assertEquals(player.getUsername(), getPlayer(DatabaseTest.PLAYER_ID).getUsername());
 
         DatabaseTest.cleanDatabase();
 

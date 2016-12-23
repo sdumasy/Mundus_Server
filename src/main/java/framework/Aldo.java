@@ -42,6 +42,6 @@ public final class Aldo {
      * @param implementation The implementation by the user.
      */
     public static void post(String path, Callback implementation) {
-        Spark.post("/session/:sessionID" + path, toRoute(implementation));
+        Spark.post("/Aldo" + path, toRoute(implementation));
     }
 }

@@ -12,7 +12,7 @@ import static models.Session.getSession;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by Thomas on 23-12-2016.
+ * Tests the session class.
  */
 public class SessionTest {
     private Session session;
@@ -65,7 +65,7 @@ public class SessionTest {
         JsonObject jsonObject = session.toJson();
 
         assertEquals(sessionID, jsonObject.get("sessionID").getAsString());
-        assertEquals(adminPlayerID, jsonObject.get("admin").getAsString());
+        assertEquals(adminPlayerID, jsonObject.get("adminID").getAsString());
         assertEquals(status, jsonObject.get("status").getAsInt());
         assertEquals(created.toString(), jsonObject.get("created").getAsString());
     }

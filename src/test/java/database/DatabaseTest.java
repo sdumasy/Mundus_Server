@@ -22,6 +22,8 @@ public class DatabaseTest {
     public static final String USER_JOIN_ID = "user42";
     public static final String MOD_JOIN_ID = "mod42";
     public static final String TOKEN = "token_42";
+    public static final String USERNAME = "username_42";
+    public static final String ADMIN_USERNAME = "admin_username_42";
 
 
     @BeforeClass
@@ -32,6 +34,8 @@ public class DatabaseTest {
     public static void cleanDatabase() {
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID_2 + "';");
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID + "';");
+        executeManipulationQuery("DELETE FROM session_player WHERE username='" + USERNAME + "';");
+        executeManipulationQuery("DELETE FROM session_player WHERE username='" + ADMIN_USERNAME + "';");
         executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + USER_JOIN_ID + "';");
         executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + MOD_JOIN_ID + "';");
         executeManipulationQuery("DELETE FROM session WHERE session_id='" + SESSION_ID + "';");
@@ -52,8 +56,8 @@ public class DatabaseTest {
         executeManipulationQuery(query, MOD_JOIN_ID, SESSION_ID, 1);
         executeManipulationQuery(query, USER_JOIN_ID, SESSION_ID, 2);
 
-        query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?)";
-        executeManipulationQuery(query, PLAYER_ID, DEVICE_ID, SESSION_ID, 0, 0);
+        query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
+        executeManipulationQuery(query, PLAYER_ID, DEVICE_ID, SESSION_ID, 0, 0, ADMIN_USERNAME);
     }
 
 

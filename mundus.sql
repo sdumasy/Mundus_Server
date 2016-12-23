@@ -34,11 +34,12 @@ CREATE TABLE `role` (
 -- Table `session_player`
 -- -----------------------------------------------------
 CREATE TABLE `session_player` (
-  `player_id` VARCHAR(45) NOT NULL,
-  `device_id` VARCHAR(45) NOT NULL,
+  `player_id`  VARCHAR(45) NOT NULL,
+  `device_id`  VARCHAR(45) NOT NULL,
   `session_id` VARCHAR(45) NOT NULL,
-  `role_id` INT NOT NULL,
-  `score` INT(5) NOT NULL,
+  `role_id`    INT         NOT NULL,
+  `score`      INT(5)      NOT NULL,
+  `username`   VARCHAR(20) NOT NULL,
   PRIMARY KEY (`player_id`),
   UNIQUE INDEX `player_id_UNIQUE` (`player_id` ASC),
   INDEX `fk_session_id_idx` (`session_id` ASC),

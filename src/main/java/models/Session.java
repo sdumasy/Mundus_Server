@@ -73,7 +73,7 @@ public class Session {
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("sessionID", sessionID);
-        jsonObject.addProperty("admin", adminID);
+        jsonObject.addProperty("adminID", adminID);
         jsonObject.addProperty("status", status);
         jsonObject.addProperty("created", created.toString());
         return jsonObject;

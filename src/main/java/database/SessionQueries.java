@@ -65,16 +65,17 @@ public final class SessionQueries {
      *
      * @param joinToken The join token of the session to join.
      * @param device    The device of the user joining the session.
+     * @param username  Username of a player.
      * @return The new player.
      */
     @SuppressWarnings("checkstyle:magicnumber")
-    public static Player playerJoinSession(String joinToken, Device device) {
+    public static Player playerJoinSession(String joinToken, Device device, String username) {
         String query = "SELECT `join_token`, `session_id`, `role_id` FROM `session_token` WHERE `join_token` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, joinToken);
         if (result.size() == 1) {
             Map<String, Object> map = result.get(0);
             return Player.newPlayer(Session.getSession(map.get("session_id").toString()),
-                    (int) map.get("role_id"), device, 0);
+                    (int) map.get("role_id"), device, 0, username);
         } else if (result.size() == 0) {
             halt(HttpStatus.UNAUTHORIZED_401, "Invalid joinToken");
         } else {

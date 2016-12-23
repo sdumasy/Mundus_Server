@@ -32,16 +32,8 @@ public final class PlayerQueries {
      */
     protected static boolean playerExists(Player player) {
         String query = "SELECT * FROM `session_player` WHERE `device_id` = ? AND `session_id` = ? AND `role_id` = ?";
-        List<Map<String, Object>> result = executeSearchQuery(query, player.getDevice().getDeviceID(),
-                player.getSession().getSessionID(), player.getRoleID());
-        if (result.size() == 0) {
-            return false;
-        } else if (result.size() == 1) {
-            return true;
-        } else {
-            halt(HttpStatus.UNAUTHORIZED_401, "Multiple identical players exist.");
-            return true;
-        }
+        return singleResult(executeSearchQuery(query, player.getDevice().getDeviceID(),
+                player.getSession().getSessionID(), player.getRoleID()));
     }
 
     /**
@@ -52,13 +44,34 @@ public final class PlayerQueries {
      */
     protected static boolean playerIDExists(String playerID) {
         String query = "SELECT * FROM `session_player` WHERE `player_id` = ?";
-        List<Map<String, Object>> result = executeSearchQuery(query, playerID);
+        return singleResult(executeSearchQuery(query, playerID));
+    }
+
+    /**
+     * Checks whether a username exists within a session in the database.
+     *
+     * @param username  The username.
+     * @param sessionID The session.
+     * @return Whether it exists.
+     */
+    protected static boolean usernameExists(String username, String sessionID) {
+        String query = "SELECT * FROM `session_player` WHERE `session_id` = ? AND `username` = ?";
+        return singleResult(executeSearchQuery(query, sessionID, username));
+    }
+
+    /**
+     * Helper class to whether a single result is given.
+     *
+     * @param result The database result.
+     * @return Whether there is a single result.
+     */
+    protected static boolean singleResult(List<Map<String, Object>> result) {
         if (result.size() == 0) {
             return false;
         } else if (result.size() == 1) {
             return true;
         } else {
-            halt(HttpStatus.UNAUTHORIZED_401, "PlayerID is not unique.");
+            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Multiple identical database entries exist.");
             return true;
         }
     }
@@ -71,9 +84,15 @@ public final class PlayerQueries {
      */
     public static boolean addNewPlayer(Player player) {
         if (!playerExists(player) && !playerIDExists(player.getPlayerID())) {
-            String query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?)";
-            return Database.executeManipulationQuery(query, player.getPlayerID(), player.getDevice().getDeviceID(),
-                    player.getSession().getSessionID(), player.getRoleID(), player.getScore());
+            if (!usernameExists(player.getUsername(), player.getSession().getSessionID())) {
+                String query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
+                return Database.executeManipulationQuery(query, player.getPlayerID(), player.getDevice().getDeviceID(),
+                        player.getSession().getSessionID(), player.getRoleID(),
+                        player.getScore(), player.getUsername());
+            } else {
+                halt(HttpStatus.UNAUTHORIZED_401, "Username already used.");
+                return false;
+            }
         } else {
             halt(HttpStatus.UNAUTHORIZED_401, "Player already created.");
             return false;
@@ -81,23 +100,45 @@ public final class PlayerQueries {
     }
 
     /**
-     * Retrieve all the player data in the database based of the playerID.
+     * Retrieve a player from the database based of the playerID.
      *
      * @param playerID The playerID.
-     * @return A map of the data.
+     * @return The player.
      */
     public static Player getPlayer(String playerID) {
         String query = "SELECT * FROM `session_player` WHERE `player_id` = ?";
-        List<Map<String, Object>> result = executeSearchQuery(query, playerID);
-        if (result.size() == 1) {
-            Map<String, Object> map = result.get(0);
+        return createPlayer(executeSearchQuery(query, playerID));
+    }
+
+
+    /**
+     * Retrieve a player from the database based of the sessionID and username.
+     *
+     * @param sessionID The sessionID.
+     * @param username  The username.
+     * @return The player.
+     */
+    public static Player getPlayer(String sessionID, String username) {
+        String query = "SELECT * FROM `session_player` WHERE `session_id` = ? AND `username` = ?";
+        return createPlayer(executeSearchQuery(query, sessionID, username));
+    }
+
+    /**
+     * Creates a new player from a database response.
+     *
+     * @param list The database response.
+     * @return The player.
+     */
+    protected static Player createPlayer(List<Map<String, Object>> list) {
+        if (list.size() == 1) {
+            Map<String, Object> map = list.get(0);
             return new Player(map.get("player_id").toString(), Session.getSession(map.get("session_id").toString()),
                     Device.getDevice(map.get("device_id").toString()),
-                    Role.getById((int) map.get("role_id")), (int) map.get("score"));
-        } else if (result.size() == 0) {
+                    Role.getById((int) map.get("role_id")), (int) map.get("score"), map.get("username").toString());
+        } else if (list.size() == 0) {
             halt(HttpStatus.UNAUTHORIZED_401, "No player found.");
         } else {
-            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "PlayerID not unique.");
+            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Player not unique.");
         }
         return null;
     }
