@@ -112,11 +112,17 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.2</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.powermock/powermock-mockito-release-full -->
+        <!-- https://mvnrepository.com/artifact/org.powermock/powermock-api-mockito -->
         <dependency>
             <groupId>org.powermock</groupId>
-            <artifactId>powermock-mockito-release-full</artifactId>
+            <artifactId>powermock-api-mockito</artifactId>
             <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.6.2</version>
+            <scope>test</scope>
         </dependency>
 
 
