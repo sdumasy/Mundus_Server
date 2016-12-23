@@ -1,7 +1,7 @@
 package application;
 
-import framework.TestImplementation;
 import http.Routes;
+import mundus.ExpeditionMundus;
 
 import static spark.Spark.port;
 
@@ -23,7 +23,7 @@ public final class App {
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
         Routes.setupRoutes();
-        TestImplementation.test();
+        ExpeditionMundus.create();
     }
 
     /**

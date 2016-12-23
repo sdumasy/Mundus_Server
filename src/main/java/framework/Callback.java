@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Interface for the methods the user should implement.
  */
-public interface Implementation {
+public interface Callback {
     /**
      * A method that is called when the corresponding path is called.
      *
@@ -16,5 +16,5 @@ public interface Implementation {
      * @param map    A map of the given data in the body.
      * @return A Json response.
      */
-    JsonObject handle(Player player, Map<String, Object> map);
+    JsonObject execute(Player player, Map<String, Object> map);
 }

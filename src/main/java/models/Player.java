@@ -32,6 +32,7 @@ public class Player {
         this.device = device;
         this.role = role;
         this.score = score;
+        // TODO: 23/12/16 Add username
     }
 
     /**

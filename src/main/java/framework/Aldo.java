@@ -18,18 +18,20 @@ public final class Aldo {
         // Empty on purpose.
     }
 
+    // TODO: 23/12/16 Calls for only active sessions and calls for all kinds of sessions.
+
     /**
      * Converts a route defined by the user to a route that spark understands.
      *
-     * @param implementation The defined route
+     * @param callback The defined route
      * @return The spark route.
      */
-    protected static Route toRoute(Implementation implementation) {
+    protected static Route toRoute(Callback callback) {
         return (request, response) -> {
             Player player = request.attribute("player");
             Type type = (new TypeToken<HashMap<String, Object>>() { }).getType();
             HashMap<String, Object> map = new Gson().fromJson(request.attribute("container").toString(), type);
-            return implementation.handle(player, map);
+            return callback.execute(player, map);
         };
     }
 
@@ -39,7 +41,7 @@ public final class Aldo {
      * @param path           The path of the post request.
      * @param implementation The implementation by the user.
      */
-    public static void post(String path, Implementation implementation) {
+    public static void post(String path, Callback implementation) {
         Spark.post("/session/:sessionID" + path, toRoute(implementation));
     }
 }

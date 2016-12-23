@@ -43,6 +43,7 @@ public final class Routes {
         setupGetScoreRoute();
         setupInGameRoutes();
         setupSessionManagementRoutes();
+        // TODO: 23/12/16 Manage players: delete, change name, etc.
     }
 
     /**
@@ -186,5 +187,7 @@ public final class Routes {
     private static void setupWebsocketRoutes() {
         webSocket("/echo", EchoWebSocket.class);
     }
+
+
 }
 
