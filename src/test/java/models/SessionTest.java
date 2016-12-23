@@ -65,7 +65,7 @@ public class SessionTest {
         JsonObject jsonObject = session.toJson();
 
         assertEquals(sessionID, jsonObject.get("sessionID").getAsString());
-        assertEquals(adminPlayerID, jsonObject.get("adminID").getAsString());
+        assertEquals(adminID, jsonObject.get("adminID").getAsString());
         assertEquals(status, jsonObject.get("status").getAsInt());
         assertEquals(created.toString(), jsonObject.get("created").getAsString());
     }

@@ -91,7 +91,7 @@ public class SessionQueriesTest {
             DatabaseTest.setupSession();
             DatabaseTest.setupDevice2();
             Device joinDevice = new Device(DatabaseTest.DEVICE_ID_2, DatabaseTest.TOKEN);
-            player = playerJoinSession(DatabaseTest.USER_JOIN_ID, joinDevice);
+            player = playerJoinSession(DatabaseTest.USER_JOIN_ID, joinDevice, DatabaseTest.USERNAME);
 
             String query = "SELECT * FROM session_player WHERE device_id='" + DatabaseTest.DEVICE_ID_2 + "';";
             List<Map<String, Object>> verify = executeSearchQuery(query);
@@ -128,7 +128,8 @@ public class SessionQueriesTest {
             DatabaseTest.setupSession();
             Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
             Session session = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
-            Player player = new Player(DatabaseTest.PLAYER_ID, session, device, Role.Admin, 0);
+            Player player = new Player(DatabaseTest.PLAYER_ID, session, device, Role.Admin, 0,
+                    DatabaseTest.ADMIN_USERNAME);
             updateSessionStatus(player, 2);
             assertEquals(2, getSession(DatabaseTest.SESSION_ID).getStatus());
         } finally {
