@@ -26,6 +26,7 @@ public final class SessionQueries {
      * Private constructor.
      */
     private SessionQueries() {
+
     }
 
     /**

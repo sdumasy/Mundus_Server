@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 public class SessionTest {
     private Session session;
     private String sessionID = "sessionID";
-    private String adminPlayerID = "adminID" ;
+    private String adminID = "adminID" ;
     private int status = 1;
     private LocalDateTime created = LocalDateTime.now();
 
@@ -28,7 +28,7 @@ public class SessionTest {
 
     @Before
     public void setup() throws Exception {
-        session = new Session(sessionID,adminPlayerID,status,created);
+        session = new Session(sessionID, adminID, status, created);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class SessionTest {
 
     @Test
     public void getAdminIDTest() throws Exception {
-        assertEquals(adminPlayerID, session.getAdminID());
+        assertEquals(adminID, session.getAdminID());
     }
 
     @Test
