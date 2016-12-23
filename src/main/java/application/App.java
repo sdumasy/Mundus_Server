@@ -1,28 +1,38 @@
 package application;
 
 import http.Routes;
+import mundus.ExpeditionMundus;
 
 import static spark.Spark.port;
 
 /**
- * Created by macbookpro on 29/11/2016.
+ * The App itself.
  */
 public final class App {
     /**
      * Private constructor.
      */
-    private App() { }
+    private App() {
+    }
 
     /**
      * Main method.
+     *
      * @param args Runtime args.
      */
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
         Routes.setupRoutes();
+        ExpeditionMundus.create();
     }
 
-    static int getHerokuAssignedPort() {
+    /**
+     * Get the assigned Heroku port, or the default if there is none.
+     *
+     * @return The port number.
+     */
+    @SuppressWarnings("checkstyle:magicnumber") //4567 is a port number
+    protected static int getHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         if (processBuilder.environment().get("PORT") != null) {
             return Integer.parseInt(processBuilder.environment().get("PORT"));

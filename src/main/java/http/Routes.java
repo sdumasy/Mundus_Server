@@ -58,7 +58,6 @@ public final class Routes {
      */
     private static void convertJson() {
         before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO,request.headers("Authorization"));
             Type type = new TypeToken<HashMap<String, Object>>() {
             }.getType();
             HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
