@@ -39,6 +39,15 @@ public class Session {
     }
 
     /**
+     * Getter for the adminID.
+     *
+     * @return Returns the adminID.
+     */
+    public String getAdminID() {
+        return adminID;
+    }
+
+    /**
      * Getter for the sessionID.
      *
      * @return Returns the sessionID.

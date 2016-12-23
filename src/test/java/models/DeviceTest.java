@@ -117,4 +117,16 @@ public class DeviceTest {
         Device device2 = new Device("other", token);
         assertNotEquals(device, device2);
     }
+
+    @Test
+    public void hashCodeTest() throws Exception {
+        Device device2 = new Device(deviceID, token);
+        assertEquals(device.hashCode(), device2.hashCode());
+    }
+
+    @Test
+    public void hashCodeTest2() throws Exception {
+        Device device2 = new Device("other", token);
+        assertNotEquals(device.hashCode(), device2.hashCode());
+    }
 }
