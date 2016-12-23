@@ -1,5 +1,6 @@
 package database;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import models.Device;
 import models.Player;
@@ -41,17 +42,17 @@ public final class SessionQueries {
         String playerID = generateUniqueID("session_player", "player_id");
 
         String query = "INSERT INTO `session` VALUES (?, ?, ?, ?)";
-        Database.executeManipulationQuery(query, sessionID, playerID, 1, LocalDateTime.now());
+        executeManipulationQuery(query, sessionID, playerID, 1, LocalDateTime.now());
 
         String modToken = generateUniqueJoinToken();
         query = "INSERT INTO `session_token` VALUES (?, ?, ?)";
-        Database.executeManipulationQuery(query, modToken, sessionID, 1);
+        executeManipulationQuery(query, modToken, sessionID, 1);
 
         String userToken = generateUniqueJoinToken();
-        Database.executeManipulationQuery(query, userToken, sessionID, 2);
+        executeManipulationQuery(query, userToken, sessionID, 2);
 
         query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?)";
-        Database.executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0);
+        executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("sessionID", sessionID);
@@ -118,7 +119,7 @@ public final class SessionQueries {
         if (status != 0) {
             query += " AND NOT `status` = 0";
         }
-        return Database.executeManipulationQuery(query, status, player.getSession().getSessionID(),
+        return executeManipulationQuery(query, status, player.getSession().getSessionID(),
                 player.getPlayerID());
     }
 
@@ -151,5 +152,25 @@ public final class SessionQueries {
             halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
         }
         return null;
+    }
+
+    /**
+     * Get all scores in a session.
+     *
+     * @param sessionID    the id of the session.
+     * @return A JsonArray containing the scores of all players within a session.
+     */
+    public static JsonArray getScores(String sessionID) {
+        String query = "SELECT `player_id`, `username`, `score` FROM `session_player`  WHERE `session_id`=? ";
+        JsonArray jsonArray = new JsonArray();
+        List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
+        for (Map<String, Object> aResult : result) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("playerID", aResult.get("player_id").toString());
+            jsonObject.addProperty("username", aResult.get("username").toString());
+            jsonObject.addProperty("score", aResult.get("score").toString());
+            jsonArray.add(jsonObject);
+        }
+        return jsonArray;
     }
 }

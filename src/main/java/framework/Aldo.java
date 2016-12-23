@@ -29,7 +29,7 @@ public final class Aldo {
     protected static Route toRoute(Callback callback) {
         return (request, response) -> {
             Player player = request.attribute("player");
-            Type type = (new TypeToken<HashMap<String, Object>>() { }).getType();
+            Type type = new TypeToken<HashMap<String, Object>>() { }.getType();
             HashMap<String, Object> map = new Gson().fromJson(request.attribute("container").toString(), type);
             return callback.execute(player, map);
         };

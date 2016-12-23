@@ -1,5 +1,6 @@
 package database;
 
+import com.google.gson.JsonArray;
 import models.Device;
 import models.Player;
 import models.Role;
@@ -108,14 +109,16 @@ public class SessionQueriesTest {
      */
     @Test
     public void getSessionTest() {
-        DatabaseTest.setupDevice();
-        DatabaseTest.setupSession();
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
 
-        assertEquals(DatabaseTest.SESSION_ID, getSession(DatabaseTest.SESSION_ID).getSessionID());
-        assertEquals(DatabaseTest.PLAYER_ID, getSession(DatabaseTest.SESSION_ID).getAdminID());
-        assertEquals(1, getSession(DatabaseTest.SESSION_ID).getStatus());
-
-        DatabaseTest.cleanDatabase();
+            assertEquals(DatabaseTest.SESSION_ID, getSession(DatabaseTest.SESSION_ID).getSessionID());
+            assertEquals(DatabaseTest.PLAYER_ID, getSession(DatabaseTest.SESSION_ID).getAdminID());
+            assertEquals(1, getSession(DatabaseTest.SESSION_ID).getStatus());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
     }
 
     /**
@@ -137,4 +140,20 @@ public class SessionQueriesTest {
         }
     }
 
+    /**
+     * Get the scores of all players in the session with sessionID.
+     */
+    @Test
+    public void getSessionScoresTest() {
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+
+            JsonArray jsonArray = getScores(DatabaseTest.SESSION_ID);
+            assertEquals(1, jsonArray.size());
+            assertEquals(DatabaseTest.PLAYER_ID, jsonArray.get(0).getAsJsonObject().get("playerID").getAsString());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
+    }
 }

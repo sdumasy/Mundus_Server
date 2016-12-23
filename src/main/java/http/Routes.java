@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static database.SessionQueries.createSession;
+import static database.SessionQueries.getScores;
 import static database.SessionQueries.playerJoinSession;
 import static spark.Spark.*;
 
@@ -41,6 +42,7 @@ public final class Routes {
         setupCreateSessionRoute();
         setupJoinSessionRoutes();
         setupGetScoreRoute();
+        setupGetAllScoresRoute();
         setupInGameRoutes();
         setupSessionManagementRoutes();
         // TODO: 23/12/16 Manage players: delete, change name, etc.
@@ -50,14 +52,14 @@ public final class Routes {
      * Convert the body from a request to attributes that can be accessed easily.
      */
     private static void convertJson() {
-        before(((request, response) -> {
+        before((request, response) -> {
             Type type = new TypeToken<HashMap<String, Object>>() {
             }.getType();
             HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
             for (Map.Entry<String, Object> e : map.entrySet()) {
                 request.attribute(e.getKey(), e.getValue().toString());
             }
-        }));
+        });
     }
 
     /**
@@ -87,7 +89,7 @@ public final class Routes {
             }
         });
 
-        after(((request, response) -> Logger.getGlobal().log(Level.INFO, "Response: " + response.raw())));
+        after((request, response) -> Logger.getGlobal().log(Level.INFO, "Response: " + response.raw()));
     }
 
     /**
@@ -139,16 +141,27 @@ public final class Routes {
 
     /**
      * Setup the route that allows clients to get their scores.
+     * The client needs to provide a player ID.
+     * There is no role verification as everyone should be able to request any players score.
      */
     private static void setupGetScoreRoute() {
         post("/session/:sessionID/score", (request, response) -> {
-            Player player = request.attribute("player");
+            Player player = Player.getPlayer(request.attribute("playerID"));
 
             JsonObject responseObject = new JsonObject();
             responseObject.addProperty("playerID", player.getPlayerID());
             responseObject.addProperty("score", player.getScore());
             return responseObject;
         });
+    }
+
+    /**
+     * Setup the route that allows clients to get all scores in their session.
+     * The client needs to provide a session ID.
+     * There is no role verification as everyone should be able to request any players score.
+     */
+    private static void setupGetAllScoresRoute() {
+        post("/session/:sessionID/scores", (request, response) -> getScores(request.params("sessionID")));
     }
 
     /**
