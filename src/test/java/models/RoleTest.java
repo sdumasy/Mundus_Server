@@ -2,10 +2,10 @@ package models;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Created by Thomas on 20-12-2016.
+ * Tests the Role class
  */
 public class RoleTest {
 

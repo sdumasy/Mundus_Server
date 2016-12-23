@@ -1,46 +1,84 @@
 package models;
 
-import database.SessionQueries;
+import com.google.gson.JsonObject;
+import database.PlayerQueries;
 
-import static database.SessionQueries.generateUniqueID;
+import static database.CreateUniqueIDs.generateUniqueID;
+import static database.PlayerQueries.addNewPlayer;
 
 /**
  * Model of the player.
  */
 public class Player {
 
-    private String playerID, sessionID, deviceID;
+    private String playerID, username;
+    private Session session;
+    private Device device;
     private Role role;
     private Integer score;
 
     /**
-     * Constructor for the player class.
-     * @param playerID A player ID.
-     * @param sessionID A session ID.
-     * @param deviceID A device ID.
+     * Constructor for player.
+     *
+     * @param playerID  The id for the player.
+     * @param session The session of the player.
+     * @param device    The device of the player.
+     * @param role      The role of the player.
+     * @param score     The score of the player.
+     * @param username  The username of the player.
      */
-    public Player(String playerID, String sessionID, String deviceID) {
+    public Player(String playerID, Session session, Device device, Role role, Integer score, String username) {
         this.playerID = playerID;
-        this.sessionID = sessionID;
-        this.deviceID = deviceID;
+        this.session = session;
+        this.device = device;
+        this.role = role;
+        this.score = score;
+        this.username = username;
+    }
+
+    /**
+     * Gets a player from the database.
+     *
+     * @param playerID The player ID.
+     * @return The Player.
+     */
+    public static Player getPlayer(String playerID) {
+        return PlayerQueries.getPlayer(playerID);
+    }
+
+    /**
+     * Gets a player from the database based of session and username.
+     *
+     * @param sessionID The sessionID.
+     * @param username  The username.
+     * @return The player.
+     */
+    public static Player getPlayer(String sessionID, String username) {
+        return PlayerQueries.getPlayer(sessionID, username);
     }
 
     /**
      * Creates a newPlayer.
-     * @param sessionID Players session.
-     * @param roleID Players role.
-     * @param deviceID Players deviceID.
+     *
+     * @param session   Players session.
+     * @param roleID    Players role.
+     * @param device    Players device.
+     * @param score     The score of the player.
+     * @param username  The username of the player.
      * @return A new player.
      */
-    public static Player newPlayer(String sessionID, int roleID, String deviceID) {
-        Player player = new Player(generateUniqueID("session_player", "player_id"), sessionID, deviceID);
-        player.setRoleID(roleID);
-        player.setScore(0);
-        return player;
+    public static Player newPlayer(Session session, int roleID, Device device, int score, String username) {
+        Player player = new Player(generateUniqueID("session_player", "player_id"),
+                session, device, Role.getById(roleID), score, username);
+        if (addNewPlayer(player)) {
+            return player;
+        }
+        return null;
     }
 
     /**
      * Gets the player ID.
+     *
      * @return The player ID.
      */
     public String getPlayerID() {
@@ -48,53 +86,62 @@ public class Player {
     }
 
     /**
-     * Gets the session ID.
-     * @return The session ID.
+     * Gets the session.
+     *
+     * @return The session.
      */
-    public String getSessionID() {
-        return sessionID;
+    public Session getSession() {
+        return session;
     }
 
     /**
      * Gets the device ID.
+     *
      * @return The device ID.
      */
-    public String getDeviceID() {
-        return deviceID;
-    }
-
-    /**
-     * Allows the role of the player to be set.
-     * @param roleID The role ID.
-     */
-    public void setRoleID(Integer roleID) {
-        this.role = Role.getById(roleID);
+    public Device getDevice() {
+        return device;
     }
 
     /**
      * Gets the role ID.
+     *
      * @return The role ID.
      */
     public int getRoleID() {
-        if (role == null) {
-            getRole();
-        }
-        return role.id;
+        return role.getId();
+    }
+
+    /**
+     * Allows the role of the player to be set.
+     *
+     * @param roleID The role ID.
+     */
+    protected void setRoleID(Integer roleID) {
+        this.role = Role.getById(roleID);
+    }
+
+    /**
+     * Gets the username.
+     *
+     * @return The username.
+     */
+    public String getUsername() {
+        return username;
     }
 
     /**
      * Gets the role ID by name.
+     *
      * @return The role.
      */
-    public Role getRole() {
-        if (role == null) {
-            setRoleID(SessionQueries.getRoleId(this));
-        }
+    protected Role getRole() {
         return role;
     }
 
     /**
      * Returns whether this player is an admin or not.
+     *
      * @return The boolean value.
      */
     public boolean isAdmin() {
@@ -102,21 +149,35 @@ public class Player {
     }
 
     /**
+     * Gets the score.
+     *
+     * @return The score.
+     */
+    public int getScore() {
+        return score;
+    }
+
+    /**
      * Allows the score of the player to be set.
+     *
      * @param score The amount of points this player has scored.
      */
-    public void setScore(Integer score) {
+    protected void setScore(Integer score) {
         this.score = score;
     }
 
     /**
-     * Gets the score.
-     * @return The score.
+     * Return a JsonObject with all the player attributes.
+     *
+     * @return A JsonObject with all the player attributes.
      */
-    public int getScore() {
-        if (score == null) {
-            score = SessionQueries.getScore(this);
-        }
-        return score;
+    public JsonObject toJson() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("playerID", getPlayerID());
+        jsonObject.addProperty("sessionID", session.toJson().toString());
+        jsonObject.addProperty("role", role.name());
+        jsonObject.addProperty("score", score);
+        jsonObject.addProperty("username", username);
+        return jsonObject;
     }
 }

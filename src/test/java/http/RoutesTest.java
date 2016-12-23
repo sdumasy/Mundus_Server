@@ -1,9 +1,7 @@
 package http;
 
 import application.App;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import database.Database;
+import models.Device;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -14,6 +12,11 @@ import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import spark.Spark;
 
 import java.io.IOException;
@@ -21,28 +24,43 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
-import static database.Database.executeManipulationQuery;
-import static database.SessionQueries.createSession;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static validation.Validation.createToken;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by Thomas on 15-12-2016.
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(Device.class)
+@PowerMockIgnore("javax.net.ssl.*")
 public class RoutesTest {
-    private String deviceID = "deviceID_42";
-    private String deviceID2 = "deviceID_43";
 
     @BeforeClass
     public static void beforeClass() {
         App.main(null);
-        //SessionQueriesTest.tearDown()
     }
 
     @AfterClass
     public static void afterClass() {
         Spark.stop();
+    }
+
+    /**
+     * Method that makes requests and executes them.
+     * @param uri The uri with the route that is supposed to be triggered.
+     * @param json The json body attributes
+     * @return An http response object
+     * @throws IOException Throws an exception if the request execution fails.
+     */
+    public HttpResponse processRoute(String uri, String json) throws IOException {
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost("http://localhost:4567/" + uri);
+        HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
+        httpPost.setEntity(entity);
+        return httpClient.execute(httpPost);
+
     }
 
     /**
@@ -52,26 +70,38 @@ public class RoutesTest {
      */
     @Test
     public void createNewTokenTest() throws IOException {
-        try {
-            HttpClient httpClient = HttpClients.createDefault();
+        PowerMockito.mockStatic(Device.class);
+        when(Device.newDevice(anyString())).thenReturn(new Device("some_id", "some_token"));
 
-            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/token");
-            String json = "{\"deviceID\" : \"" + deviceID + "\"}";
+        String uri = "token";
+        String json = "{\"deviceID\" : \"" + "some_id" + "\"}";
+        HttpResponse response = processRoute(uri, json);
 
-            HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
-            httpPost.setEntity(entity);
-            HttpResponse response = httpClient.execute(httpPost);
-            String result = EntityUtils.toString(response.getEntity());
-
-            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
-        } finally {
-            tearDown();
-        }
+        String result = EntityUtils.toString(response.getEntity());
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
-    //TODO: Fix test
+    /**
+     * Test the route that generates a token for a new device, when a token already exists.
+     *
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
-    public void createSessionTest() throws IOException {
+    public void createDuplicateTokenTest() throws IOException {
+        PowerMockito.mockStatic(Device.class);
+        when(Device.newDevice(anyString())).thenReturn(null);
+
+        String uri = "token";
+        String json = "{\"deviceID\" : \"" + "some_id" + "\"}";
+        HttpResponse response = processRoute(uri, json);
+
+        String result = EntityUtils.toString(response.getEntity());
+        assertEquals("HTTP/1.1 401 Unauthorized", response.getStatusLine().toString());
+    }
+
+//    //TODO: Fix create
+//    @Test
+//    public void createSessionTest() throws IOException {
 //        JsonObject jsonObject = null;
 //        try {
 //            HttpClient httpClient = HttpClients.createDefault();
@@ -92,82 +122,47 @@ public class RoutesTest {
 //            }
 //            tearDown();
 //        }
-    }
+//    }
 
-    @Test
-    public void joinSessionTest() throws IOException {
-        JsonObject jsonObject1 = null;
-        JsonObject jsonObject2 = null;
-        try {
-            createToken(deviceID);
-            String token2 = createToken(deviceID2);
-            jsonObject1 = createSession(deviceID);
-            String joinToken = jsonObject1.get("userToken").getAsString();
-
-            HttpClient httpClient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/join");
-//            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
-//                    + joinToken + "\"}";
-
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("deviceID", deviceID2);
-            jsonObject.addProperty("token", token2);
-            jsonObject.addProperty("joinToken", joinToken);
-
-            HttpEntity entity = new ByteArrayEntity(jsonObject.toString().getBytes("UTF-8"));
-            httpPost.setEntity(entity);
-            HttpResponse response = httpClient.execute(httpPost);
-            JsonParser jsonParser = new JsonParser();
-
-            jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
-
-            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
-        } finally {
-            if (jsonObject2 != null) {
-                tearDownExtraPlayer(jsonObject2);
-            }
-            if (jsonObject1 != null) {
-                tearDownSession(jsonObject1);
-            }
-            tearDown();
-        }
-
-    }
-
-    /**
-     * Delete the extra player that was added to the session.
-     *
-     * @param jsonObject A jsonObject that contains the required playerID.
-     */
-    protected void tearDownExtraPlayer(JsonObject jsonObject) {
-        String playerID = jsonObject.get("playerID").getAsString();
-        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
-    }
-
-    /**
-     * Delete the device and token from the database.
-     */
-    public void tearDown() {
-        executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
-        executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID2 + "';");
-    }
-
-    /**
-     * Tear down a session after it has been created via a route
-     *
-     * @param jsonObject A JsonObject containing all session information
-     */
-    public void tearDownSession(JsonObject jsonObject) {
-        String sessionID = jsonObject.get("sessionID").getAsString();
-        String playerID = jsonObject.get("playerID").getAsString();
-        String userToken = jsonObject.get("userToken").getAsString();
-        String modToken = jsonObject.get("modToken").getAsString();
-        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + playerID + "';");
-        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + userToken + "';");
-        Database.executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + modToken + "';");
-        Database.executeManipulationQuery("DELETE FROM session WHERE session_id='" + sessionID + "';");
-        Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
-    }
+//    @Test
+//    public void joinSessionTest() throws IOException {
+//        JsonObject jsonObject1 = null;
+//        JsonObject jsonObject2 = null;
+//        try {
+//            createToken(deviceID);
+//            String token2 = createToken(deviceID2);
+//            jsonObject1 = createSession(deviceID);
+//            String joinToken = jsonObject1.get("userToken").getAsString();
+//
+//            HttpClient httpClient = HttpClients.createDefault();
+//            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/join");
+////            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
+////                    + joinToken + "\"}";
+//
+//            JsonObject jsonObject = new JsonObject();
+//            jsonObject.addProperty("deviceID", deviceID2);
+//            jsonObject.addProperty("token", token2);
+//            jsonObject.addProperty("joinToken", joinToken);
+//
+//            HttpEntity entity = new ByteArrayEntity(jsonObject.toString().getBytes("UTF-8"));
+//            httpPost.setEntity(entity);
+//            HttpResponse response = httpClient.execute(httpPost);
+//            JsonParser jsonParser = new JsonParser();
+//
+//            jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
+//
+//            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+//        } finally {
+//            if (jsonObject2 != null) {
+//                tearDownExtraPlayer(jsonObject2);
+//            }
+//            if (jsonObject1 != null) {
+//                tearDownSession(jsonObject1);
+//            }
+//            tearDown();
+//        }
+//
+//    }
 
     /**
      * Test whether constructor is private and does not raise any exceptions.
@@ -185,6 +180,4 @@ public class RoutesTest {
         constructor.setAccessible(true);
         constructor.newInstance();
     }
-
-
 }
