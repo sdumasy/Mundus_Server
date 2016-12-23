@@ -16,9 +16,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static database.SessionQueries.createSession;
-import static database.SessionQueries.getScores;
-import static database.SessionQueries.playerJoinSession;
+import static database.SessionQueries.*;
 import static spark.Spark.*;
 
 /**
@@ -41,11 +39,18 @@ public final class Routes {
         setupTokenValidation();
         setupCreateSessionRoute();
         setupJoinSessionRoutes();
+        setupGetPlayerRoute();
         setupGetScoreRoute();
-        setupGetAllScoresRoute();
         setupInGameRoutes();
         setupSessionManagementRoutes();
         // TODO: 23/12/16 Manage players: delete, change name, etc.
+    }
+
+    /**
+     * Setup the route that allows the use of websockets.
+     */
+    private static void setupWebsocketRoutes() {
+        webSocket("/echo", EchoWebSocket.class);
     }
 
     /**
@@ -145,14 +150,11 @@ public final class Routes {
      * The client needs to provide a player ID.
      * There is no role verification as everyone should be able to request any players score.
      */
-    private static void setupGetScoreRoute() {
-        post("/session/:sessionID/score", (request, response) -> {
+    private static void setupGetPlayerRoute() {
+        post("/session/:sessionID/player", (request, response) -> {
             Player player = Player.getPlayer(request.attribute("playerID"));
 
-            JsonObject responseObject = new JsonObject();
-            responseObject.addProperty("playerID", player.getPlayerID());
-            responseObject.addProperty("score", player.getScore());
-            return responseObject;
+            return player.toJson();
         });
     }
 
@@ -161,8 +163,8 @@ public final class Routes {
      * The client needs to provide a session ID.
      * There is no role verification as everyone should be able to request any players score.
      */
-    private static void setupGetAllScoresRoute() {
-        post("/session/:sessionID/scores", (request, response) -> getScores(request.params("sessionID")));
+    private static void setupGetScoreRoute() {
+        post("/session/:sessionID/score", (request, response) -> getScores(request.params("sessionID")));
     }
 
     /**
@@ -175,11 +177,11 @@ public final class Routes {
             }
         });
 
-        put("/session/:sessionID/play", (request, response) -> updateSessionStatus(request, 1));
+        post("/session/:sessionID/play", (request, response) -> updateSessionStatus(request, 1));
 
-        put("/session/:sessionID/pause", (request, response) -> updateSessionStatus(request, 2));
+        post("/session/:sessionID/pause", (request, response) -> updateSessionStatus(request, 2));
 
-        delete("/session/:sessionID/delete", (request, response) -> updateSessionStatus(request, 0));
+        post("/session/:sessionID/delete", (request, response) -> updateSessionStatus(request, 0));
     }
 
     /**
@@ -194,13 +196,6 @@ public final class Routes {
         SessionQueries.updateSessionStatus(player, status);
 
         return Session.getSession(player.getSession().getSessionID()).toJson();
-    }
-
-    /**
-     * Setup the route that allows the use of websockets.
-     */
-    private static void setupWebsocketRoutes() {
-        webSocket("/echo", EchoWebSocket.class);
     }
 }
 
