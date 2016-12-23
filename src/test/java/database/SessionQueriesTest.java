@@ -18,6 +18,7 @@ import java.util.Map;
 import static database.Database.executeSearchQuery;
 import static database.SessionQueries.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -53,28 +54,18 @@ public class SessionQueriesTest {
     public void createSessionTest() {
         try {
             DatabaseTest.setupDevice();
-            DatabaseTest.setupSession();
+            createSession(new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN),DatabaseTest.ADMIN_USERNAME);
             List<Map<String, Object>> verify;
 
             verify = Database
-                    .executeSearchQuery("SELECT player_id FROM session_player WHERE player_id='"
-                            + DatabaseTest.PLAYER_ID + "';");
-            assertEquals(verify.size(), 1);
+                    .executeSearchQuery("SELECT player_id FROM session_player WHERE username='"
+                            + DatabaseTest.ADMIN_USERNAME + "';");
+            assertNotEquals(verify.size(), 0);
 
             verify = Database
-                    .executeSearchQuery("SELECT join_token FROM session_token WHERE join_token='"
-                            + DatabaseTest.USER_JOIN_ID + "';");
-            assertEquals(verify.size(), 1);
-
-            verify = Database
-                    .executeSearchQuery("SELECT join_token FROM session_token WHERE join_token='"
-                            + DatabaseTest.MOD_JOIN_ID + "';");
-            assertEquals(verify.size(), 1);
-
-            verify = Database
-                    .executeSearchQuery("SELECT session_id FROM session WHERE session_id='"
-                            + DatabaseTest.SESSION_ID + "';");
-            assertEquals(verify.size(), 1);
+                    .executeSearchQuery("SELECT player_id FROM session_player WHERE device_id='"
+                            + DatabaseTest.DEVICE_ID + "';");
+            assertNotEquals(verify.size(), 0);
         } finally {
             DatabaseTest.cleanDatabase();
         }

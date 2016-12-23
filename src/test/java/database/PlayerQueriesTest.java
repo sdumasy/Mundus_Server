@@ -1,96 +1,71 @@
 package database;
 
+import models.Player;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+
+import static database.PlayerQueries.getPlayer;
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Thomas on 23-12-2016.
  */
 public class PlayerQueriesTest {
-    @Test
-    public void playerExists() throws Exception {
-
+    @BeforeClass
+    public static void clean() {
+        DatabaseTest.cleanDatabase();
     }
 
+    /**
+     * Test whether constructor is private and does not raise any exceptions.
+     * @throws NoSuchMethodException The method must be there.
+     * @throws IllegalAccessException The method must be accessible.
+     * @throws InvocationTargetException The method must be invocable
+     * @throws InstantiationException The method must be instantiationable.
+     */
     @Test
-    public void playerIDExists() throws Exception {
-
+    public void testConstructorIsPrivate() throws NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, InstantiationException {
+        Constructor<PlayerQueries> constructor = PlayerQueries.class.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 
+    /**
+     * Test adding an extra player to a session and verifying its values.
+     */
     @Test
-    public void addNewPlayer() throws Exception {
+    public void getPlayerTest() {
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+            Player player = getPlayer(DatabaseTest.SESSION_ID, DatabaseTest.ADMIN_USERNAME);
 
+            assertEquals(DatabaseTest.PLAYER_ID, player.getPlayerID());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
     }
 
+    /**
+     * Test adding an extra player to a session and verifying its values.
+     */
     @Test
-    public void getPlayer() throws Exception {
+    public void getPlayerByIDTest() {
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+            Player player = getPlayer(DatabaseTest.PLAYER_ID);
 
+            assertEquals(DatabaseTest.ADMIN_USERNAME, player.getUsername());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
     }
-
-//    /**
-//     * Test adding an extra player to a session and verifying its values.
-//     */
-//    @Test
-//    public void setGetPlayer() {
-//        try {
-//            Player player = addNewPlayerSetup();
-//
-//            Map<String, Object> map = PlayerQueries.getPlayerData(player);
-//            assertEquals("playerID_42", (String) map.get("player_id"));
-//            assertEquals(sessionID, (String) map.get("session_id"));
-//            assertEquals(localDevice, (String) map.get("device_id"));
-//        } finally {
-//            addNewPlayerTearDown();
-//        }
-//    }
-//
-//
-//
-//    /**
-//     * Creates a session setup with one extra player added.
-//     * @return The extra player
-//     */
-//    public Player addNewPlayerSetup() {
-//        Validation.createToken(localDevice);
-//        createSessionSetup();
-//        Player player = new Player("playerID_42", sessionID, localDevice);
-//        player.setRoleID(0);
-//        player.setScore(42);
-//        PlayerQueries.addNewPlayer(player);
-//        return player;
-//    }
-//
-//    /**
-//     * Deletes the extra player and tears down the session.
-//     */
-//    private void addNewPlayerTearDown() {
-//        Database.executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + "playerID_42" + "';");
-//        createSessionTearDown();
-//        Database.executeManipulationQuery("DELETE FROM device WHERE device_id='" + localDevice + "';");
-//    }
-//    /**
-//     * Test getting the role of a player.
-//     */
-//    @Test
-//    public void getRoleIdTest() {
-//        try {
-//            Player player = addNewPlayerSetup();
-//            assertEquals(0, (int) getRoleId(player));
-//        } finally {
-//            addNewPlayerTearDown();
-//        }
-//    }
-//
-//    /**
-//     * Test getting the score of a player.
-//     */
-//    @Test
-//    public void getScoreTest() {
-//        try {
-//            Player player = addNewPlayerSetup();
-//            assertEquals(42, (int) getScore(player));
-//        } finally {
-//            addNewPlayerTearDown();
-//        }
-//    }
-
 }

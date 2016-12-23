@@ -36,6 +36,7 @@ public class CreateUniqueIDsTest {
         constructor.setAccessible(true);
         constructor.newInstance();
     }
+
     @Test
     public void createTokenTest() throws Exception {
 

@@ -96,7 +96,8 @@ public final class Routes {
      * Setup the route that allows the creation of a new session.
      */
     private static void setupCreateSessionRoute() {
-        post("/session/create", (request, response) -> createSession(request.attribute("device")));
+        post("/session/create", (request, response) ->
+                createSession(request.attribute("device"), request.attribute("username")));
     }
 
     /**

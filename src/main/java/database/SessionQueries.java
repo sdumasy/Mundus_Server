@@ -37,7 +37,7 @@ public final class SessionQueries {
      * @param device The device that creates the session.
      * @return A JsonObject that contains the generated playerID, modToken and userToken
      */
-    public static JsonObject createSession(Device device) {
+    public static JsonObject createSession(Device device, String userName) {
         String sessionID = generateUniqueID("session", "session_id");
         String playerID = generateUniqueID("session_player", "player_id");
 
@@ -51,8 +51,8 @@ public final class SessionQueries {
         String userToken = generateUniqueJoinToken();
         executeManipulationQuery(query, userToken, sessionID, 2);
 
-        query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?)";
-        executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0);
+        query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
+        executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0, userName);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("sessionID", sessionID);
