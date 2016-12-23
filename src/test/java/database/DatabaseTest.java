@@ -16,12 +16,15 @@ import static org.junit.Assert.assertTrue;
  */
 public class DatabaseTest {
     public static final String DEVICE_ID = "deviceID_42";
+    public static final String DEVICE_ID_2 = "deviceID_43";
     public static final String SESSION_ID = "sessionID_42";
     public static final String PLAYER_ID = "playerID_42";
     public static final String PLAYER_ID_2 = "playerID_43";
     public static final String USER_JOIN_ID = "user42";
     public static final String MOD_JOIN_ID = "mod42";
     public static final String TOKEN = "token_42";
+    public static final String TOKEN_2 = "token_43";
+
 
 
     @BeforeClass
@@ -35,13 +38,17 @@ public class DatabaseTest {
         executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + USER_JOIN_ID + "';");
         executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + MOD_JOIN_ID + "';");
         executeManipulationQuery("DELETE FROM session WHERE session_id='" + SESSION_ID + "';");
-        executeManipulationQuery("DELETE FROM device WHERE device_id='" + DEVICE_ID + "';");
+        executeManipulationQuery("DELETE FROM device WHERE device_id='" + DEVICE_ID_2 + "';");
         executeManipulationQuery("DELETE FROM device WHERE device_id='" + DEVICE_ID + "';");
     }
 
 
     public static void setupDevice() {
         executeManipulationQuery("INSERT INTO device VALUES ('" + DEVICE_ID + "','" + TOKEN + "');");
+    }
+
+    public static void setupDevice2() {
+        executeManipulationQuery("INSERT INTO device VALUES ('" + DEVICE_ID_2 + "','" + TOKEN_2 + "');");
     }
 
     public static void setupSession() {
