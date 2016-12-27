@@ -51,8 +51,7 @@ public final class Routes {
         setupPlayerRoutes();
         setupGetPlayerRoute();
         setupSessionRoutes();
-
-        // TODO: 23/12/16 Manage players: delete, change name, etc.
+        setupChangeUsername();
     }
 
     /**
@@ -137,10 +136,8 @@ public final class Routes {
      * Creates a player model for all in game requests.
      */
     private static void setupSessionRoutes() {
-        before("/session/:sessionID/*", (request, response) -> {
-            request.attribute("session",
-                    validateSession(request.attribute("device"), request.params("sessionID")));
-        });
+        before("/session/:sessionID/*", (request, response) -> request.attribute("session",
+                validateSession(request.attribute("device"), request.params("sessionID"))));
     }
 
     /**
@@ -240,10 +237,8 @@ public final class Routes {
      * Validates the playerID and stores it in the request attributed for the specific path.
      */
     private static void setupPlayerRoutes() {
-        before("/player/:playerID/*", (request, response) -> {
-            request.attribute("player",
-                    validatePlayer(request.attribute("device"), request.params("playerID")));
-        });
+        before("/player/:playerID/*", (request, response) -> request.attribute("player",
+                validatePlayer(request.attribute("device"), request.params("playerID"))));
     }
 
     /**
@@ -277,7 +272,20 @@ public final class Routes {
         get("/player/:playerID", (request, response) -> {
             Player player = validatePlayer(request.attribute("device"), request.params("playerID"));
 
+            assert player != null;
             return player.toJson();
+        });
+    }
+
+    private static void setupChangeUsername() {
+        put("/player/:playerID/username/:username", (request, response) -> {
+            Player player = request.attribute("player");
+            if (PlayerQueries.setUsername(player, request.params("username"))) {
+                return Player.getPlayer(player.getPlayerID()).toJson();
+            } else {
+                halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Failed to set username.");
+                return null;
+            }
         });
     }
 }

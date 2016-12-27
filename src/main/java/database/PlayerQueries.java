@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
 import static spark.Spark.halt;
 
@@ -169,5 +170,17 @@ public final class PlayerQueries {
         }
 
         return list;
+    }
+
+    /**
+     * Updates the username of a player.
+     *
+     * @param player   The player.
+     * @param username The new username.
+     * @return Whether the update succeeded.
+     */
+    public static boolean setUsername(Player player, String username) {
+        String query = "UPDATE `session_player` SET `username` = ? WHERE `player_id` = ?";
+        return executeManipulationQuery(query, username, player.getPlayerID());
     }
 }
