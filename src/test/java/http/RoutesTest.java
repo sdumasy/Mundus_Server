@@ -45,6 +45,7 @@ public class RoutesTest {
         Spark.stop();
     }
 
+
     /**
      * Method that makes requests and executes them.
      * @param uri The uri with the route that is supposed to be triggered.
@@ -52,12 +53,11 @@ public class RoutesTest {
      * @return An http response object.
      * @throws IOException Throws an exception if the request execution fails.
      */
-    public HttpResponse processRoute(String uri, Device device) throws IOException {
+    public HttpResponse processAuthorizedRoute(String uri, Device device) throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://localhost:4567/" + uri);
+        HttpPost httpPost = new HttpPost("http://localhost:4567" + uri);
         httpPost.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
         return httpClient.execute(httpPost);
-
     }
 
     /**
@@ -70,8 +70,8 @@ public class RoutesTest {
         PowerMockito.mockStatic(Device.class);
         when(Device.newDevice(anyString())).thenReturn(new Device("some_id", "some_token"));
 
-        String uri = "token";
-        HttpResponse response = processRoute(uri, new Device("deviceID", "some_id"));
+        String uri = "/token";
+        HttpResponse response = processAuthorizedRoute(uri, new Device("deviceID", "some_id"));
 
         String result = EntityUtils.toString(response.getEntity());
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
@@ -87,8 +87,8 @@ public class RoutesTest {
         PowerMockito.mockStatic(Device.class);
         when(Device.newDevice(anyString())).thenReturn(null);
 
-        String uri = "token";
-        HttpResponse response = processRoute(uri, new Device("deviceID", "some_id"));
+        String uri = "/token";
+        HttpResponse response = processAuthorizedRoute(uri, new Device("deviceID", "some_id"));
 
         String result = EntityUtils.toString(response.getEntity());
         assertEquals("HTTP/1.1 401 Unauthorized", response.getStatusLine().toString());

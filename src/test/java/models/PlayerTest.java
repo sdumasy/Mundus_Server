@@ -175,14 +175,39 @@ public class PlayerTest {
         DatabaseTest.setupDevice();
         DatabaseTest.setupSession();
 
-        Player player = new Player(DatabaseTest.PLAYER_ID,
+        Player player1 = new Player(DatabaseTest.PLAYER_ID,
                 new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()),
                 new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), Admin, 0, DatabaseTest.ADMIN_USERNAME);
-        assertEquals(player.getSession().getSessionID(), getPlayer(DatabaseTest.PLAYER_ID).getSession().getSessionID());
-        assertEquals(player.getDevice().getDeviceID(), getPlayer(DatabaseTest.PLAYER_ID).getDevice().getDeviceID());
-        assertEquals(player.getRole(), getPlayer(DatabaseTest.PLAYER_ID).getRole());
-        assertEquals(player.getScore(), getPlayer(DatabaseTest.PLAYER_ID).getScore());
-        assertEquals(player.getUsername(), getPlayer(DatabaseTest.PLAYER_ID).getUsername());
+        Player player2 = getPlayer(DatabaseTest.PLAYER_ID);
+
+        assertEquals(player1.getSession().getSessionID(), player2.getSession().getSessionID());
+        assertEquals(player1.getDevice().getDeviceID(), player2.getDevice().getDeviceID());
+        assertEquals(player1.getRole(), player2.getRole());
+        assertEquals(player1.getScore(), player2.getScore());
+        assertEquals(player1.getUsername(), player2.getUsername());
+
+        DatabaseTest.cleanDatabase();
+
+    }
+
+    /**
+     * Test getting a player object by ID.
+     */
+    @Test
+    public void getPlayerTestUsername() {
+        DatabaseTest.setupDevice();
+        DatabaseTest.setupSession();
+
+        Player player1 = new Player(DatabaseTest.PLAYER_ID,
+                new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()),
+                new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), Admin, 0, DatabaseTest.ADMIN_USERNAME);
+        Player player2 = getPlayer(DatabaseTest.SESSION_ID, DatabaseTest.ADMIN_USERNAME);
+
+        assertEquals(player1.getSession().getSessionID(), player2.getSession().getSessionID());
+        assertEquals(player1.getDevice().getDeviceID(), player2.getDevice().getDeviceID());
+        assertEquals(player1.getRole(), player2.getRole());
+        assertEquals(player1.getScore(), player2.getScore());
+        assertEquals(player1.getUsername(), player2.getUsername());
 
         DatabaseTest.cleanDatabase();
 

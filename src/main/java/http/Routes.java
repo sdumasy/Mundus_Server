@@ -64,6 +64,7 @@ public final class Routes {
     /**
      * Convert the body from a request to attributes that can be accessed easily.
      */
+    //Deprecated
     private static void convertJson() {
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.headers("Authorization"));

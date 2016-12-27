@@ -17,19 +17,16 @@ import java.util.Map;
 
 import static database.Database.executeSearchQuery;
 import static database.SessionQueries.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
- * Created by Thomas on 20-12-2016.
+ * Tests the class SessionQueries.
  */
 public class SessionQueriesTest {
     @BeforeClass
     public static void clean() {
         DatabaseTest.cleanDatabase();
     }
-
 
     /**
      * Test whether constructor is private and does not raise any exceptions.
