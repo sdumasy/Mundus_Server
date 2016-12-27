@@ -35,6 +35,7 @@ public final class SessionQueries {
      * user as the administrator to the session.
      *
      * @param device The device that creates the session.
+     * @param userName The username of the admin.
      * @return A JsonObject that contains the generated playerID, modToken and userToken
      */
     public static JsonObject createSession(Device device, String userName) {
@@ -87,6 +88,20 @@ public final class SessionQueries {
     }
 
     /**
+     * Checks whether the given device is a member of the given session.
+     *
+     * @param sessionID The sessionID.
+     * @param device    The device.
+     * @return Whether the device is a member of the session.
+     */
+    public static boolean isMember(String sessionID, Device device) {
+        String query = "SELECT * FROM `session_player` WHERE `session_id` = ? AND `device_id` = ?";
+        List<Map<String, Object>> result = Database.executeSearchQuery(query, sessionID, device.getDeviceID());
+
+        return result.size() > 0;
+    }
+
+    /**
      * Gets the session by ID.
      *
      * @param sessionID Id of the session.
@@ -121,37 +136,6 @@ public final class SessionQueries {
         }
         return executeManipulationQuery(query, status, player.getSession().getSessionID(),
                 player.getPlayerID());
-    }
-
-    /**
-     * Inserts the Authorization token of a device requesting a token in the database.
-     *
-     * @param id    the UUID of the device
-     * @param token the generated authorization token for the device
-     * @return <code>true</code> if successfully added, otherwise <code>false</code>
-     */
-    protected static boolean insertAuthorizationToken(String id, String token) {
-        String sql = "INSERT INTO `device` VALUES(?, ?)";
-        return executeManipulationQuery(sql, id, token);
-    }
-
-    /**
-     * Get a device token by ID.
-     *
-     * @param deviceID The device which token should be recovered
-     * @return The token
-     */
-    public static String selectAuthorizationToken(String deviceID) {
-        String query = "SELECT `auth_token` FROM `device` WHERE `device_id` = ?";
-        List<Map<String, Object>> result = executeSearchQuery(query, deviceID);
-        if (result.size() == 1) {
-            return result.get(0).get("auth_token").toString();
-        } else if (result.size() == 0) {
-            return null;
-        } else {
-            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
-        }
-        return null;
     }
 
     /**

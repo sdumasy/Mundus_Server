@@ -3,7 +3,7 @@ package models;
 import com.google.gson.JsonObject;
 import database.CreateUniqueIDs;
 
-import static database.SessionQueries.selectAuthorizationToken;
+import static database.AuthenticationTokenQueries.selectAuthorizationToken;
 
 /**
  * Model of a users device.

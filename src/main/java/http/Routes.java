@@ -1,8 +1,10 @@
 package http;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import database.PlayerQueries;
 import database.SessionQueries;
 import models.Device;
 import models.Player;
@@ -12,6 +14,7 @@ import spark.Request;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,12 +40,18 @@ public final class Routes {
         setupWebsocketRoutes();
         convertJson();
         setupTokenValidation();
+
         setupCreateSessionRoute();
-        setupJoinSessionRoutes();
-        setupGetPlayerRoute();
-        setupGetScoreRoute();
-        setupInGameRoutes();
+        setupJoinSessionRoute();
+        setupGetSessionRoute();
+        setupGetSessionScoresRoute();
         setupSessionManagementRoutes();
+
+        setupGetAllPlayersOfDevice();
+        setupPlayerRoutes();
+        setupGetPlayerRoute();
+        setupSessionRoutes();
+
         // TODO: 23/12/16 Manage players: delete, change name, etc.
     }
 
@@ -58,11 +67,14 @@ public final class Routes {
      */
     private static void convertJson() {
         before((request, response) -> {
+            Logger.getGlobal().log(Level.INFO, request.headers("Authorization"));
             Type type = new TypeToken<HashMap<String, Object>>() {
             }.getType();
             HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
-            for (Map.Entry<String, Object> e : map.entrySet()) {
-                request.attribute(e.getKey(), e.getValue().toString());
+            if (map != null) {
+                for (Map.Entry<String, Object> e : map.entrySet()) {
+                    request.attribute(e.getKey(), e.getValue().toString());
+                }
             }
         });
     }
@@ -72,7 +84,7 @@ public final class Routes {
      */
     private static void setupTokenValidation() {
         post("/token", (request, response) -> {
-            Device device = Device.newDevice(request.attribute("deviceID"));
+            Device device = Device.newDevice(request.headers("Authorization").split(":")[0]);
             if (device != null) {
                 return device.toJson();
             } else {
@@ -82,10 +94,10 @@ public final class Routes {
         });
 
         before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri()
-                    + ", body: " + request.body());
+            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
             if (!request.uri().equals("/token")) {
-                Device device = new Device(request.attribute("deviceID"), request.attribute("token"));
+                String[] stringArray = request.headers("Authorization").split(":");
+                Device device = new Device(stringArray[0], stringArray[1]);
                 if (!device.authenticate()) {
                     halt(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
                 } else {
@@ -101,17 +113,17 @@ public final class Routes {
      * Setup the route that allows the creation of a new session.
      */
     private static void setupCreateSessionRoute() {
-        post("/session/create", (request, response) ->
-                createSession(request.attribute("device"), request.attribute("username")));
+        post("/createSession/username/:username", (request, response) ->
+                createSession(request.attribute("device"), request.params("username")));
     }
 
     /**
      * Setup the route that allows clients to join a session.
      */
-    private static void setupJoinSessionRoutes() {
-        post("/session/join", (request, response) -> {
-            Player player = playerJoinSession(request.attribute("joinToken"),
-                    request.attribute("device"), request.attribute("username"));
+    private static void setupJoinSessionRoute() {
+        post("/joinSession/:joinToken/username/:username", (request, response) -> {
+            Player player = playerJoinSession(request.params("joinToken"),
+                    request.attribute("device"), request.params("username"));
             if (player != null) {
                 return player.toJson();
             } else {
@@ -124,25 +136,34 @@ public final class Routes {
     /**
      * Creates a player model for all in game requests.
      */
-    private static void setupInGameRoutes() {
+    private static void setupSessionRoutes() {
         before("/session/:sessionID/*", (request, response) -> {
-            String playerID = request.attribute("playerID");
-            Device device = request.attribute("device");
-            if (playerID != null && device != null) {
-                Player player = Player.getPlayer(playerID);
-                if (player.getDevice().equals(device)
-                        && player.getSession().getSessionID().equals(request.params("sessionID"))) {
-                    request.attribute("player", player);
-                } else {
-                    halt(HttpStatus.UNAUTHORIZED_401, "Invalid deviceID,sessionID, or playerID.");
-                }
-                if (player.getSession().getStatus() != 1) {
-                    halt(HttpStatus.LOCKED_423, "Session is paused or stopped.");
-                }
-            } else {
-                halt(HttpStatus.BAD_REQUEST_400, "Invalid playerID or deviceID.");
-            }
+            request.attribute("session",
+                    validateSession(request.attribute("device"), request.params("sessionID")));
         });
+    }
+
+    /**
+     * Validates that the given device is a member of the given sessionID.
+     *
+     * @param device    The users device.
+     * @param sessionID The given sessionID.
+     * @return Whether the sessionID corresponds with the device.
+     */
+    private static Session validateSession(Device device, String sessionID) {
+        if (sessionID != null && device != null) {
+            Session session = Session.getSession(sessionID);
+            if (isMember(sessionID, device)) {
+                return session;
+            } else {
+                halt(HttpStatus.BAD_REQUEST_400,
+                        "You are trying to access a session that you are not a member of.");
+            }
+        } else {
+            halt(HttpStatus.BAD_REQUEST_400, "Invalid sessionID or deviceID.");
+        }
+        //Unreachable code, halt() will stop request.
+        return null;
     }
 
     /**
@@ -150,11 +171,15 @@ public final class Routes {
      * The client needs to provide a player ID.
      * There is no role verification as everyone should be able to request any players score.
      */
-    private static void setupGetPlayerRoute() {
-        post("/session/:sessionID/player", (request, response) -> {
-            Player player = Player.getPlayer(request.attribute("playerID"));
-
-            return player.toJson();
+    private static void setupGetSessionRoute() {
+        get("/session/:session", (request, response) -> {
+            Session session = validateSession(request.attribute("device"), request.params("sessionID"));
+            if (session != null) {
+                return session.toJson();
+            } else {
+                //Unreachable code, session can not be null.
+                return null;
+            }
         });
     }
 
@@ -163,8 +188,8 @@ public final class Routes {
      * The client needs to provide a session ID.
      * There is no role verification as everyone should be able to request any players score.
      */
-    private static void setupGetScoreRoute() {
-        post("/session/:sessionID/score", (request, response) -> getScores(request.params("sessionID")));
+    private static void setupGetSessionScoresRoute() {
+        post("/session/:sessionID/scores", (request, response) -> getScores(request.params("sessionID")));
     }
 
     /**
@@ -172,16 +197,17 @@ public final class Routes {
      */
     private static void setupSessionManagementRoutes() {
         before("/session/:sessionID/manage/*", (request, response) -> {
-            if (!((Player) request.attribute("player")).isAdmin()) {
+            if (((Session) request.attribute("session")).getAdminID()
+                    .equals(((Device) request.attribute("device")).getDeviceID())) {
                 halt(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
             }
         });
 
-        post("/session/:sessionID/play", (request, response) -> updateSessionStatus(request, 1));
+        post("/session/:sessionID/manage/play", (request, response) -> updateSessionStatus(request, 1));
 
-        post("/session/:sessionID/pause", (request, response) -> updateSessionStatus(request, 2));
+        post("/session/:sessionID/manage/pause", (request, response) -> updateSessionStatus(request, 2));
 
-        post("/session/:sessionID/delete", (request, response) -> updateSessionStatus(request, 0));
+        post("/session/:sessionID/manage/delete", (request, response) -> updateSessionStatus(request, 0));
     }
 
     /**
@@ -196,6 +222,63 @@ public final class Routes {
         SessionQueries.updateSessionStatus(player, status);
 
         return Session.getSession(player.getSession().getSessionID()).toJson();
+    }
+
+    private static void setupGetAllPlayersOfDevice() {
+        get("/player/all", (request, response) -> {
+            List<Player> list = PlayerQueries.getAllPlayers(request.attribute("device"));
+
+            JsonArray jsonArray = new JsonArray();
+            for (Player player : list) {
+                jsonArray.add(player.toJson());
+            }
+            return jsonArray;
+        });
+    }
+
+    /**
+     * Validates the playerID and stores it in the request attributed for the specific path.
+     */
+    private static void setupPlayerRoutes() {
+        before("/player/:playerID/*", (request, response) -> {
+            request.attribute("player",
+                    validatePlayer(request.attribute("device"), request.params("playerID")));
+        });
+    }
+
+    /**
+     * Validates that the given playerID is from the given device.
+     *
+     * @param device   The users device.
+     * @param playerID The given playerID.
+     * @return Whether the playerID corresponds with the device.
+     */
+    private static Player validatePlayer(Device device, String playerID) {
+        if (playerID != null && device != null) {
+            Player player = Player.getPlayer(playerID);
+            if (player.getDevice().equals(device)) {
+                return player;
+            } else {
+                halt(HttpStatus.BAD_REQUEST_400, "You are trying to access a player that is not yours.");
+            }
+        } else {
+            halt(HttpStatus.BAD_REQUEST_400, "Invalid playerID or deviceID.");
+        }
+        //Unreachable code, halt() will stop request.
+        return null;
+    }
+
+    /**
+     * Setup the route that allows clients to get their scores.
+     * The client needs to provide a player ID.
+     * There is no role verification as everyone should be able to request any players score.
+     */
+    private static void setupGetPlayerRoute() {
+        get("/player/:playerID", (request, response) -> {
+            Player player = validatePlayer(request.attribute("device"), request.params("playerID"));
+
+            return player.toJson();
+        });
     }
 }
 
