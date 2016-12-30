@@ -5,6 +5,7 @@ import models.Device;
 import models.Player;
 import models.Role;
 import models.Session;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,6 +26,11 @@ import static org.junit.Assert.*;
 public class SessionQueriesTest {
     @BeforeClass
     public static void clean() {
+        DatabaseTest.cleanDatabase();
+    }
+
+    @After
+    public void tearDown() throws Exception {
         DatabaseTest.cleanDatabase();
     }
 
@@ -143,5 +149,19 @@ public class SessionQueriesTest {
         } finally {
             DatabaseTest.cleanDatabase();
         }
+    }
+
+    /**
+     * Tests isMember method.
+     */
+    @Test
+    public void isMemberTest() {
+        Device device = DatabaseTest.setupDevice();
+        Device device2 = DatabaseTest.setupDevice2();
+        DatabaseTest.setupSession();
+
+        assertTrue(SessionQueries.isMember(DatabaseTest.SESSION_ID, device));
+        assertFalse(SessionQueries.isMember(DatabaseTest.SESSION_ID, device2));
+
     }
 }

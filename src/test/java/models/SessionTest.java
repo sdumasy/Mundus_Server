@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 import static models.Session.getSession;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Tests the session class.
@@ -68,6 +69,58 @@ public class SessionTest {
         assertEquals(adminID, jsonObject.get("adminID").getAsString());
         assertEquals(status, jsonObject.get("status").getAsInt());
         assertEquals(created.toString(), jsonObject.get("created").getAsString());
+    }
+
+    @Test
+    public void equalsSelfTest() throws Exception {
+        assertEquals(session, session);
+    }
+
+    @Test
+    public void equalsSameTest() throws Exception {
+        Session session2 = new Session(sessionID, adminID, status, created);
+        assertEquals(session, session2);
+    }
+
+    @Test
+    public void equalsOtherTest() throws Exception {
+        Session session2 = new Session("other", adminID, status, created);
+        assertNotEquals(session, session2);
+    }
+
+    @Test
+    public void equalsOtherTest2() throws Exception {
+        Session session2 = new Session(sessionID, "other", status, created);
+        assertNotEquals(session, session2);
+    }
+
+    @Test
+    public void equalsOtherTest3() throws Exception {
+        Session session2 = new Session(sessionID, adminID, Integer.MAX_VALUE, created);
+        assertNotEquals(session, session2);
+    }
+
+    @Test
+    public void equalsOtherTest4() throws Exception {
+        Session session2 = new Session(sessionID, adminID, status, LocalDateTime.MAX);
+        assertNotEquals(session, session2);
+    }
+
+    @Test
+    public void hashCodeSelfTest() throws Exception {
+        assertEquals(session.hashCode(), session.hashCode());
+    }
+
+    @Test
+    public void hashCodeSameTest() throws Exception {
+        Session session2 = new Session(sessionID, adminID, status, created);
+        assertEquals(session.hashCode(), session2.hashCode());
+    }
+
+    @Test
+    public void hashCodeTest() throws Exception {
+        Session session2 = new Session("other", adminID, status, created);
+        assertNotEquals(session.hashCode(), session2.hashCode());
     }
 
 }

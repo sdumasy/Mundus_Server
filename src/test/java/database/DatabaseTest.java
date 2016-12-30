@@ -71,6 +71,11 @@ public class DatabaseTest {
         executeManipulationQuery(query, PLAYER_ID, DEVICE_ID, SESSION_ID, 0, 0, ADMIN_USERNAME);
     }
 
+    public static void setupPlayer() {
+        String query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
+        executeManipulationQuery(query, PLAYER_ID_2, DEVICE_ID, SESSION_ID, 1, 0, USERNAME);
+    }
+
 
     /**
      * Test whether constructor is private and does not raise any exceptions.

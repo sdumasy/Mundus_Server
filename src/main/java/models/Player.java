@@ -180,4 +180,56 @@ public class Player {
         jsonObject.addProperty("username", username);
         return jsonObject;
     }
+
+    /**
+     * The equals method of player.
+     *
+     * @param o The other object to compare with.
+     * @return Whether they are equal.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Player player = (Player) o;
+
+        if (!playerID.equals(player.playerID)) {
+            return false;
+        }
+        if (!username.equals(player.username)) {
+            return false;
+        }
+        if (!session.equals(player.session)) {
+            return false;
+        }
+        if (!device.equals(player.device)) {
+            return false;
+        }
+        if (role != player.role) {
+            return false;
+        }
+        return score.equals(player.score);
+    }
+
+    /**
+     * Hashcode method of player.
+     *
+     * @return The hashcode.
+     */
+    @SuppressWarnings("checkstyle:magicnumber") //31 is defined by intellij.
+    @Override
+    public int hashCode() {
+        int result = playerID.hashCode();
+        result = 31 * result + username.hashCode();
+        result = 31 * result + session.hashCode();
+        result = 31 * result + device.hashCode();
+        result = 31 * result + role.hashCode();
+        result = 31 * result + score.hashCode();
+        return result;
+    }
 }

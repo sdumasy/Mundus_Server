@@ -1,5 +1,6 @@
 package database;
 
+import models.Device;
 import models.Player;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -7,13 +8,15 @@ import org.junit.Test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import static database.PlayerQueries.getPlayer;
+import static database.PlayerQueries.setUsername;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by Thomas on 23-12-2016.
+ * Tests the player queries.
  */
 public class PlayerQueriesTest {
     @BeforeClass
@@ -64,6 +67,45 @@ public class PlayerQueriesTest {
             Player player = getPlayer(DatabaseTest.PLAYER_ID);
 
             assertEquals(DatabaseTest.ADMIN_USERNAME, player.getUsername());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
+    }
+
+    /**
+     * Tests retrieving all players of a device.
+     */
+    @Test
+    public void getAllPlayersTest() {
+        try {
+            Device device = DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+            DatabaseTest.setupPlayer();
+            List<Player> list = PlayerQueries.getAllPlayers(device);
+
+            assertEquals(2, list.size());
+            assertTrue(list.contains(getPlayer(DatabaseTest.PLAYER_ID)));
+            assertTrue(list.contains(getPlayer(DatabaseTest.PLAYER_ID_2)));
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
+    }
+
+    /**
+     * Tests setting the username of a player.
+     */
+    @Test
+    public void setUsernameTest() {
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+            Player player = getPlayer(DatabaseTest.PLAYER_ID);
+
+            assertEquals(getPlayer(player.getPlayerID()).getUsername(), DatabaseTest.ADMIN_USERNAME);
+
+            setUsername(player, DatabaseTest.USERNAME);
+
+            assertEquals(getPlayer(player.getPlayerID()).getUsername(), DatabaseTest.USERNAME);
         } finally {
             DatabaseTest.cleanDatabase();
         }

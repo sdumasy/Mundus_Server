@@ -88,7 +88,7 @@ public final class PlayerQueries {
         if (!playerExists(player) && !playerIDExists(player.getPlayerID())) {
             if (!usernameExists(player.getUsername(), player.getSession().getSessionID())) {
                 String query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
-                return Database.executeManipulationQuery(query, player.getPlayerID(), player.getDevice().getDeviceID(),
+                return executeManipulationQuery(query, player.getPlayerID(), player.getDevice().getDeviceID(),
                         player.getSession().getSessionID(), player.getRoleID(),
                         player.getScore(), player.getUsername());
             } else {

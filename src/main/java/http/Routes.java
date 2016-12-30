@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import database.PlayerQueries;
-import database.SessionQueries;
 import models.Device;
 import models.Player;
 import models.Session;
@@ -201,11 +200,11 @@ public final class Routes {
             }
         });
 
-        post("/session/:sessionID/manage/play", (request, response) -> updateSessionStatus(request, 1));
+        put("/session/:sessionID/manage/play", (request, response) -> setSessionStatus(request, 1));
 
-        post("/session/:sessionID/manage/pause", (request, response) -> updateSessionStatus(request, 2));
+        put("/session/:sessionID/manage/pause", (request, response) -> setSessionStatus(request, 2));
 
-        post("/session/:sessionID/manage/delete", (request, response) -> updateSessionStatus(request, 0));
+        delete("/session/:sessionID/manage/delete", (request, response) -> setSessionStatus(request, 0));
     }
 
     /**
@@ -215,9 +214,9 @@ public final class Routes {
      * @param status  Status to change the session to.
      * @return SessionID and status.
      */
-    private static JsonObject updateSessionStatus(Request request, int status) {
+    private static JsonObject setSessionStatus(Request request, int status) {
         Player player = request.attribute("player");
-        SessionQueries.updateSessionStatus(player, status);
+        updateSessionStatus(player, status);
 
         return Session.getSession(player.getSession().getSessionID()).toJson();
     }

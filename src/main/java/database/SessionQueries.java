@@ -21,6 +21,7 @@ import static spark.Spark.halt;
 /**
  * Contains the sql queries for the sessions.
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
 public final class SessionQueries {
 
     /**
@@ -96,7 +97,7 @@ public final class SessionQueries {
      */
     public static boolean isMember(String sessionID, Device device) {
         String query = "SELECT * FROM `session_player` WHERE `session_id` = ? AND `device_id` = ?";
-        List<Map<String, Object>> result = Database.executeSearchQuery(query, sessionID, device.getDeviceID());
+        List<Map<String, Object>> result = executeSearchQuery(query, sessionID, device.getDeviceID());
 
         return result.size() > 0;
     }
