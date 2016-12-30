@@ -1,5 +1,6 @@
 package database;
 
+import models.Device;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -36,6 +37,8 @@ public class DatabaseTest {
     public static void cleanDatabase() {
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID_2 + "';");
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID + "';");
+        executeManipulationQuery("DELETE FROM session_player WHERE device_id='" + DEVICE_ID + "';");
+        executeManipulationQuery("DELETE FROM session_player WHERE device_id='" + DEVICE_ID + "';");
         executeManipulationQuery("DELETE FROM session_player WHERE username='" + USERNAME + "';");
         executeManipulationQuery("DELETE FROM session_player WHERE username='" + ADMIN_USERNAME + "';");
         executeManipulationQuery("DELETE FROM session_token WHERE join_token='" + USER_JOIN_ID + "';");
@@ -46,12 +49,14 @@ public class DatabaseTest {
     }
 
 
-    public static void setupDevice() {
+    public static Device setupDevice() {
         executeManipulationQuery("INSERT INTO device VALUES ('" + DEVICE_ID + "','" + TOKEN + "');");
+        return new Device(DEVICE_ID, TOKEN);
     }
 
-    public static void setupDevice2() {
+    public static Device setupDevice2() {
         executeManipulationQuery("INSERT INTO device VALUES ('" + DEVICE_ID_2 + "','" + TOKEN_2 + "');");
+        return new Device(DEVICE_ID_2, TOKEN_2);
     }
 
     public static void setupSession() {

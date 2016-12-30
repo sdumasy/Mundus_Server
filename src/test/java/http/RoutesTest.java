@@ -2,11 +2,9 @@ package http;
 
 import application.App;
 import models.Device;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
@@ -30,7 +28,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by Thomas on 15-12-2016.
+ * Tests the Routes class.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Device.class)
@@ -47,20 +45,19 @@ public class RoutesTest {
         Spark.stop();
     }
 
+
     /**
      * Method that makes requests and executes them.
      * @param uri The uri with the route that is supposed to be triggered.
-     * @param json The json body attributes
-     * @return An http response object
+     * @param device The json device making the request.
+     * @return An http response object.
      * @throws IOException Throws an exception if the request execution fails.
      */
-    public HttpResponse processRoute(String uri, String json) throws IOException {
+    public HttpResponse processAuthorizedRoute(String uri, Device device) throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://localhost:4567/" + uri);
-        HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
-        httpPost.setEntity(entity);
+        HttpPost httpPost = new HttpPost("http://localhost:4567" + uri);
+        httpPost.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
         return httpClient.execute(httpPost);
-
     }
 
     /**
@@ -73,9 +70,8 @@ public class RoutesTest {
         PowerMockito.mockStatic(Device.class);
         when(Device.newDevice(anyString())).thenReturn(new Device("some_id", "some_token"));
 
-        String uri = "token";
-        String json = "{\"deviceID\" : \"" + "some_id" + "\"}";
-        HttpResponse response = processRoute(uri, json);
+        String uri = "/token";
+        HttpResponse response = processAuthorizedRoute(uri, new Device("deviceID", "some_id"));
 
         String result = EntityUtils.toString(response.getEntity());
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
@@ -91,9 +87,8 @@ public class RoutesTest {
         PowerMockito.mockStatic(Device.class);
         when(Device.newDevice(anyString())).thenReturn(null);
 
-        String uri = "token";
-        String json = "{\"deviceID\" : \"" + "some_id" + "\"}";
-        HttpResponse response = processRoute(uri, json);
+        String uri = "/token";
+        HttpResponse response = processAuthorizedRoute(uri, new Device("deviceID", "some_id"));
 
         String result = EntityUtils.toString(response.getEntity());
         assertEquals("HTTP/1.1 401 Unauthorized", response.getStatusLine().toString());

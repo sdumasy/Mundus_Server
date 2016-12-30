@@ -6,9 +6,11 @@ import models.Role;
 import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
 import static spark.Spark.halt;
 
@@ -107,7 +109,7 @@ public final class PlayerQueries {
      */
     public static Player getPlayer(String playerID) {
         String query = "SELECT * FROM `session_player` WHERE `player_id` = ?";
-        return createPlayer(executeSearchQuery(query, playerID));
+        return createSinglePlayer(executeSearchQuery(query, playerID));
     }
 
 
@@ -120,7 +122,7 @@ public final class PlayerQueries {
      */
     public static Player getPlayer(String sessionID, String username) {
         String query = "SELECT * FROM `session_player` WHERE `session_id` = ? AND `username` = ?";
-        return createPlayer(executeSearchQuery(query, sessionID, username));
+        return createSinglePlayer(executeSearchQuery(query, sessionID, username));
     }
 
     /**
@@ -129,17 +131,56 @@ public final class PlayerQueries {
      * @param list The database response.
      * @return The player.
      */
-    protected static Player createPlayer(List<Map<String, Object>> list) {
+    protected static Player createSinglePlayer(List<Map<String, Object>> list) {
         if (list.size() == 1) {
-            Map<String, Object> map = list.get(0);
-            return new Player(map.get("player_id").toString(), Session.getSession(map.get("session_id").toString()),
-                    Device.getDevice(map.get("device_id").toString()),
-                    Role.getById((int) map.get("role_id")), (int) map.get("score"), map.get("username").toString());
+            return createPlayer(list.get(0));
         } else if (list.size() == 0) {
             halt(HttpStatus.UNAUTHORIZED_401, "No player found.");
         } else {
             halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Player not unique.");
         }
         return null;
+    }
+
+    /**
+     * Creates a player from a map containing the player data.
+     *
+     * @param map The map containing the data.
+     * @return The created Player.
+     */
+    protected static Player createPlayer(Map<String, Object> map) {
+        return new Player(map.get("player_id").toString(), Session.getSession(map.get("session_id").toString()),
+                Device.getDevice(map.get("device_id").toString()),
+                Role.getById((int) map.get("role_id")), (int) map.get("score"), map.get("username").toString());
+    }
+
+    /**
+     * Retrieves all players from a specific device.
+     *
+     * @param device The device.
+     * @return A list with all the players.
+     */
+    public static List<Player> getAllPlayers(Device device) {
+        String query = "SELECT * FROM `session_player` WHERE `device_id` = ?";
+        List<Map<String, Object>> result = executeSearchQuery(query, device.getDeviceID());
+        List<Player> list = new ArrayList<>();
+
+        for (Map<String, Object> map : result) {
+            list.add(createPlayer(map));
+        }
+
+        return list;
+    }
+
+    /**
+     * Updates the username of a player.
+     *
+     * @param player   The player.
+     * @param username The new username.
+     * @return Whether the update succeeded.
+     */
+    public static boolean setUsername(Player player, String username) {
+        String query = "UPDATE `session_player` SET `username` = ? WHERE `player_id` = ?";
+        return executeManipulationQuery(query, username, player.getPlayerID());
     }
 }

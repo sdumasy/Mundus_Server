@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import static database.AuthenticationTokenQueries.insertAuthorizationToken;
 import static database.Database.executeSearchQuery;
-import static database.SessionQueries.insertAuthorizationToken;
 
 /**
  * Creates unique tokens.
