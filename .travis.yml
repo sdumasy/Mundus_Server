@@ -1,3 +1,13 @@
 language: java
 notifications:
   email: false
+
+jdk:
+  - oraclejdk8
+
+services:
+  - mysql
+
+before_script:
+  - mysql -u root -e 'CREATE DATABASE mundus;'
+  - mysql -u root mundus < mundus.sql
