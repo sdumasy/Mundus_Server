@@ -147,7 +147,7 @@ public final class Routes {
      * @param sessionID The given sessionID.
      * @return Whether the sessionID corresponds with the device.
      */
-    private static Session validateSession(Device device, String sessionID) {
+    protected static Session validateSession(Device device, String sessionID) {
         if (sessionID != null && device != null) {
             Session session = Session.getSession(sessionID);
             if (isMember(sessionID, device)) {

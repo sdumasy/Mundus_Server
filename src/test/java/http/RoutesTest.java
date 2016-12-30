@@ -1,7 +1,10 @@
 package http;
 
 import application.App;
+import database.DatabaseTest;
+import database.SessionQueries;
 import models.Device;
+import models.Session;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -9,19 +12,24 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import spark.HaltException;
 import spark.Spark;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.time.LocalDateTime;
 
+import static http.Routes.validateSession;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
@@ -31,7 +39,7 @@ import static org.mockito.Mockito.when;
  * Tests the Routes class.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(Device.class)
+@PrepareForTest({Device.class, SessionQueries.class})
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesTest {
 
@@ -44,6 +52,9 @@ public class RoutesTest {
     public static void afterClass() {
         Spark.stop();
     }
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
 
     /**
@@ -94,70 +105,40 @@ public class RoutesTest {
         assertEquals("HTTP/1.1 401 Unauthorized", response.getStatusLine().toString());
     }
 
-//    //TODO: Fix create
-//    @Test
-//    public void createSessionTest() throws IOException {
-//        JsonObject jsonObject = null;
-//        try {
-//            HttpClient httpClient = HttpClients.createDefault();
-//
-//            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/create");
-//            String token = createToken(deviceID);
-//            String json = "{\"deviceID\" : \"" + deviceID + "\", \"token\" : \"" + token + "\"}";
-//
-//            HttpEntity entity = new ByteArrayEntity(json.getBytes("UTF-8"));
-//            httpPost.setEntity(entity);
-//            HttpResponse response = httpClient.execute(httpPost);
-//            JsonParser jsonParser = new JsonParser();
-//            jsonObject = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
-//            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
-//        } finally {
-//            if(jsonObject != null) {
-//                tearDownSession(jsonObject);
-//            }
-//            tearDown();
-//        }
-//    }
+    @Test
+    public void validateSessionTest() throws IOException {
+        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
+        Session session1 = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
 
-//    @Test
-//    public void joinSessionTest() throws IOException {
-//        JsonObject jsonObject1 = null;
-//        JsonObject jsonObject2 = null;
-//        try {
-//            createToken(deviceID);
-//            String token2 = createToken(deviceID2);
-//            jsonObject1 = createSession(deviceID);
-//            String joinToken = jsonObject1.get("userToken").getAsString();
-//
-//            HttpClient httpClient = HttpClients.createDefault();
-//            HttpPost httpPost = new HttpPost("https://expeditionmundus.herokuapp.com/session/join");
-////            String json = "{\"deviceID\" : \"" + deviceID2 + "\", \"token\" : \"" + token2 + "\", \"joinToken\" : \""
-////                    + joinToken + "\"}";
-//
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.addProperty("deviceID", deviceID2);
-//            jsonObject.addProperty("token", token2);
-//            jsonObject.addProperty("joinToken", joinToken);
-//
-//            HttpEntity entity = new ByteArrayEntity(jsonObject.toString().getBytes("UTF-8"));
-//            httpPost.setEntity(entity);
-//            HttpResponse response = httpClient.execute(httpPost);
-//            JsonParser jsonParser = new JsonParser();
-//
-//            jsonObject2 = (JsonObject) jsonParser.parse(EntityUtils.toString(response.getEntity()));
-//
-//            assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
-//        } finally {
-//            if (jsonObject2 != null) {
-//                tearDownExtraPlayer(jsonObject2);
-//            }
-//            if (jsonObject1 != null) {
-//                tearDownSession(jsonObject1);
-//            }
-//            tearDown();
-//        }
-//
-//    }
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(session1);
+        when(SessionQueries.isMember(DatabaseTest.SESSION_ID, device)).thenReturn(true);
+
+        Session session2 = validateSession(device, DatabaseTest.SESSION_ID);
+        assertEquals(session1, session2);
+    }
+
+    @Test
+    public void validateSessionFalseTest() throws IOException {
+        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
+
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(null);
+        when(SessionQueries.isMember(DatabaseTest.SESSION_ID, device)).thenReturn(false);
+
+        exception.expect(HaltException.class);
+        validateSession(device, DatabaseTest.SESSION_ID);
+
+    }
+
+    @Test
+    public void validateSessionFalseTest2() throws IOException {
+        Device device = new Device(null, null);
+
+        exception.expect(HaltException.class);
+        validateSession(device, null);
+
+    }
 
     /**
      * Test whether constructor is private and does not raise any exceptions.
