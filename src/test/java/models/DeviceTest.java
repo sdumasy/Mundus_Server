@@ -119,6 +119,11 @@ public class DeviceTest {
     }
 
     @Test
+    public void equalsOtherTest3() throws Exception {
+        assertNotEquals(device, null);
+    }
+
+    @Test
     public void hashCodeTest() throws Exception {
         Device device2 = new Device(deviceID, token);
         assertEquals(device.hashCode(), device2.hashCode());

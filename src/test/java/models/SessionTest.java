@@ -107,6 +107,11 @@ public class SessionTest {
     }
 
     @Test
+    public void equalsOtherTest5() throws Exception {
+        assertNotEquals(session, null);
+    }
+
+    @Test
     public void hashCodeSelfTest() throws Exception {
         assertEquals(session.hashCode(), session.hashCode());
     }
