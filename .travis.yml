@@ -11,3 +11,6 @@ services:
 before_script:
   - mysql -u root -e 'CREATE DATABASE mundus;'
   - mysql -u root mundus < mundus.sql
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
