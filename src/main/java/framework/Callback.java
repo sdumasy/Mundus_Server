@@ -1,7 +1,7 @@
 package framework;
 
 import com.google.gson.JsonObject;
-import models.Player;
+import models.Device;
 
 import java.util.Map;
 
@@ -12,9 +12,9 @@ public interface Callback {
     /**
      * A method that is called when the corresponding path is called.
      *
-     * @param player The Player who makes the call.
+     * @param device The Player who makes the call.
      * @param map    A map of the given data in the body.
      * @return A Json response.
      */
-    JsonObject execute(Player player, Map<String, Object> map);
+    JsonObject execute(Device device, Map<String, Object> map);
 }

@@ -51,7 +51,7 @@ public final class Routes {
      * Setup the route that allows the use of websockets.
      */
     private static void setupWebsocketRoutes() {
-        webSocket("/echo", EchoWebSocket.class);
+        webSocket("/socket/time", TimeWebSocket.class);
     }
 
     /**
@@ -70,7 +70,7 @@ public final class Routes {
 
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
-            if (!request.uri().equals("/token")) {
+            if (!request.uri().equals("/token") && !request.uri().startsWith("/socket/")) { // TODO: 04/01/17 remove socket surpassing validation.
                 String[] stringArray = request.headers("Authorization").split(":");
                 Device device = new Device(stringArray[0], stringArray[1]);
                 if (!device.authenticate()) {

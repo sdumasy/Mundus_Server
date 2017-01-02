@@ -1,23 +1,41 @@
 package http;
 
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Creates a WebSocket connection which sends the same message back.
+ * Creates a WebSocket connection which sends the current time to al subscribers.
  */
 @WebSocket
-public class EchoWebSocket {
+public class TimeWebSocket {
 
-    // Store SESSIONS if you want to, for example, broadcast a message to all users
     private static final Queue<Session> SESSIONS = new ConcurrentLinkedQueue<>();
+
+    /**
+     * Sends a message to all the sessions.
+     *
+     * @param message the message to be sent.
+     */
+    public static void send(String message) {
+        for (Session session : SESSIONS) {
+            try {
+                session.getRemote().sendString(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (WebSocketException e) {
+                Logger.getGlobal().log(Level.WARNING, e.getMessage());
+            }
+        }
+    }
 
     /**
      * Adds a session to the connected websockets.
@@ -39,19 +57,6 @@ public class EchoWebSocket {
     @OnWebSocketClose
     public void closed(Session session, int statusCode, String reason) {
         SESSIONS.remove(session);
-    }
-
-    /**
-     * Receives a message over the websocket.
-     *
-     * @param session The session it receives it from.
-     * @param message The message received.
-     * @throws IOException Could fail at sending it back.
-     */
-    @OnWebSocketMessage
-    public void message(Session session, String message) throws IOException {
-        System.out.println("Got: " + message);   // Print message
-        session.getRemote().sendString(message); // and send it back
     }
 
 }
