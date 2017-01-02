@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 import static models.Session.getSession;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
 /**
@@ -108,7 +109,12 @@ public class SessionTest {
 
     @Test
     public void equalsOtherTest5() throws Exception {
-        assertNotEquals(session, null);
+        assertFalse(session.equals(null));
+    }
+
+    @Test
+    public void equalsOtherTest6() throws Exception {
+        assertFalse(session.equals(""));
     }
 
     @Test

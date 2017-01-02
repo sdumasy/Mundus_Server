@@ -88,6 +88,12 @@ public class DeviceTest {
     }
 
     @Test
+    public void authenticateTestNull() throws Exception {
+        Device device = new Device("device", null);
+        assertFalse(device.authenticate());
+    }
+
+    @Test
     public void toJsonTest() throws Exception {
         JsonObject jsonObject = device.toJson();
 
@@ -120,7 +126,12 @@ public class DeviceTest {
 
     @Test
     public void equalsOtherTest3() throws Exception {
-        assertNotEquals(device, null);
+        assertFalse(device.equals(null));
+    }
+
+    @Test
+    public void equalsOtherTest4() throws Exception {
+        assertFalse(device.equals(""));
     }
 
     @Test

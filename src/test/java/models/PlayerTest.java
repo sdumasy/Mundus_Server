@@ -2,34 +2,23 @@ package models;
 
 import com.google.gson.JsonObject;
 import database.DatabaseTest;
-import database.PlayerQueries;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import spark.HaltException;
 
 import java.time.LocalDateTime;
 
 import static database.Database.executeManipulationQuery;
 import static models.Player.getPlayer;
-import static models.Role.Admin;
-import static models.Role.Moderator;
-import static models.Role.getById;
+import static models.Role.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 /**
  * Test of the player class.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({PlayerQueries.class})
 public class PlayerTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -104,19 +93,6 @@ public class PlayerTest {
         } finally {
             DatabaseTest.cleanDatabase();
         }
-    }
-
-    /**
-     * Test addition of a new Player to a session.
-     */
-    @Test
-    public void newPlayerDuplicateTest2() {
-        PowerMockito.mockStatic(PlayerQueries.class);
-        when(PlayerQueries.addNewPlayer(any())).thenReturn(false);
-        Player newPlayer = Player.newPlayer(
-                new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()), 0,
-                new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42, DatabaseTest.USERNAME);
-        assertNull(newPlayer);
     }
 
     /**
@@ -265,41 +241,46 @@ public class PlayerTest {
 
     @Test
     public void equalsOtherTest2() throws Exception {
-        assertNotEquals(player, null);
+        assertFalse(player.equals(null));
     }
 
     @Test
     public void equalsOtherTest3() throws Exception {
+        assertFalse(player.equals(""));
+    }
+
+    @Test
+    public void equalsOtherTest4() throws Exception {
         Player player2 = new Player(playerID2, session, device, Admin, 42, username);
         assertNotEquals(player, player2);
     }
 
     @Test
-    public void equalsOtherTest4() throws Exception {
+    public void equalsOtherTest5() throws Exception {
         Player player2 = new Player(playerID, session_other, device, Admin, 42, username);
         assertNotEquals(player, player2);
     }
 
     @Test
-    public void equalsOtherTest5() throws Exception {
+    public void equalsOtherTest6() throws Exception {
         Player player2 = new Player(playerID, session, device_other, Admin, 42, username);
         assertNotEquals(player, player2);
     }
 
     @Test
-    public void equalsOtherTest6() throws Exception {
+    public void equalsOtherTest7() throws Exception {
         Player player2 = new Player(playerID, session, device, Moderator, 42, username);
         assertNotEquals(player, player2);
     }
 
     @Test
-    public void equalsOtherTest7() throws Exception {
+    public void equalsOtherTest8() throws Exception {
         Player player2 = new Player(playerID, session, device, Admin, 42, username2);
         assertNotEquals(player, player2);
     }
 
     @Test
-    public void equalsOtherTest8() throws Exception {
+    public void equalsOtherTest9() throws Exception {
         Player player2 = new Player(playerID, session, device, Admin, 43, username);
         assertNotEquals(player, player2);
     }
