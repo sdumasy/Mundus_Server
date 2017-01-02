@@ -1,9 +1,7 @@
 package http;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import database.PlayerQueries;
 import models.Device;
 import models.Player;
@@ -11,10 +9,7 @@ import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +32,6 @@ public final class Routes {
      */
     public static void setupRoutes() {
         setupWebsocketRoutes();
-        convertJson();
         setupTokenValidation();
 
         setupCreateSessionRoute();
@@ -57,25 +51,7 @@ public final class Routes {
      * Setup the route that allows the use of websockets.
      */
     private static void setupWebsocketRoutes() {
-        webSocket("/echo", EchoWebSocket.class);
-    }
-
-    /**
-     * Convert the body from a request to attributes that can be accessed easily.
-     */
-    //Deprecated
-    private static void convertJson() {
-        before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, request.headers("Authorization"));
-            Type type = new TypeToken<HashMap<String, Object>>() {
-            }.getType();
-            HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
-            if (map != null) {
-                for (Map.Entry<String, Object> e : map.entrySet()) {
-                    request.attribute(e.getKey(), e.getValue().toString());
-                }
-            }
-        });
+        webSocket("/socket/time", TimeWebSocket.class);
     }
 
     /**
@@ -94,7 +70,7 @@ public final class Routes {
 
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
-            if (!request.uri().equals("/token")) {
+            if (!request.uri().equals("/token") && !request.uri().startsWith("/socket/")) {
                 String[] stringArray = request.headers("Authorization").split(":");
                 Device device = new Device(stringArray[0], stringArray[1]);
                 if (!device.authenticate()) {
