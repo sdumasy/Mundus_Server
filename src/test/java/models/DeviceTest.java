@@ -88,9 +88,11 @@ public class DeviceTest {
     }
 
     @Test
-    public void authenticateTestNull() throws Exception {
-        Device device = new Device("device", null);
+    public void authenticateTestFailure2() throws Exception {
+        DatabaseTest.setupDevice();
+        Device device = new Device(DatabaseTest.DEVICE_ID, "other_token");
         assertFalse(device.authenticate());
+        DatabaseTest.cleanDatabase();
     }
 
     @Test
