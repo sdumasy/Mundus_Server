@@ -1,9 +1,7 @@
 package http;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import database.PlayerQueries;
 import models.Device;
 import models.Player;
@@ -11,10 +9,7 @@ import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +32,6 @@ public final class Routes {
      */
     public static void setupRoutes() {
         setupWebsocketRoutes();
-        convertJson();
         setupTokenValidation();
 
         setupCreateSessionRoute();
@@ -58,24 +52,6 @@ public final class Routes {
      */
     private static void setupWebsocketRoutes() {
         webSocket("/echo", EchoWebSocket.class);
-    }
-
-    /**
-     * Convert the body from a request to attributes that can be accessed easily.
-     */
-    //Deprecated
-    private static void convertJson() {
-        before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, request.headers("Authorization"));
-            Type type = new TypeToken<HashMap<String, Object>>() {
-            }.getType();
-            HashMap<String, Object> map = new Gson().fromJson(request.body(), type);
-            if (map != null) {
-                for (Map.Entry<String, Object> e : map.entrySet()) {
-                    request.attribute(e.getKey(), e.getValue().toString());
-                }
-            }
-        });
     }
 
     /**
@@ -112,7 +88,7 @@ public final class Routes {
      * Setup the route that allows the creation of a new session.
      */
     private static void setupCreateSessionRoute() {
-        post("/createSession/username/:username", (request, response) ->
+        post("/session/username/:username", (request, response) ->
                 createSession(request.attribute("device"), request.params("username")));
     }
 
@@ -120,7 +96,7 @@ public final class Routes {
      * Setup the route that allows clients to join a session.
      */
     private static void setupJoinSessionRoute() {
-        post("/joinSession/:joinToken/username/:username", (request, response) -> {
+        post("/session/join/:joinToken/username/:username", (request, response) -> {
             Player player = playerJoinSession(request.params("joinToken"),
                     request.attribute("device"), request.params("username"));
             if (player != null) {
@@ -136,8 +112,12 @@ public final class Routes {
      * Creates a player model for all in game requests.
      */
     private static void setupSessionRoutes() {
-        before("/session/:sessionID/*", (request, response) -> request.attribute("session",
-                validateSession(request.attribute("device"), request.params("sessionID"))));
+        before("/session/:sessionID/*", (request, response) -> {
+                if(!(request.params("sessionID").equals("join") || request.params("sessionID").equals("username"))) {
+                    request.attribute("session",
+                    validateSession(request.attribute("device"), request.params("sessionID")));
+                }
+        });
     }
 
     /**
@@ -148,7 +128,6 @@ public final class Routes {
      * @return Whether the sessionID corresponds with the device.
      */
     protected static Session validateSession(Device device, String sessionID) {
-        if (sessionID != null && device != null) {
             Session session = Session.getSession(sessionID);
             if (isMember(sessionID, device)) {
                 return session;
@@ -156,9 +135,6 @@ public final class Routes {
                 halt(HttpStatus.BAD_REQUEST_400,
                         "You are trying to access a session that you are not a member of.");
             }
-        } else {
-            halt(HttpStatus.BAD_REQUEST_400, "Invalid sessionID or deviceID.");
-        }
         //Unreachable code, halt() will stop request.
         return null;
     }
@@ -169,14 +145,9 @@ public final class Routes {
      * There is no role verification as everyone should be able to request any players score.
      */
     private static void setupGetSessionRoute() {
-        get("/session/:session", (request, response) -> {
+        get("/session/:sessionID", (request, response) -> {
             Session session = validateSession(request.attribute("device"), request.params("sessionID"));
-            if (session != null) {
-                return session.toJson();
-            } else {
-                //Unreachable code, session can not be null.
-                return null;
-            }
+            return session.toJson();
         });
     }
 

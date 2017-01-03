@@ -1,0 +1,146 @@
+package http;
+
+import application.App;
+import com.google.gson.JsonObject;
+import database.AuthenticationTokenQueries;
+import database.DatabaseTest;
+import database.SessionQueries;
+import models.Device;
+import models.Player;
+import models.Role;
+import models.Session;
+import org.apache.http.HttpResponse;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import spark.HaltException;
+import spark.Spark;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+
+import static http.Routes.validateSession;
+import static http.RoutesTest.processAuthorizedGetRoute;
+import static http.RoutesTest.processAuthorizedPostRoute;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+
+/**
+ * Created by Thomas on 3-1-2017.
+ */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({SessionQueries.class, AuthenticationTokenQueries.class})
+@PowerMockIgnore("javax.net.ssl.*")
+public class RoutesSessionTest {
+    private static final String MOCKED_TOKEN = "some_token";
+
+    @BeforeClass
+    public static void beforeAll() {
+        App.main(null);
+    }
+
+    @Before
+    public  void before() {
+        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
+        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
+    }
+
+    @AfterClass
+    public static void after() {
+        Spark.stop();
+    }
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
+    @Test
+    public void setupCreateSessionTest() throws IOException {
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.createSession(any(),any())).thenReturn(new JsonObject());
+
+        String uri = "/session/username/some_username";
+        HttpResponse response = processAuthorizedPostRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setupJoinSessionFailureTest() throws IOException {
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.createSession(any(),any())).thenReturn(new JsonObject());
+        when(SessionQueries.playerJoinSession(any(),any(), any())).thenReturn(null);
+
+        String uri = "/session/join/some_token/username/some_username";
+        HttpResponse response = processAuthorizedPostRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 401 Unauthorized", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setupJoinSessionSuccesTest() throws IOException {
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.createSession(any(),any())).thenReturn(new JsonObject());
+        Device device = new Device("Device_ID", MOCKED_TOKEN);
+        Session session = new Session("", "", 1, LocalDateTime.now());
+        when(SessionQueries.playerJoinSession(any(),any(), any())).thenReturn(
+                new Player("", session, device, Role.Admin, 0, ""));
+
+        String uri = "/session/join/some_token/username/some_username";
+        HttpResponse response = processAuthorizedPostRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setupUnauthorizedSessionTest() throws IOException {
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(any())).thenReturn(null);
+        String uri = "/session/some_id/some_action";
+        HttpResponse response = processAuthorizedPostRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 400 Bad Request", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setupGetSessionTest() throws IOException {
+        PowerMockito.mockStatic(SessionQueries.class);
+        Session session = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
+        when(SessionQueries.getSession(any())).thenReturn(session);
+        when(SessionQueries.isMember(any(), any())).thenReturn(true);
+
+        String uri = "/session/some_id";
+        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    //TODO: Add test for Session management and session status
+
+    @Test
+    public void validateSessionTest() throws IOException {
+        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
+        Session session1 = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
+
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(session1);
+        when(SessionQueries.isMember(DatabaseTest.SESSION_ID, device)).thenReturn(true);
+
+        Session session2 = validateSession(device, DatabaseTest.SESSION_ID);
+        assertEquals(session1, session2);
+    }
+
+    @Test
+    public void validateSessionFalseTest() throws IOException {
+        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
+
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(null);
+        when(SessionQueries.isMember(DatabaseTest.SESSION_ID, device)).thenReturn(false);
+
+        exception.expect(HaltException.class);
+        validateSession(device, DatabaseTest.SESSION_ID);
+
+    }
+
+}
