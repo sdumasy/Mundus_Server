@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 
 import static database.Database.executeManipulationQuery;
 import static models.Player.getPlayer;
-import static models.Role.Admin;
-import static models.Role.getById;
+import static models.Role.*;
 import static org.junit.Assert.*;
 
 /**
@@ -26,11 +25,20 @@ public class PlayerTest {
     private Player player;
     private Device device;
     private Session session;
+    private Player player_other;
+    private Device device_other;
+    private Session session_other;
+    private Player player_same;
     private String deviceID = "deviceID_42";
     private String token = "token_42";
     private String playerID = "playerID_42";
     private String sessionID = "sessionID_42";
     private String username = "username_42";
+    private String deviceID2 = "deviceID_43";
+    private String token2 = "token_43";
+    private String playerID2 = "playerID_43";
+    private String sessionID2 = "sessionID_43";
+    private String username2 = "username_43";
 
     @BeforeClass
     public static void clean() {
@@ -45,6 +53,10 @@ public class PlayerTest {
         session = new Session(sessionID, playerID, 1, LocalDateTime.now());
         device = new Device(deviceID, token);
         player = new Player(playerID, session, device, Admin, 42, username);
+        session_other = new Session(sessionID2, playerID2, 1, LocalDateTime.now());
+        device_other = new Device(deviceID2, token2);
+        player_other = new Player(playerID2, session_other, device_other, Admin, 42, username2);
+        player_same = new Player(playerID, session, device, Admin, 42, username);
     }
 
     /**
@@ -81,7 +93,6 @@ public class PlayerTest {
         } finally {
             DatabaseTest.cleanDatabase();
         }
-
     }
 
     /**
@@ -211,6 +222,79 @@ public class PlayerTest {
 
         DatabaseTest.cleanDatabase();
 
+    }
+
+    @Test
+    public void equalsSelfTest() throws Exception {
+        assertEquals(player, player);
+    }
+
+    @Test
+    public void equalsSameTest() throws Exception {
+        assertEquals(player, player_same);
+    }
+
+    @Test
+    public void equalsOtherTest() throws Exception {
+        assertNotEquals(player, player_other);
+    }
+
+    @Test
+    public void equalsOtherTest2() throws Exception {
+        assertFalse(player.equals(null));
+    }
+
+    @Test
+    public void equalsOtherTest3() throws Exception {
+        assertFalse(player.equals(""));
+    }
+
+    @Test
+    public void equalsOtherTest4() throws Exception {
+        Player player2 = new Player(playerID2, session, device, Admin, 42, username);
+        assertNotEquals(player, player2);
+    }
+
+    @Test
+    public void equalsOtherTest5() throws Exception {
+        Player player2 = new Player(playerID, session_other, device, Admin, 42, username);
+        assertNotEquals(player, player2);
+    }
+
+    @Test
+    public void equalsOtherTest6() throws Exception {
+        Player player2 = new Player(playerID, session, device_other, Admin, 42, username);
+        assertNotEquals(player, player2);
+    }
+
+    @Test
+    public void equalsOtherTest7() throws Exception {
+        Player player2 = new Player(playerID, session, device, Moderator, 42, username);
+        assertNotEquals(player, player2);
+    }
+
+    @Test
+    public void equalsOtherTest8() throws Exception {
+        Player player2 = new Player(playerID, session, device, Admin, 42, username2);
+        assertNotEquals(player, player2);
+    }
+
+    @Test
+    public void equalsOtherTest9() throws Exception {
+        Player player2 = new Player(playerID, session, device, Admin, 43, username);
+        assertNotEquals(player, player2);
+    }
+
+    @Test
+    public void hashCodeTest() throws Exception {
+        Device device2 = new Device(deviceID, token);
+        assertEquals(player.hashCode(), player_same.hashCode());
+    }
+
+    @Test
+    public void hashCodeTest2() throws Exception {
+        Device device2 = new Device("other", token);
+        assertNotEquals(player.hashCode(), player_other.hashCode());
     }
 
 }
