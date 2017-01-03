@@ -126,17 +126,16 @@ public final class SessionQueries {
     /**
      * Changes the session status.
      *
-     * @param player The player profile of the creator.
+     * @param sessionID The sessionID.
      * @param status The status to change is to.
      * @return A boolean value indicating succes.
      */
-    public static boolean updateSessionStatus(Player player, int status) {
-        String query = "UPDATE `session` SET `status` = ? WHERE `session_id` = ? AND `player_id` = ? ";
+    public static boolean updateSessionStatus(String sessionID, int status) {
+        String query = "UPDATE `session` SET `status` = ? WHERE `session_id` = ? ";
         if (status != 0) {
             query += " AND NOT `status` = 0";
         }
-        return executeManipulationQuery(query, status, player.getSession().getSessionID(),
-                player.getPlayerID());
+        return executeManipulationQuery(query, status, sessionID);
     }
 
     /**
@@ -145,7 +144,7 @@ public final class SessionQueries {
      * @param sessionID    the id of the session.
      * @return A JsonArray containing the scores of all players within a session.
      */
-    public static JsonArray getScores(String sessionID) {
+    public static JsonArray getPlayers(String sessionID) {
         String query = "SELECT `player_id`, `username`, `score` FROM `session_player`  WHERE `session_id`=? ";
         JsonArray jsonArray = new JsonArray();
         List<Map<String, Object>> result = executeSearchQuery(query, sessionID);

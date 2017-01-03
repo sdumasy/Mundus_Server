@@ -7,13 +7,13 @@ import models.Device;
 import models.Player;
 import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
-import spark.Request;
 
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static database.SessionQueries.*;
+import static models.Player.getPlayer;
 import static spark.Spark.*;
 
 /**
@@ -37,7 +37,7 @@ public final class Routes {
         setupCreateSessionRoute();
         setupJoinSessionRoute();
         setupGetSessionRoute();
-        setupGetSessionScoresRoute();
+        setupGetSessionPlayersRoute();
         setupSessionManagementRoutes();
 
         setupGetAllPlayersOfDevice();
@@ -100,6 +100,7 @@ public final class Routes {
             Player player = playerJoinSession(request.params("joinToken"),
                     request.attribute("device"), request.params("username"));
             if (player != null) {
+                //TODO: Notify admin (websocket) that a player joined.
                 return player.toJson();
             } else {
                 halt(HttpStatus.UNAUTHORIZED_401, "Could not add you to the session.");
@@ -128,13 +129,13 @@ public final class Routes {
      * @return Whether the sessionID corresponds with the device.
      */
     protected static Session validateSession(Device device, String sessionID) {
-            Session session = Session.getSession(sessionID);
-            if (isMember(sessionID, device)) {
-                return session;
-            } else {
-                halt(HttpStatus.BAD_REQUEST_400,
-                        "You are trying to access a session that you are not a member of.");
-            }
+        Session session = Session.getSession(sessionID);
+        if (isMember(sessionID, device)) {
+            return session;
+        } else {
+            halt(HttpStatus.BAD_REQUEST_400,
+                    "You are trying to access a session that you are not a member of.");
+        }
         //Unreachable code, halt() will stop request.
         return null;
     }
@@ -152,12 +153,12 @@ public final class Routes {
     }
 
     /**
-     * Setup the route that allows clients to get all scores in their session.
+     * Setup the route that allows clients to get all players and their scores in their session.
      * The client needs to provide a session ID.
      * There is no role verification as everyone should be able to request any players score.
      */
-    private static void setupGetSessionScoresRoute() {
-        post("/session/:sessionID/scores", (request, response) -> getScores(request.params("sessionID")));
+    private static void setupGetSessionPlayersRoute() {
+        post("/session/:sessionID/players", (request, response) -> getPlayers(request.params("sessionID")));
     }
 
     /**
@@ -165,31 +166,34 @@ public final class Routes {
      */
     private static void setupSessionManagementRoutes() {
         before("/session/:sessionID/manage/*", (request, response) -> {
-            if (((Session) request.attribute("session")).getAdminID()
-                    .equals(((Device) request.attribute("device")).getDeviceID())) {
+            String[] stringArray = request.headers("Authorization").split(":");
+            Device device = new Device(stringArray[0], stringArray[1]);
+            if (!getPlayer(getSession(request.params("sessionID")).getAdminID()).getDevice()
+                    .equals((device))) {
                 halt(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
             }
         });
 
-        put("/session/:sessionID/manage/play", (request, response) -> setSessionStatus(request, 1));
+        put("/session/:sessionID/manage/play", (request, response) ->
+                setSessionStatus(request.params("sessionID"), 1));
 
-        put("/session/:sessionID/manage/pause", (request, response) -> setSessionStatus(request, 2));
+        put("/session/:sessionID/manage/pause", (request, response) ->
+                setSessionStatus(request.params("sessionID"), 2));
 
-        delete("/session/:sessionID/manage/delete", (request, response) -> setSessionStatus(request, 0));
+        delete("/session/:sessionID/manage/delete", (request, response) ->
+                setSessionStatus(request.params("sessionID"), 0));
     }
 
     /**
      * Helper class for play/pause/delete session requests.
      *
-     * @param request Request made.
+     * @param sessionID The ID of the session that needs to be set.
      * @param status  Status to change the session to.
      * @return SessionID and status.
      */
-    private static JsonObject setSessionStatus(Request request, int status) {
-        Player player = request.attribute("player");
-        updateSessionStatus(player, status);
-
-        return Session.getSession(player.getSession().getSessionID()).toJson();
+    private static JsonObject setSessionStatus(String sessionID, int status) {
+        updateSessionStatus(sessionID, status);
+        return Session.getSession(sessionID).toJson();
     }
 
     private static void setupGetAllPlayersOfDevice() {
@@ -221,7 +225,7 @@ public final class Routes {
      */
     private static Player validatePlayer(Device device, String playerID) {
         if (playerID != null && device != null) {
-            Player player = Player.getPlayer(playerID);
+            Player player = getPlayer(playerID);
             if (player.getDevice().equals(device)) {
                 return player;
             } else {
@@ -252,7 +256,7 @@ public final class Routes {
         put("/player/:playerID/username/:username", (request, response) -> {
             Player player = request.attribute("player");
             if (PlayerQueries.setUsername(player, request.params("username"))) {
-                return Player.getPlayer(player.getPlayerID()).toJson();
+                return getPlayer(player.getPlayerID()).toJson();
             } else {
                 halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Failed to set username.");
                 return null;

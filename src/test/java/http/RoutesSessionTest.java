@@ -4,6 +4,7 @@ import application.App;
 import com.google.gson.JsonObject;
 import database.AuthenticationTokenQueries;
 import database.DatabaseTest;
+import database.PlayerQueries;
 import database.SessionQueries;
 import models.Device;
 import models.Player;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import static http.Routes.validateSession;
 import static http.RoutesTest.processAuthorizedGetRoute;
 import static http.RoutesTest.processAuthorizedPostRoute;
+import static http.RoutesTest.processAuthorizedPutRoute;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -35,7 +37,7 @@ import static org.mockito.Mockito.when;
  * Created by Thomas on 3-1-2017.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SessionQueries.class, AuthenticationTokenQueries.class})
+@PrepareForTest({SessionQueries.class, AuthenticationTokenQueries.class, PlayerQueries.class})
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesSessionTest {
     private static final String MOCKED_TOKEN = "some_token";
@@ -115,7 +117,55 @@ public class RoutesSessionTest {
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
-    //TODO: Add test for Session management and session status
+    @Test
+    public void validateAuthorizedSessionManageTest() throws IOException {
+        Device device = new Device("DeviceID", MOCKED_TOKEN);
+        Session session = new Session("SomeID", "AdminID", 1, LocalDateTime.now());
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(session);
+        when(SessionQueries.isMember(any(), any())).thenReturn(true);
+
+        PowerMockito.mockStatic(PlayerQueries.class);
+        when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.Admin, 0, ""));
+
+        String uri = "/session/some_id/manage/some_action";
+        HttpResponse response = processAuthorizedPostRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 405 HTTP method POST is not supported by this URL", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void validateUnauthorizedSessionManageTest() throws IOException {
+        Device device = new Device("OtherID", MOCKED_TOKEN);
+        Session session = new Session("SomeID", "AdminID", 1, LocalDateTime.now());
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(session);
+        when(SessionQueries.isMember(any(), any())).thenReturn(true);
+
+        PowerMockito.mockStatic(PlayerQueries.class);
+        when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.Admin, 0, ""));
+
+        String uri = "/session/some_id/manage/some_action";
+        HttpResponse response = processAuthorizedPostRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 403 Forbidden", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setSessionStatusTest() throws IOException {
+        Device device = new Device("DeviceID", MOCKED_TOKEN);
+        Session session = new Session("SomeID", "AdminID", 1, LocalDateTime.now());
+        PowerMockito.mockStatic(SessionQueries.class);
+        when(SessionQueries.getSession(anyString())).thenReturn(session);
+        when(SessionQueries.isMember(any(), any())).thenReturn(true);
+
+        PowerMockito.mockStatic(PlayerQueries.class);
+        when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.Admin, 0, ""));
+
+        String uri = "/session/some_id/manage/play";
+        HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+
+
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
 
     @Test
     public void validateSessionTest() throws IOException {
@@ -142,5 +192,4 @@ public class RoutesSessionTest {
         validateSession(device, DatabaseTest.SESSION_ID);
 
     }
-
 }

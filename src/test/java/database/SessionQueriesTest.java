@@ -127,7 +127,7 @@ public class SessionQueriesTest {
             Session session = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
             Player player = new Player(DatabaseTest.PLAYER_ID, session, device, Role.Admin, 0,
                     DatabaseTest.ADMIN_USERNAME);
-            updateSessionStatus(player, 2);
+            updateSessionStatus(DatabaseTest.SESSION_ID, 2);
             assertEquals(2, getSession(DatabaseTest.SESSION_ID).getStatus());
         } finally {
             DatabaseTest.cleanDatabase();
@@ -143,7 +143,7 @@ public class SessionQueriesTest {
             DatabaseTest.setupDevice();
             DatabaseTest.setupSession();
 
-            JsonArray jsonArray = getScores(DatabaseTest.SESSION_ID);
+            JsonArray jsonArray = getPlayers(DatabaseTest.SESSION_ID);
             assertEquals(1, jsonArray.size());
             assertEquals(DatabaseTest.PLAYER_ID, jsonArray.get(0).getAsJsonObject().get("playerID").getAsString());
         } finally {

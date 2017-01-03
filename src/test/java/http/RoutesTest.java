@@ -5,6 +5,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Test;
 
@@ -32,6 +33,20 @@ public class RoutesTest {
         HttpPost httpPost = new HttpPost("http://localhost:4567" + uri);
         httpPost.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
         return httpClient.execute(httpPost);
+    }
+
+    /**
+     * Method that makes requests and executes them.
+     * @param uri The uri with the route that is supposed to be triggered.
+     * @param device The json device making the request.
+     * @return An http response object.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
+    public static HttpResponse processAuthorizedPutRoute(String uri, Device device) throws IOException {
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPut httpPut = new HttpPut("http://localhost:4567" + uri);
+        httpPut.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
+        return httpClient.execute(httpPut);
     }
 
     /**
