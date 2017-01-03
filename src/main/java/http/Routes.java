@@ -224,15 +224,11 @@ public final class Routes {
      * @return Whether the playerID corresponds with the device.
      */
     private static Player validatePlayer(Device device, String playerID) {
-        if (playerID != null && device != null) {
-            Player player = getPlayer(playerID);
-            if (player.getDevice().equals(device)) {
-                return player;
-            } else {
-                halt(HttpStatus.BAD_REQUEST_400, "You are trying to access a player that is not yours.");
-            }
+        Player player = getPlayer(playerID);
+        if (player.getDevice().equals(device)) {
+            return player;
         } else {
-            halt(HttpStatus.BAD_REQUEST_400, "Invalid playerID or deviceID.");
+            halt(HttpStatus.BAD_REQUEST_400, "You are trying to access a player that is not yours.");
         }
         //Unreachable code, halt() will stop request.
         return null;
