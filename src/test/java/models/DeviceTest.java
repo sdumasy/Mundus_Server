@@ -88,6 +88,14 @@ public class DeviceTest {
     }
 
     @Test
+    public void authenticateTestFailure2() throws Exception {
+        DatabaseTest.setupDevice();
+        Device device = new Device(DatabaseTest.DEVICE_ID, "other_token");
+        assertFalse(device.authenticate());
+        DatabaseTest.cleanDatabase();
+    }
+
+    @Test
     public void toJsonTest() throws Exception {
         JsonObject jsonObject = device.toJson();
 
@@ -116,6 +124,16 @@ public class DeviceTest {
     public void equalsOtherTest2() throws Exception {
         Device device2 = new Device("other", token);
         assertNotEquals(device, device2);
+    }
+
+    @Test
+    public void equalsOtherTest3() throws Exception {
+        assertFalse(device.equals(null));
+    }
+
+    @Test
+    public void equalsOtherTest4() throws Exception {
+        assertFalse(device.equals(""));
     }
 
     @Test
