@@ -58,6 +58,15 @@ public class RoutesPlayerTest {
     public final ExpectedException exception = ExpectedException.none();
 
     @Test
+    public void setupGetAllPlayersTest() throws IOException {
+        PowerMockito.mockStatic(PlayerQueries.class);
+
+        String uri = "/player/all";
+        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    @Test
     public void setupPlayerValidationSuccessTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
         Device device = new Device("Device_ID", MOCKED_TOKEN);
@@ -94,6 +103,16 @@ public class RoutesPlayerTest {
         String uri = "/player/some_playerID";
         HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setupGetPlayerNullTest() throws IOException {
+        PowerMockito.mockStatic(PlayerQueries.class);
+        when(PlayerQueries.getPlayer(any())).thenReturn(null);
+
+        String uri = "/player/some_playerID";
+        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 500 Server Error", response.getStatusLine().toString());
     }
 
     @Test
