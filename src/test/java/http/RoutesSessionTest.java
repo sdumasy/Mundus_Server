@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static http.Routes.validateSession;
-import static http.RoutesTest.processAuthorizedGetRoute;
-import static http.RoutesTest.processAuthorizedPostRoute;
-import static http.RoutesTest.processAuthorizedPutRoute;
+import static http.RoutesTest.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -149,21 +147,40 @@ public class RoutesSessionTest {
         assertEquals("HTTP/1.1 403 Forbidden", response.getStatusLine().toString());
     }
 
-    @Test
-    public void setSessionStatusTest() throws IOException {
+    public void setSessionStatusSetup() {
         Device device = new Device("DeviceID", MOCKED_TOKEN);
         Session session = new Session("SomeID", "AdminID", 1, LocalDateTime.now());
         PowerMockito.mockStatic(SessionQueries.class);
         when(SessionQueries.getSession(anyString())).thenReturn(session);
         when(SessionQueries.isMember(any(), any())).thenReturn(true);
-
         PowerMockito.mockStatic(PlayerQueries.class);
         when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.Admin, 0, ""));
+    }
+
+    @Test
+    public void setSessionStatusPlayTest() throws IOException {
+        setSessionStatusSetup();
 
         String uri = "/session/some_id/manage/play";
         HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
 
+    @Test
+    public void setSessionStatusPauseTest() throws IOException {
+        setSessionStatusSetup();
 
+        String uri = "/session/some_id/manage/pause";
+        HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    @Test
+    public void setSessionStatusDeleteTest() throws IOException {
+        setSessionStatusSetup();
+
+        String uri = "/session/some_id/manage/delete";
+        HttpResponse response = processAuthorizedDeleteRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -190,6 +207,5 @@ public class RoutesSessionTest {
 
         exception.expect(HaltException.class);
         validateSession(device, DatabaseTest.SESSION_ID);
-
     }
 }

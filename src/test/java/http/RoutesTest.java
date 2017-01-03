@@ -3,6 +3,7 @@ package http;
 import models.Device;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -48,6 +49,21 @@ public class RoutesTest {
         httpPut.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
         return httpClient.execute(httpPut);
     }
+
+    /**
+     * Method that makes requests and executes them.
+     * @param uri The uri with the route that is supposed to be triggered.
+     * @param device The json device making the request.
+     * @return An http response object.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
+    public static HttpResponse processAuthorizedDeleteRoute(String uri, Device device) throws IOException {
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpDelete httpDelete = new HttpDelete("http://localhost:4567" + uri);
+        httpDelete.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
+        return httpClient.execute(httpDelete);
+    }
+
 
     /**
      * Method that makes requests and executes them.
