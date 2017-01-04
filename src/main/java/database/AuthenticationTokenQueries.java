@@ -45,8 +45,8 @@ public final class AuthenticationTokenQueries {
         if (result.size() > 1) {
             halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
         }
-        if (result.size() == 1) {
-            halter(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
+        if (result.size() < 1) {
+            return null;
         }
         return result.get(0).get("auth_token").toString();
     }

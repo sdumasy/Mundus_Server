@@ -49,6 +49,10 @@ public final class Routes {
             }
 
             Device device = Device.newDevice(authorizationHeader.split(":")[0]);
+            if (device == null) {
+                halter(HttpStatus.UNAUTHORIZED_401, "You already have a authorization token.");
+            }
+
             response.body(device.toJson().toString());
             return response.body();
         });
