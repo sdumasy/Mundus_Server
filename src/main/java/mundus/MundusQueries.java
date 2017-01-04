@@ -15,7 +15,7 @@ import static spark.Spark.halt;
 /**
  * Created by Thomas on 4-1-2017.
  */
-public class MundusQueries {
+public final class MundusQueries {
 
     /**
      * Private constructor.
@@ -32,7 +32,7 @@ public class MundusQueries {
      */
     public static JsonObject getQuestion(Player player) {
         if(assignedQuestions(player.getPlayerID()) < 3) {
-            return verifyAssignQuestion(player.getPlayerID(),player.getSession().getSessionID());
+            return verifyAssignQuestion(player.getPlayerID(), player.getSession().getSessionID());
         } else {
             halt(HttpStatus.UNAUTHORIZED_401, "You have reached the maximum amount of assigned questions.");
             return null;
@@ -45,7 +45,7 @@ public class MundusQueries {
      * @return The amount of questions assigned to the player with playerID
      */
     public static int assignedQuestions(String playerID) {
-        String query = "SELECT `question_id` FROM `session_question` WHERE `player_id` = ?";
+        String query = "SELECT `question_id` FROM `session_question` WHERE `player_id` = ? AND `reviewed` IS NOT 1 ";
         List<Map<String, Object>> result = executeSearchQuery(query, playerID);
         return result.size();
     }
@@ -53,6 +53,7 @@ public class MundusQueries {
     /**
      * Verify if there are still new questions available within a session, if so assign one.
      * @param playerID The player that wants a new question
+     * @param sessionID The id of the session that the player is part of.
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject verifyAssignQuestion(String playerID, String sessionID) {
@@ -62,10 +63,10 @@ public class MundusQueries {
         while(result.size() > 0) {
             int i = r.nextInt(result.size());
             Map<String, Object> m = result.get(i);
-            if (questionAssigned(m.get("question_id").toString(), sessionID)){
+            if (questionAssigned(m.get("question_id").toString(), sessionID)) {
                 result.remove(i);
             } else {
-                assignQuestion(m, playerID, sessionID);
+                return assignQuestion(m, playerID, sessionID);
             }
         }
         halt(HttpStatus.NOT_FOUND_404, "There are no more questions.");
@@ -76,10 +77,11 @@ public class MundusQueries {
      * Add a new question and player assignment to the database and return the question as JsonObject.
      * @param m The question information.
      * @param playerID The player id.
+     * @param sessionID The id of the session that the player is part of.
      * @return A JsonObject containing the player information.
      */
     public static JsonObject assignQuestion(Map<String, Object> m, String playerID, String sessionID) {
-        String questionID = m.get("text").toString();
+        String questionID = m.get("question_id").toString();
         String query = "INSERT INTO `session_question` (question_id, player_id, session_id) VALUES(?, ?, ?)";
         executeManipulationQuery(query, questionID, playerID, sessionID);
 
