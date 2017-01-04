@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the Role class
+ * Tests the Role class.
  */
 public class RoleTest {
 

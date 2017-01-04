@@ -171,7 +171,7 @@ public final class Routes {
             String[] stringArray = request.headers("Authorization").split(":");
             Device device = new Device(stringArray[0], stringArray[1]);
             if (!getPlayer(getSession(request.params("sessionID")).getAdminID()).getDevice()
-                    .equals((device))) {
+                    .equals(device)) {
                 halt(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
             }
         });

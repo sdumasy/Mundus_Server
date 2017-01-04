@@ -24,13 +24,20 @@ import static org.junit.Assert.*;
  * Tests the class SessionQueries.
  */
 public class SessionQueriesTest {
+
+    /**
+     * Make sure the database is clean before we do anything else.
+     */
     @BeforeClass
     public static void clean() {
         DatabaseTest.cleanDatabase();
     }
 
+    /**
+     * Make sure the database is cleaned after we are done.
+     */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         DatabaseTest.cleanDatabase();
     }
 
@@ -57,7 +64,7 @@ public class SessionQueriesTest {
     public void createSessionTest() {
         try {
             DatabaseTest.setupDevice();
-            createSession(new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN),DatabaseTest.ADMIN_USERNAME);
+            createSession(new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), DatabaseTest.ADMIN_USERNAME);
             List<Map<String, Object>> verify;
 
             verify = Database
