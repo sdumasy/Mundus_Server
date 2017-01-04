@@ -67,7 +67,7 @@ public final class Database {
      * @param params Optional parameters.
      * @return A JSON object with the query results.
      */
-    protected static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
+    public static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
         List<Map<String, Object>> listOfMaps;
         try {
             openConnectionToDb();

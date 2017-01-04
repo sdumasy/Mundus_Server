@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
-import static spark.Spark.halt;
+import static util.Halt.halter;
 
 /**
  * Database queries associated with the authentication token.
@@ -47,8 +47,8 @@ public final class AuthenticationTokenQueries {
         } else if (result.size() == 0) {
             return null;
         } else {
-            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
+            halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
+            return null;
         }
-        return null;
     }
 }

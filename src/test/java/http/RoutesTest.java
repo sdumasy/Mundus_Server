@@ -18,7 +18,7 @@ import java.lang.reflect.Modifier;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by Thomas on 3-1-2017.
+ * Tests the class Routes.
  */
 public class RoutesTest {
 
@@ -39,14 +39,18 @@ public class RoutesTest {
     /**
      * Method that makes requests and executes them.
      * @param uri The uri with the route that is supposed to be triggered.
-     * @param device The json device making the request.
+     * @param auth Items for the authorization header in order.
      * @return An http response object.
      * @throws IOException Throws an exception if the request execution fails.
      */
-    public static HttpResponse processAuthorizedPutRoute(String uri, Device device) throws IOException {
+    public static HttpResponse processAuthorizedPutRoute(String uri, String... auth) throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
         HttpPut httpPut = new HttpPut("http://localhost:4567" + uri);
-        httpPut.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
+        String authentication = "";
+        for (int i = 0; i < auth.length; i++) {
+            authentication += ":" + auth[i];
+        }
+        httpPut.addHeader("Authorization", authentication.substring(1));
         return httpClient.execute(httpPut);
     }
 
@@ -68,14 +72,18 @@ public class RoutesTest {
     /**
      * Method that makes requests and executes them.
      * @param uri The uri with the route that is supposed to be triggered.
-     * @param device The json device making the request.
+     * @param auth Items for the authorization header in order.
      * @return An http response object.
      * @throws IOException Throws an exception if the request execution fails.
      */
-    public static HttpResponse processAuthorizedGetRoute(String uri, Device device) throws IOException {
+    public static HttpResponse processAuthorizedGetRoute(String uri, String... auth) throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet("http://localhost:4567" + uri);
-        httpGet.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
+        String authentication = "";
+        for (int i = 0; i < auth.length; i++) {
+            authentication += ":" + auth[i];
+        }
+        httpGet.addHeader("Authorization", authentication.substring(1));
         return httpClient.execute(httpGet);
     }
 
