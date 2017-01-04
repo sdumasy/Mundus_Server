@@ -57,14 +57,18 @@ public class RoutesTest {
     /**
      * Method that makes requests and executes them.
      * @param uri The uri with the route that is supposed to be triggered.
-     * @param device The json device making the request.
+     * @param auth Items for the authorization header in order.
      * @return An http response object.
      * @throws IOException Throws an exception if the request execution fails.
      */
-    public static HttpResponse processAuthorizedDeleteRoute(String uri, Device device) throws IOException {
+    public static HttpResponse processAuthorizedDeleteRoute(String uri, String... auth) throws IOException {
         HttpClient httpClient = HttpClients.createDefault();
         HttpDelete httpDelete = new HttpDelete("http://localhost:4567" + uri);
-        httpDelete.addHeader("Authorization", device.getDeviceID() + ":" + device.getToken());
+        String authentication = "";
+        for (int i = 0; i < auth.length; i++) {
+            authentication += ":" + auth[i];
+        }
+        httpDelete.addHeader("Authorization", authentication.substring(1));
         return httpClient.execute(httpDelete);
     }
 
