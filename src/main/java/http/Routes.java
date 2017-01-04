@@ -1,17 +1,12 @@
 package http;
 
 import com.google.gson.JsonElement;
-import database.PlayerQueries;
 import models.Device;
 import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Request;
 import spark.Route;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static spark.Spark.before;
 import static spark.Spark.post;
 import static util.Halt.halter;
 
@@ -31,11 +26,9 @@ public final class Routes {
      */
     public static void setupRoutes() {
         setupTokenRoute();
-        setupTokenValidation();
 
         RoutesSession.setupCreateSessionRoute();
         RoutesSession.setupJoinSessionRoute();
-        RoutesSession.setupSessionRoutes();
         RoutesSession.setupGetSessionRoute();
         RoutesSession.setupGetSessionPlayersRoute();
         RoutesSession.setupSessionManagementRoutes();
@@ -57,39 +50,11 @@ public final class Routes {
 
             Device device = Device.newDevice(authorizationHeader.split(":")[0]);
             if (device == null) {
-                halter(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
+                halter(HttpStatus.UNAUTHORIZED_401, "You already have a authorization token.");
             }
 
             response.body(device.toJson().toString());
             return response.body();
-        });
-    }
-
-    /**
-     * Setup the route for new tokens and intercept all other requests that don't come with a proper deviceID and token.
-     */
-    @Deprecated
-    private static void setupTokenValidation() {
-        before((request, response) -> {
-            Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
-            if (!request.uri().equals("/token")) {
-                String[] authorizationValues = request.headers("Authorization").split(":");
-                // TODO: 04/01/17 Halt if there is no authorization header
-                Device device = new Device(authorizationValues[0], authorizationValues[1]);
-                if (!device.authenticate()) {
-                    halter(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
-                } else {
-                    request.attribute("device", device);
-                }
-                if (authorizationValues.length == 3) {
-                    Player player = PlayerQueries.getPlayer(authorizationValues[2]);
-                    if (player.getDevice().equals(device)) {
-                        request.attribute("player", player);
-                    } else {
-                        halter(HttpStatus.UNAUTHORIZED_401, "PlayerID does not match deviceID.");
-                    }
-                }
-            }
         });
     }
 

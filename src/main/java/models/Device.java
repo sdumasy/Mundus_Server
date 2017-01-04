@@ -29,11 +29,10 @@ public class Device {
      * @return A new device.
      */
     public static Device newDevice(String deviceID) {
-        if (selectAuthorizationToken(deviceID) == null) {
-            return new Device(deviceID, CreateUniqueIDs.createToken(deviceID));
-        } else {
+        if (selectAuthorizationToken(deviceID) != null) {
             return null;
         }
+        return new Device(deviceID, CreateUniqueIDs.createToken(deviceID));
     }
 
     /**
@@ -44,11 +43,10 @@ public class Device {
      */
     public static Device getDevice(String deviceID) {
         String token = selectAuthorizationToken(deviceID);
-        if (token != null) {
-            return new Device(deviceID, token);
-        } else {
+        if (token == null) {
             return null;
         }
+        return new Device(deviceID, token);
     }
 
     /**

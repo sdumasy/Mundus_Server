@@ -19,6 +19,7 @@ import spark.Spark;
 
 import java.io.IOException;
 
+import static http.RoutesTest.processAuthorizedGetRoute;
 import static http.RoutesTest.processAuthorizedPostRoute;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
@@ -31,6 +32,9 @@ import static org.mockito.Mockito.when;
 @PrepareForTest({Device.class, SessionQueries.class, AuthenticationTokenQueries.class})
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesTokenValidationTest {
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     /**
      * Start the spark framework.
@@ -47,9 +51,6 @@ public class RoutesTokenValidationTest {
     public static void afterClass() {
         Spark.stop();
     }
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     /**
      * Test the route that generates a token for a new device.
@@ -91,8 +92,8 @@ public class RoutesTokenValidationTest {
         PowerMockito.mockStatic(AuthenticationTokenQueries.class);
         when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(null);
 
-        String uri = "/someRequest";
-        HttpResponse response = processAuthorizedPostRoute(uri, new Device("deviceID", "some_token"));
+        String uri = "/player";
+        HttpResponse response = processAuthorizedGetRoute(uri, "deviceID", "some_token");
         assertEquals("HTTP/1.1 401 Unauthorized", response.getStatusLine().toString());
     }
 
