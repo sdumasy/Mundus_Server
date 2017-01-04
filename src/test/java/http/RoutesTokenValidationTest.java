@@ -32,11 +32,17 @@ import static org.mockito.Mockito.when;
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesTokenValidationTest {
 
+    /**
+     * Start the spark framework.
+     */
     @BeforeClass
     public static void beforeClass() {
         App.main(null);
     }
 
+    /**
+     * Stop the spark framework.
+     */
     @AfterClass
     public static void afterClass() {
         Spark.stop();
@@ -44,9 +50,6 @@ public class RoutesTokenValidationTest {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
-
-
-
 
     /**
      * Test the route that generates a token for a new device.
@@ -99,7 +102,7 @@ public class RoutesTokenValidationTest {
      * @throws IOException Throws an exception if the request execution fails.
      */
     @Test
-    public void AuthorizedRequestTest() throws IOException {
+    public void authorizedRequestTest() throws IOException {
         PowerMockito.mockStatic(AuthenticationTokenQueries.class);
         when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn("some_token");
 

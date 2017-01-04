@@ -16,6 +16,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class CreateUniqueIDsTest {
 
+    /**
+     * Make sure the database is clean before we do anything else.
+     */
     @BeforeClass
     public static void clean() {
         DatabaseTest.cleanDatabase();
@@ -37,29 +40,28 @@ public class CreateUniqueIDsTest {
         constructor.newInstance();
     }
 
+    /**
+     * Generate a new ID.
+     */
     @Test
-    public void createTokenTest() throws Exception {
-
-    }
-
-    @Test
-    public void generateUniqueIDTest() throws Exception {
+    public void generateUniqueIDTest() {
         assertNotNull(generateUniqueID("device", "auth_token"));
     }
 
+    /**
+     * Generate a new ID for a different table.
+     */
     @Test
-    public void generateUniqueIDTest2() throws Exception {
+    public void generateUniqueIDTest2() {
         assertNotNull(generateUniqueID("session_player", "player_id"));
     }
 
+    /**
+     * Generate a new ID for a different table.
+     */
     @Test
-    public void generateUniqueIDTest3() throws Exception {
+    public void generateUniqueIDTest3() {
         assertNotNull(generateUniqueID("session", "session_id"));
-    }
-
-    @Test
-    public void generateUniqueJoinTokenTest() throws Exception {
-
     }
 
 }

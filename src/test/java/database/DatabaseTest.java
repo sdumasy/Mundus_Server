@@ -28,12 +28,17 @@ public class DatabaseTest {
     public static final String USERNAME = "username_42";
     public static final String ADMIN_USERNAME = "admin_username_42";
 
-
+    /**
+     * Make sure the database is clean before we do anything else.
+     */
     @BeforeClass
     public static void clean() {
         cleanDatabase();
     }
 
+    /**
+     * Method that removes all entries that have been added testing purposes.
+     */
     public static void cleanDatabase() {
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID_2 + "';");
         executeManipulationQuery("DELETE FROM session_player WHERE player_id='" + PLAYER_ID + "';");
@@ -48,17 +53,27 @@ public class DatabaseTest {
         executeManipulationQuery("DELETE FROM device WHERE device_id='" + DEVICE_ID + "';");
     }
 
-
+    /**
+     * Method that inserts a device into the database for testing purposes.
+     * @return returns the device that was inserted.
+     */
     public static Device setupDevice() {
         executeManipulationQuery("INSERT INTO device VALUES ('" + DEVICE_ID + "','" + TOKEN + "');");
         return new Device(DEVICE_ID, TOKEN);
     }
 
+    /**
+     * Method that inserts a device into the database for testing purposes.
+     * @return returns the device that was inserted.
+     */
     public static Device setupDevice2() {
         executeManipulationQuery("INSERT INTO device VALUES ('" + DEVICE_ID_2 + "','" + TOKEN_2 + "');");
         return new Device(DEVICE_ID_2, TOKEN_2);
     }
 
+    /**
+     * Method that inserts a session into the database for testing purposes.
+     */
     public static void setupSession() {
         String query = "INSERT INTO `session` VALUES (?, ?, ?, ?)";
         executeManipulationQuery(query, SESSION_ID, PLAYER_ID, 1, LocalDateTime.now());
@@ -71,6 +86,9 @@ public class DatabaseTest {
         executeManipulationQuery(query, PLAYER_ID, DEVICE_ID, SESSION_ID, 0, 0, ADMIN_USERNAME);
     }
 
+    /**
+     * Method that inserts a player into the database for testing purposes.
+     */
     public static void setupPlayer() {
         String query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
         executeManipulationQuery(query, PLAYER_ID_2, DEVICE_ID, SESSION_ID, 1, 0, USERNAME);

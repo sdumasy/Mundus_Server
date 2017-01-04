@@ -25,10 +25,10 @@ public class PlayerTest {
     private Player player;
     private Device device;
     private Session session;
-    private Player player_other;
-    private Device device_other;
-    private Session session_other;
-    private Player player_same;
+    private Player otherPlayer;
+    private Device otherDevice;
+    private Session otherSession;
+    private Player identicalPlayer;
     private String deviceID = "deviceID_42";
     private String token = "token_42";
     private String playerID = "playerID_42";
@@ -40,6 +40,9 @@ public class PlayerTest {
     private String sessionID2 = "sessionID_43";
     private String username2 = "username_43";
 
+    /**
+     * Make sure the database is clean before we do anything else.
+     */
     @BeforeClass
     public static void clean() {
         DatabaseTest.cleanDatabase();
@@ -53,10 +56,10 @@ public class PlayerTest {
         session = new Session(sessionID, playerID, 1, LocalDateTime.now());
         device = new Device(deviceID, token);
         player = new Player(playerID, session, device, Admin, 42, username);
-        session_other = new Session(sessionID2, playerID2, 1, LocalDateTime.now());
-        device_other = new Device(deviceID2, token2);
-        player_other = new Player(playerID2, session_other, device_other, Admin, 42, username2);
-        player_same = new Player(playerID, session, device, Admin, 42, username);
+        otherSession = new Session(sessionID2, playerID2, 1, LocalDateTime.now());
+        otherDevice = new Device(deviceID2, token2);
+        otherPlayer = new Player(playerID2, otherSession, otherDevice, Admin, 42, username2);
+        identicalPlayer = new Player(playerID, session, device, Admin, 42, username);
     }
 
     /**
@@ -224,77 +227,116 @@ public class PlayerTest {
 
     }
 
+    /**
+     * Verify that a player does equal itself.
+     */
     @Test
-    public void equalsSelfTest() throws Exception {
+    public void equalsSelfTest() {
         assertEquals(player, player);
     }
 
+    /**
+     * Verify that a player does equal a player with the same fields.
+     */
     @Test
-    public void equalsSameTest() throws Exception {
-        assertEquals(player, player_same);
+    public void equalsSameTest() {
+        assertEquals(player, identicalPlayer);
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest() throws Exception {
-        assertNotEquals(player, player_other);
+    public void equalsOtherTest() {
+        assertNotEquals(player, otherPlayer);
     }
 
+    /**
+     * Verify that a player does not equal null.
+     */
     @Test
-    public void equalsOtherTest2() throws Exception {
+    public void equalsOtherTest2() {
         assertFalse(player.equals(null));
     }
 
+    /**
+     * Verify that a player does not equal a string.
+     */
     @Test
-    public void equalsOtherTest3() throws Exception {
+    public void equalsOtherTest3() {
         assertFalse(player.equals(""));
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest4() throws Exception {
+    public void equalsOtherTest4() {
         Player player2 = new Player(playerID2, session, device, Admin, 42, username);
         assertNotEquals(player, player2);
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest5() throws Exception {
-        Player player2 = new Player(playerID, session_other, device, Admin, 42, username);
+    public void equalsOtherTest5() {
+        Player player2 = new Player(playerID, otherSession, device, Admin, 42, username);
         assertNotEquals(player, player2);
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest6() throws Exception {
-        Player player2 = new Player(playerID, session, device_other, Admin, 42, username);
+    public void equalsOtherTest6() {
+        Player player2 = new Player(playerID, session, otherDevice, Admin, 42, username);
         assertNotEquals(player, player2);
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest7() throws Exception {
+    public void equalsOtherTest7() {
         Player player2 = new Player(playerID, session, device, Moderator, 42, username);
         assertNotEquals(player, player2);
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest8() throws Exception {
+    public void equalsOtherTest8() {
         Player player2 = new Player(playerID, session, device, Admin, 42, username2);
         assertNotEquals(player, player2);
     }
 
+    /**
+     * Verify that a player does not equal a different player.
+     */
     @Test
-    public void equalsOtherTest9() throws Exception {
+    public void equalsOtherTest9() {
         Player player2 = new Player(playerID, session, device, Admin, 43, username);
         assertNotEquals(player, player2);
     }
 
+    /**
+     * Verify that the hashcode for two identical players is the same.
+     */
     @Test
-    public void hashCodeTest() throws Exception {
+    public void hashCodeTest() {
         Device device2 = new Device(deviceID, token);
-        assertEquals(player.hashCode(), player_same.hashCode());
+        assertEquals(player.hashCode(), identicalPlayer.hashCode());
     }
 
+    /**
+     * Verify that the hashcode for two different players is NOT the same.
+     */
     @Test
-    public void hashCodeTest2() throws Exception {
+    public void hashCodeTest2() {
         Device device2 = new Device("other", token);
-        assertNotEquals(player.hashCode(), player_other.hashCode());
+        assertNotEquals(player.hashCode(), otherPlayer.hashCode());
     }
 
 }

@@ -38,17 +38,26 @@ import static org.mockito.Mockito.when;
 public class RoutesPlayerTest {
     private static final String MOCKED_TOKEN = "some_token";
 
+    /**
+     * Start the spark framework.
+     */
     @BeforeClass
     public static void beforeAll() {
         App.main(null);
     }
 
+    /**
+     * Mock the token validation and always return the same token.
+     */
     @Before
     public  void before() {
         PowerMockito.mockStatic(AuthenticationTokenQueries.class);
         when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
     }
 
+    /**
+     * Stop the spark framework.
+     */
     @AfterClass
     public static void after() {
         Spark.stop();
@@ -57,6 +66,10 @@ public class RoutesPlayerTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
+    /**
+     *  Try getting all players coupled to your device.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupGetAllPlayersTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
@@ -71,6 +84,10 @@ public class RoutesPlayerTest {
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
+    /**
+     * Try to perform an action with a certain player object.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupPlayerValidationSuccessTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
@@ -84,6 +101,10 @@ public class RoutesPlayerTest {
         assertEquals("HTTP/1.1 405 HTTP method POST is not supported by this URL", response.getStatusLine().toString());
     }
 
+    /**
+     * Try to perform an action with an invalid player object.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupPlayerValidationFailureTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
@@ -97,6 +118,10 @@ public class RoutesPlayerTest {
         assertEquals("HTTP/1.1 400 Bad Request", response.getStatusLine().toString());
     }
 
+    /**
+     * Try to get the player object corresponding with the provided ID.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupGetPlayerTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
@@ -110,6 +135,10 @@ public class RoutesPlayerTest {
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
+    /**
+     * Try to get a player object that does not exist.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupGetPlayerNullTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
@@ -120,6 +149,10 @@ public class RoutesPlayerTest {
         assertEquals("HTTP/1.1 500 Server Error", response.getStatusLine().toString());
     }
 
+    /**
+     * Try to change username but it fails (for instance due to a duplicate entry).
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupChangeUsernameFailureTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
@@ -134,6 +167,10 @@ public class RoutesPlayerTest {
         assertEquals("HTTP/1.1 500 Server Error", response.getStatusLine().toString());
     }
 
+    /**
+     * Try to change the username of your player.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
     @Test
     public void setupChangeUsernameSuccessTest() throws IOException {
         PowerMockito.mockStatic(PlayerQueries.class);
