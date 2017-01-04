@@ -1,5 +1,6 @@
 package application;
 
+import framework.Aldo;
 import http.Routes;
 import mundus.ExpeditionMundus;
 
@@ -22,8 +23,11 @@ public final class App {
      */
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
-        Routes.setupRoutes();
+        Aldo.setupRoutes();
         ExpeditionMundus.create();
+        Routes.setupRoutes();
+        Aldo.start(); //Executes the http routes defined by expedition Mundus
+        // All web sockets should have been defined before.
     }
 
     /**

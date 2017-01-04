@@ -31,7 +31,7 @@ public final class Routes {
      * Setup all route hooks.
      */
     public static void setupRoutes() {
-        setupWebsocketRoutes();
+//        setupWebsocketRoutes();
         setupTokenValidation();
 
         setupCreateSessionRoute();
@@ -51,7 +51,6 @@ public final class Routes {
      * Setup the route that allows the use of websockets.
      */
     private static void setupWebsocketRoutes() {
-        webSocket("/socket/time", TimeWebSocket.class);
     }
 
     /**
@@ -61,7 +60,8 @@ public final class Routes {
         post("/token", (request, response) -> {
             Device device = Device.newDevice(request.headers("Authorization").split(":")[0]);
             if (device != null) {
-                return device.toJson();
+                response.body(device.toJson().toString());
+                return null;
             } else {
                 halt(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
                 return null;
@@ -70,7 +70,8 @@ public final class Routes {
 
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
-            if (!request.uri().equals("/token") && !request.uri().startsWith("/socket/")) { // TODO: 04/01/17 remove socket surpassing validation.
+            if (!request.uri().equals("/token") && !request.uri().startsWith("/subscribe/")) {
+                // TODO: 04/01/17 remove socket surpassing validation.
                 String[] stringArray = request.headers("Authorization").split(":");
                 Device device = new Device(stringArray[0], stringArray[1]);
                 if (!device.authenticate()) {
@@ -114,7 +115,8 @@ public final class Routes {
      */
     private static void setupSessionRoutes() {
         before("/session/:sessionID/*", (request, response) -> {
-                if(!(request.params("sessionID").equals("join") || request.params("sessionID").equals("username"))) {
+            if (!(request.params("sessionID").equals("join")
+                    || request.params("sessionID").equals("username"))) {
                     request.attribute("session",
                     validateSession(request.attribute("device"), request.params("sessionID")));
                 }
@@ -223,7 +225,7 @@ public final class Routes {
      * @param playerID The given playerID.
      * @return Whether the playerID corresponds with the device.
      */
-    private static Player validatePlayer(Device device, String playerID) {
+    public static Player validatePlayer(Device device, String playerID) {
         Player player = getPlayer(playerID);
         if (player.getDevice().equals(device)) {
             return player;

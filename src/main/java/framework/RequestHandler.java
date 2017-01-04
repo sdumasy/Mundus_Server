@@ -1,20 +1,18 @@
 package framework;
 
 import com.google.gson.JsonObject;
-import models.Device;
-
-import java.util.Map;
+import models.Player;
 
 /**
  * Interface for the methods the user should implement.
  */
-public interface Callback {
+public interface RequestHandler {
     /**
      * A method that is called when the corresponding path is called.
      *
-     * @param device The Player who makes the call.
-     * @param map    A map of the given data in the body.
+     * @param player The Player who makes the call.
+     * @param json   The json object from the body of the request.
      * @return A Json response.
      */
-    JsonObject execute(Device device, Map<String, Object> map);
+    JsonObject handle(Player player, JsonObject json);
 }

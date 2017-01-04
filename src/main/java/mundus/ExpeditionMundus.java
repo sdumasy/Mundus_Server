@@ -2,9 +2,7 @@ package mundus;
 
 import com.google.gson.JsonObject;
 import framework.Aldo;
-import http.TimeWebSocket;
 
-import java.time.LocalDateTime;
 
 /**
  * Temporary class for Expedition Mundus implementation, eventually this should gets its own project.
@@ -22,7 +20,10 @@ public final class ExpeditionMundus {
      * Creates http routes.
      */
     public static void create() {
-        Aldo.setupGameLoop(() -> TimeWebSocket.send(LocalDateTime.now().toString()), 1);
+//        Aldo.setupGameLoop(() -> Logger.getGlobal().log(Level.INFO, "Game loop is running!"),
+//                ((int) TimeUnit.SECONDS.toMillis((long) 1))); //No magic number :D
+        Aldo.subscribe("/1", new String[]{"/echo1"}, (player, sessionID) -> true);
+        Aldo.subscribe("/2", new String[]{"/echo2"}, (player, sessionID) -> true);
         questions();
         // TODO: 23/12/16 Subscribe?
     }
@@ -35,9 +36,15 @@ public final class ExpeditionMundus {
         // TODO: 23/12/16 Answer question.
         // TODO: 23/12/16 Get answered questions.
 
-        Aldo.post("/echo", (device, map) -> {
+        Aldo.post("/echo1", (player, json) -> {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", map.get("message") + device.getDeviceID());
+            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            return jsonObject;
+        });
+
+        Aldo.post("/echo2", (player, json) -> {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
             return jsonObject;
         });
     }
