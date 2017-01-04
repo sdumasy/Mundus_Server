@@ -100,6 +100,37 @@ CREATE TABLE `session_token` (
     ON UPDATE CASCADE);
 
 
+-- -----------------------------------------------------
+-- Table `question`
+-- -----------------------------------------------------
+CREATE TABLE `question` (
+  `question_id` INT NOT NULL,
+  `text` VARCHAR(1000) NULL,
+  PRIMARY KEY (`question_id`));
+
+
+-- -----------------------------------------------------
+-- Table `session_question`
+-- -----------------------------------------------------
+CREATE TABLE `session_question` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `question_id` INT NULL,
+  `player_id` VARCHAR(45) NOT NULL,
+  `answer` VARCHAR(1000) NOT NULL,
+  `reviewed` INT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `question_id`
+  FOREIGN KEY (`question_id`)
+  REFERENCES `question` (`question_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT `player_id`
+  FOREIGN KEY (`player_id`)
+  REFERENCES `session_player` (`player_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE);
+
+
 INSERT INTO `role` (`role_id`, `name`) VALUES (0, 'Admin');
 INSERT INTO `role` (`role_id`, `name`) VALUES (1, 'Moderator');
 INSERT INTO `role` (`role_id`, `name`) VALUES (2, 'User');

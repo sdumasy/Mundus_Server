@@ -32,9 +32,29 @@ public final class ExpeditionMundus {
      * Creates routes associated with research questions.
      */
     public static void questions() {
-        // TODO: 23/12/16 Assign/Get question.
-        // TODO: 23/12/16 Answer question.
-        // TODO: 23/12/16 Get answered questions.
+        Aldo.get("/player/:playerID/question", (player, json) -> {
+            // TODO: 23/12/16 Assign/Get question.
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            return jsonObject;
+        });
+
+        Aldo.post("/player/:playerID/question/:questionID/answer", (player, json) -> {
+            // TODO: 23/12/16 Answer question.
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            return jsonObject;
+        });
+
+        Aldo.get("/player/:playerID/publications", (player, json) -> {
+            // TODO: 23/12/16 Get an overview of all approved answers.
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            return jsonObject;
+        });
 
         Aldo.post("/echo1", (player, json) -> {
             JsonObject jsonObject = new JsonObject();
