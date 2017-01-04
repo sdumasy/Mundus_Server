@@ -7,12 +7,16 @@ import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
 import static database.SessionQueries.*;
+import static http.Routes.validateDevice;
 import static models.Player.getPlayer;
 import static spark.Spark.*;
+import static util.Halt.halter;
 
 /**
- * Routes concerning session.
+ * Could not be prevented easily.
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
+
 public final class RoutesSession {
     /**
      * Private constructor.
@@ -24,25 +28,25 @@ public final class RoutesSession {
      * Setup the route that allows the creation of a new session.
      */
     static void setupCreateSessionRoute() {
-        post("/session/username/:username", (request, response) ->
-                createSession(request.attribute("device"), request.params("username")));
+        post("/session/username/:username", validateDevice((request, device) ->
+                createSession(device, request.params("username"))));
     }
 
     /**
      * Setup the route that allows clients to join a session.
      */
     static void setupJoinSessionRoute() {
-        post("/session/join/:joinToken/username/:username", (request, response) -> {
+        post("/session/join/:joinToken/username/:username", validateDevice((request, device) -> {
             Player player = playerJoinSession(request.params("joinToken"),
-                    request.attribute("device"), request.params("username"));
+                    device, request.params("username"));
             if (player != null) {
                 //TODO: Notify admin (websocket) that a player joined.
                 return player.toJson();
             } else {
-                halt(HttpStatus.UNAUTHORIZED_401, "Could not add you to the session.");
+                halter(HttpStatus.UNAUTHORIZED_401, "Could not add you to the session.");
                 return null;
             }
-        });
+        }));
     }
 
     /**
@@ -67,14 +71,11 @@ public final class RoutesSession {
      */
     protected static Session validateSession(Device device, String sessionID) {
         Session session = Session.getSession(sessionID);
-        if (isMember(sessionID, device)) {
-            return session;
-        } else {
-            halt(HttpStatus.BAD_REQUEST_400,
+        if (!isMember(sessionID, device)) {
+            halter(HttpStatus.BAD_REQUEST_400,
                     "You are trying to access a session that you are not a member of.");
         }
-        //Unreachable code, halt() will stop request.
-        return null;
+        return session;
     }
 
     /**
@@ -95,7 +96,7 @@ public final class RoutesSession {
      * There is no role verification as everyone should be able to request any players score.
      */
     static void setupGetSessionPlayersRoute() {
-        post("/session/:sessionID/players", (request, response) -> getPlayers(request.params("sessionID")));
+        get("/session/:sessionID/players", (request, response) -> getPlayers(request.params("sessionID")));
     }
 
     /**
@@ -107,7 +108,7 @@ public final class RoutesSession {
             Device device = new Device(stringArray[0], stringArray[1]);
             if (!getPlayer(getSession(request.params("sessionID")).getAdminID()).getDevice()
                     .equals(device)) {
-                halt(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
+                halter(HttpStatus.FORBIDDEN_403, "You are not an administrator.");
             }
         });
 

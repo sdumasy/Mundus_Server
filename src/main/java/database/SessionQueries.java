@@ -111,16 +111,15 @@ public final class SessionQueries {
     public static Session getSession(String sessionID) {
         String query = "SELECT * FROM `session` WHERE `session_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
-        if (result.size() == 1) {
-            Map<String, Object> map = result.get(0);
-            return new Session(sessionID, map.get("player_id").toString(), (Integer) map.get("status"),
-                    Timestamp.valueOf(map.get("created").toString()).toLocalDateTime());
-        } else if (result.size() == 0) {
+        if (result.size() < 1) {
             halter(HttpStatus.NOT_FOUND_404, "No session found.");
-        } else {
+        }
+        if (result.size() > 1) {
             halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "SessionID not unique.");
         }
-        return null;
+        Map<String, Object> map = result.get(0);
+        return new Session(sessionID, map.get("player_id").toString(), (Integer) map.get("status"),
+                    Timestamp.valueOf(map.get("created").toString()).toLocalDateTime());
     }
 
     /**

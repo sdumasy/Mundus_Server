@@ -13,7 +13,7 @@ import static database.Database.executeSearchQuery;
 import static util.Halt.halter;
 
 /**
- * Created by Thomas on 4-1-2017.
+ * Mundus queries.
  */
 public final class MundusQueries {
 
@@ -31,7 +31,7 @@ public final class MundusQueries {
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject getQuestion(Player player) {
-        if(assignedQuestions(player.getPlayerID()) < 3) {
+        if (assignedQuestions(player.getPlayerID()) < 3) {
             return verifyAssignQuestion(player.getPlayerID(), player.getSession().getSessionID());
         } else {
             halter(HttpStatus.UNAUTHORIZED_401, "You have reached the maximum amount of assigned questions.");
@@ -57,11 +57,11 @@ public final class MundusQueries {
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject verifyAssignQuestion(String playerID, String sessionID) {
-        String query = "SELECT * FROM `question` WHERE `question`.`question_id` NOT IN ( " +
-                "SELECT `question_id` FROM `session_question` WHERE `session_id = ?)";
+        String query = "SELECT * FROM `question` WHERE `question`.`question_id` NOT IN ( "
+                + "SELECT `question_id` FROM `session_question` WHERE `session_id = ?)";
         List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
         Random r = new Random();
-        if(result.size() > 0) {
+        if (result.size() > 0) {
             int i = r.nextInt(result.size());
             Map<String, Object> m = result.get(i);
             return assignQuestion(m, playerID, sessionID);

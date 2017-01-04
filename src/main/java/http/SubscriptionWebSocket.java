@@ -1,14 +1,12 @@
 package http;
 
-import database.PlayerQueries;
+import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,16 +20,6 @@ import java.util.logging.Logger;
 @WebSocket
 public class SubscriptionWebSocket {
     private Map<String, Queue<Session>> sessions = new ConcurrentHashMap<>();
-    private String prefix;
-
-    /**
-     * A new subscription webSocket to a specific path.
-     *
-     * @param path The path to subscribe with.
-     */
-    public SubscriptionWebSocket(String path) {
-        this.prefix = path;
-    }
 
     /**
      * Sends a message to all the sessions.
@@ -44,9 +32,7 @@ public class SubscriptionWebSocket {
             for (Session session : sessions.get(id)) {
                 try {
                     session.getRemote().sendString(message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (WebSocketException e) {
+                } catch (Exception e) {
                     Logger.getGlobal().log(Level.WARNING, e.getMessage());
                 }
             }
@@ -71,11 +57,11 @@ public class SubscriptionWebSocket {
      * Closes and removes session from connected web sockets.
      *
      * @param session    The session to close.
-     * @param statusCode The status to close it with.
-     * @param reason     The reason to close it.
+     * @param code       code of the close reason.
+     * @param reason    Reason message of close.
      */
     @OnWebSocketClose
-    public void closed(Session session, int statusCode, String reason) {
+    public void closed(Session session, int code, String reason) {
         String id = getSessionID(session);
         sessions.get(id).remove(session);
         if (sessions.get(id).isEmpty()) {
@@ -91,12 +77,19 @@ public class SubscriptionWebSocket {
      */
     protected String getSessionID(Session session) {
         String[] authorizationValues = session.getUpgradeRequest().getHeader("Authorization").split(":");
-        if (authorizationValues.length == 3) {
-            return PlayerQueries.getPlayer(authorizationValues[2]).getSession().getSessionID();
-        } else {
+        if (authorizationValues.length < 3) {
             session.close(HttpStatus.BAD_REQUEST_400, "Invalid Authorization header.");
-            return null;
         }
+        return Player.getPlayer(authorizationValues[2]).getSession().getSessionID();
+
     }
 
+    /**
+     * Getter for sessions.
+     *
+     * @return The sessions.
+     */
+    protected Map<String, Queue<Session>> getSessions() {
+        return sessions;
+    }
 }

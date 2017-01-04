@@ -5,10 +5,22 @@ import com.google.gson.JsonObject;
 import static spark.Spark.halt;
 
 /**
- * Created by Thomas on 4-1-2017.
+ * Halts the http request.
  */
-public class Halt {
+public final class Halt {
 
+    /**
+     * Private constructor.
+     */
+    private Halt() {
+    }
+
+    /**
+     * Halts the http request.
+     *
+     * @param status       Status of the halt.
+     * @param errorMessage Message for the error.
+     */
     public static void halter(int status, String errorMessage) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("halt", errorMessage);

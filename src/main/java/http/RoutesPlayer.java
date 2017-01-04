@@ -2,18 +2,22 @@ package http;
 
 import com.google.gson.JsonArray;
 import database.PlayerQueries;
-import models.Device;
 import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 
-import java.util.List;
-
+import static http.Routes.validateDevice;
+import static http.Routes.validatePlayer;
 import static models.Player.getPlayer;
-import static spark.Spark.*;
+import static spark.Spark.get;
+import static spark.Spark.put;
+import static util.Halt.halter;
 
 /**
- * Routes for player.
+ * Could not be prevented easily.
  */
+@SuppressWarnings("PMD.TooManyStaticImports")
+
+
 public final class RoutesPlayer {
 
     /**
@@ -26,41 +30,13 @@ public final class RoutesPlayer {
      * Returns all the players of the given device.
      */
     static void setupGetAllPlayersOfDevice() {
-        get("/player/all", (request, response) -> {
-            List<Player> list = PlayerQueries.getAllPlayers(request.attribute("device"));
-
+        get("/player/all", validateDevice((request, device) -> {
             JsonArray jsonArray = new JsonArray();
-            for (Player player : list) {
-                jsonArray.add(player.toJson());
+            for (Player p : PlayerQueries.getAllPlayers(device)) {
+                jsonArray.add(p.toJson());
             }
             return jsonArray;
-        });
-    }
-
-    /**
-     * Validates the playerID and stores it in the request attributed for the specific path.
-     */
-    static void setupPlayerRoutes() {
-        before("/player/:playerID/*", (request, response) -> request.attribute("player",
-                validatePlayer(request.attribute("device"), request.params("playerID"))));
-    }
-
-    /**
-     * Validates that the given playerID is from the given device.
-     *
-     * @param device   The users device.
-     * @param playerID The given playerID.
-     * @return Whether the playerID corresponds with the device.
-     */
-    public static Player validatePlayer(Device device, String playerID) {
-        Player player = getPlayer(playerID);
-        if (player.getDevice().equals(device)) {
-            return player;
-        } else {
-            halt(HttpStatus.BAD_REQUEST_400, "You are trying to access a player that is not yours.");
-        }
-        //Unreachable code, halt() will stop request.
-        return null;
+        }));
     }
 
     /**
@@ -69,26 +45,20 @@ public final class RoutesPlayer {
      * There is no role verification as everyone should be able to request any players score.
      */
     static void setupGetPlayerRoute() {
-        get("/player/:playerID", (request, response) -> {
-            Player player = validatePlayer(request.attribute("device"), request.params("playerID"));
-
-            assert player != null;
-            return player.toJson();
-        });
+        get("/player", validatePlayer((request, player) -> player.toJson()));
     }
 
     /**
      * Changes the username of the player.
      */
     static void setupChangeUsername() {
-        put("/player/:playerID/username/:username", (request, response) -> {
-            Player player = request.attribute("player");
+        put("/player/username/:username", validatePlayer((request, player) -> {
             if (PlayerQueries.setUsername(player, request.params("username"))) {
                 return getPlayer(player.getPlayerID()).toJson();
             } else {
-                halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Failed to set username.");
+                halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "Failed to set username.");
                 return null;
             }
-        });
+        }));
     }
 }

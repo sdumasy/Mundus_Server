@@ -30,13 +30,15 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by Thomas on 3-1-2017.
+ * Tests player routes.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SessionQueries.class, AuthenticationTokenQueries.class, PlayerQueries.class})
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesPlayerTest {
     private static final String MOCKED_TOKEN = "some_token";
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     /**
      * Start the spark framework.
@@ -47,15 +49,6 @@ public class RoutesPlayerTest {
     }
 
     /**
-     * Mock the token validation and always return the same token.
-     */
-    @Before
-    public  void before() {
-        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
-        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
-    }
-
-    /**
      * Stop the spark framework.
      */
     @AfterClass
@@ -63,8 +56,14 @@ public class RoutesPlayerTest {
         Spark.stop();
     }
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+    /**
+     * Mock the token validation and always return the same token.
+     */
+    @Before
+    public  void before() {
+        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
+        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
+    }
 
     /**
      *  Try getting all players coupled to your device.
@@ -80,7 +79,7 @@ public class RoutesPlayerTest {
         players.add(new Player("2", session, device, Role.Admin, 0, ""));
         when(PlayerQueries.getAllPlayers(any())).thenReturn(players);
         String uri = "/player/all";
-        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -102,23 +101,6 @@ public class RoutesPlayerTest {
     }
 
     /**
-     * Try to perform an action with an invalid player object.
-     * @throws IOException Throws an exception if the request execution fails.
-     */
-    @Test
-    public void setupPlayerValidationFailureTest() throws IOException {
-        PowerMockito.mockStatic(PlayerQueries.class);
-        Device device = new Device("Other_Device_ID", "Other_token");
-        Session session = new Session("", "", 1, LocalDateTime.now());
-        when(PlayerQueries.getPlayer(any())).thenReturn(
-                new Player("", session, device, Role.Admin, 0, ""));
-
-        String uri = "/player/some_playerID/some_action";
-        HttpResponse response = processAuthorizedPostRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
-        assertEquals("HTTP/1.1 400 Bad Request", response.getStatusLine().toString());
-    }
-
-    /**
      * Try to get the player object corresponding with the provided ID.
      * @throws IOException Throws an exception if the request execution fails.
      */
@@ -130,8 +112,8 @@ public class RoutesPlayerTest {
         when(PlayerQueries.getPlayer(any())).thenReturn(
                 new Player("", session, device, Role.Admin, 0, ""));
 
-        String uri = "/player/some_playerID";
-        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        String uri = "/player";
+        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN, "playerID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -144,8 +126,8 @@ public class RoutesPlayerTest {
         PowerMockito.mockStatic(PlayerQueries.class);
         when(PlayerQueries.getPlayer(any())).thenReturn(null);
 
-        String uri = "/player/some_playerID";
-        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        String uri = "/player";
+        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN, null);
         assertEquals("HTTP/1.1 500 Server Error", response.getStatusLine().toString());
     }
 
@@ -162,8 +144,8 @@ public class RoutesPlayerTest {
                 new Player("", session, device, Role.Admin, 0, ""));
         when(PlayerQueries.setUsername(any(), any())).thenReturn(false);
 
-        String uri = "/player/some_playerID/username/some_username";
-        HttpResponse response = processAuthorizedPutRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        String uri = "/player/username/some_username";
+        HttpResponse response = processAuthorizedPutRoute(uri, "Device_ID", MOCKED_TOKEN, "player");
         assertEquals("HTTP/1.1 500 Server Error", response.getStatusLine().toString());
     }
 
@@ -180,8 +162,8 @@ public class RoutesPlayerTest {
                 new Player("", session, device, Role.Admin, 0, ""));
         when(PlayerQueries.setUsername(any(), any())).thenReturn(true);
 
-        String uri = "/player/some_playerID/username/some_username";
-        HttpResponse response = processAuthorizedPutRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        String uri = "/player/username/some_username";
+        HttpResponse response = processAuthorizedPutRoute(uri, "Device_ID", MOCKED_TOKEN, "player");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 }

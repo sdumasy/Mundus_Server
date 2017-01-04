@@ -139,7 +139,7 @@ public class RoutesSessionTest {
         when(SessionQueries.isMember(any(), any())).thenReturn(true);
 
         String uri = "/session/some_id";
-        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -206,7 +206,7 @@ public class RoutesSessionTest {
         setSessionStatusSetup();
 
         String uri = "/session/some_id/manage/play";
-        HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -219,7 +219,7 @@ public class RoutesSessionTest {
         setSessionStatusSetup();
 
         String uri = "/session/some_id/manage/pause";
-        HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 

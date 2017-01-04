@@ -44,7 +44,7 @@ public final class Aldo {
      */
     public static SubscriptionWebSocket subscribe(String path, String[] paths,
                                                   SubscriptionVerifier subscriptionVerifier) {
-        SubscriptionWebSocket webSocket = new SubscriptionWebSocket("/subscribe/" + simplifyPath(path) + "/");
+        SubscriptionWebSocket webSocket = new SubscriptionWebSocket();
         Spark.webSocket("/subscribe/" + simplifyPath(path), webSocket);
         addRoute(() -> Spark.before("/subscribe/" + simplifyPath(path), (request, response) -> {
             Player player = request.attribute("player");
