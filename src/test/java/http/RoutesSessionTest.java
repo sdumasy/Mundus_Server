@@ -24,7 +24,7 @@ import spark.Spark;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static http.Routes.validateSession;
+import static http.RoutesSession.validateSession;
 import static http.RoutesTest.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -39,6 +39,8 @@ import static org.mockito.Mockito.when;
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesSessionTest {
     private static final String MOCKED_TOKEN = "some_token";
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     /**
      * Start the spark framework.
@@ -49,15 +51,6 @@ public class RoutesSessionTest {
     }
 
     /**
-     * Mock the token validation and always return the same token.
-     */
-    @Before
-    public  void before() {
-        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
-        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
-    }
-
-    /**
      * Stop the spark framework.
      */
     @AfterClass
@@ -65,8 +58,14 @@ public class RoutesSessionTest {
         Spark.stop();
     }
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+    /**
+     * Mock the token validation and always return the same token.
+     */
+    @Before
+    public  void before() {
+        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
+        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
+    }
 
     /**
      * Try creating a session.
