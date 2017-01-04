@@ -19,6 +19,10 @@ import static org.junit.Assert.assertTrue;
  * Tests the player queries.
  */
 public class PlayerQueriesTest {
+
+    /**
+     * Make sure the database is clean before we do anything else.
+     */
     @BeforeClass
     public static void clean() {
         DatabaseTest.cleanDatabase();

@@ -48,7 +48,7 @@ public final class AuthenticationTokenQueries {
             return null;
         } else {
             halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
+            return null;
         }
-        return null;
     }
 }
