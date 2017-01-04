@@ -18,13 +18,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import spark.HaltException;
 import spark.Spark;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static http.RoutesSession.validateSession;
 import static http.RoutesTest.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -32,7 +30,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by Thomas on 3-1-2017.
+ * Tests RouteSession.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SessionQueries.class, AuthenticationTokenQueries.class, PlayerQueries.class})
@@ -122,8 +120,8 @@ public class RoutesSessionTest {
     public void setupUnauthorizedSessionTest() throws IOException {
         PowerMockito.mockStatic(SessionQueries.class);
         when(SessionQueries.getSession(any())).thenReturn(null);
-        String uri = "/session/some_id/some_action";
-        HttpResponse response = processAuthorizedPostRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        String uri = "/session";
+        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 400 Bad Request", response.getStatusLine().toString());
     }
 
@@ -134,12 +132,16 @@ public class RoutesSessionTest {
     @Test
     public void setupGetSessionTest() throws IOException {
         PowerMockito.mockStatic(SessionQueries.class);
+        PowerMockito.mockStatic(PlayerQueries.class);
         Session session = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
         when(SessionQueries.getSession(any())).thenReturn(session);
-        when(SessionQueries.isMember(any(), any())).thenReturn(true);
 
-        String uri = "/session/some_id";
-        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN);
+        when(PlayerQueries.getPlayer(any())).thenReturn(new Player("player", session,
+                new Device(DatabaseTest.DEVICE_ID, MOCKED_TOKEN), Role.User, 0, ""));
+
+        String uri = "/session";
+        HttpResponse response = processAuthorizedGetRoute(uri,
+                DatabaseTest.DEVICE_ID, MOCKED_TOKEN, "player");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -176,16 +178,15 @@ public class RoutesSessionTest {
         when(SessionQueries.isMember(any(), any())).thenReturn(true);
 
         PowerMockito.mockStatic(PlayerQueries.class);
-        when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.Admin, 0, ""));
+        when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.User, 0, ""));
 
-        String uri = "/session/some_id/manage/some_action";
-        HttpResponse response = processAuthorizedPostRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        String uri = "/session/manage/play";
+        HttpResponse response = processAuthorizedPutRoute(uri, "OtherID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 403 Forbidden", response.getStatusLine().toString());
     }
 
     /**
      * Verify that only admins can change the session status.
-     * @throws IOException Throws an exception if the request execution fails.
      */
     public void setSessionStatusSetup() {
         Device device = new Device("DeviceID", MOCKED_TOKEN);
@@ -205,8 +206,8 @@ public class RoutesSessionTest {
     public void setSessionStatusPlayTest() throws IOException {
         setSessionStatusSetup();
 
-        String uri = "/session/some_id/manage/play";
-        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN);
+        String uri = "/session/manage/play";
+        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -218,8 +219,8 @@ public class RoutesSessionTest {
     public void setSessionStatusPauseTest() throws IOException {
         setSessionStatusSetup();
 
-        String uri = "/session/some_id/manage/pause";
-        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN);
+        String uri = "/session/manage/pause";
+        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -231,41 +232,8 @@ public class RoutesSessionTest {
     public void setSessionStatusDeleteTest() throws IOException {
         setSessionStatusSetup();
 
-        String uri = "/session/some_id/manage/delete";
-        HttpResponse response = processAuthorizedDeleteRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        String uri = "/session/manage/delete";
+        HttpResponse response = processAuthorizedDeleteRoute(uri, "DeviceID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
-    }
-
-    /**
-     * Test a successful session validation.
-     * @throws IOException Throws an exception if the request execution fails.
-     */
-    @Test
-    public void validateSessionTest() throws IOException {
-        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
-        Session session1 = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
-
-        PowerMockito.mockStatic(SessionQueries.class);
-        when(SessionQueries.getSession(anyString())).thenReturn(session1);
-        when(SessionQueries.isMember(DatabaseTest.SESSION_ID, device)).thenReturn(true);
-
-        Session session2 = validateSession(device, DatabaseTest.SESSION_ID);
-        assertEquals(session1, session2);
-    }
-
-    /**
-     * Test a failing session validation.
-     * @throws IOException Throws an exception if the request execution fails.
-     */
-    @Test
-    public void validateSessionFalseTest() throws IOException {
-        Device device = new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN);
-
-        PowerMockito.mockStatic(SessionQueries.class);
-        when(SessionQueries.getSession(anyString())).thenReturn(null);
-        when(SessionQueries.isMember(DatabaseTest.SESSION_ID, device)).thenReturn(false);
-
-        exception.expect(HaltException.class);
-        validateSession(device, DatabaseTest.SESSION_ID);
     }
 }

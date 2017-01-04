@@ -42,13 +42,12 @@ public final class AuthenticationTokenQueries {
     public static String selectAuthorizationToken(String deviceID) {
         String query = "SELECT `auth_token` FROM `device` WHERE `device_id` = ?";
         List<Map<String, Object>> result = executeSearchQuery(query, deviceID);
-        if (result.size() == 1) {
-            return result.get(0).get("auth_token").toString();
-        } else if (result.size() == 0) {
-            return null;
-        } else {
+        if (result.size() > 1) {
             halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "DeviceID not unique.");
-            return null;
         }
+        if (result.size() == 1) {
+            halter(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
+        }
+        return result.get(0).get("auth_token").toString();
     }
 }

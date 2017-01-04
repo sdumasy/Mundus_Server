@@ -29,11 +29,8 @@ public class Device {
      * @return A new device.
      */
     public static Device newDevice(String deviceID) {
-        if (selectAuthorizationToken(deviceID) == null) {
-            return new Device(deviceID, CreateUniqueIDs.createToken(deviceID));
-        } else {
-            return null;
-        }
+        selectAuthorizationToken(deviceID);
+        return new Device(deviceID, CreateUniqueIDs.createToken(deviceID));
     }
 
     /**
