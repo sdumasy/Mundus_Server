@@ -27,7 +27,6 @@ public final class ExpeditionMundus {
         Aldo.subscribe("/1", new String[]{"/echo1"}, (player, sessionID) -> true);
         Aldo.subscribe("/2", new String[]{"/echo2"}, (player, sessionID) -> true);
         questions();
-        // TODO: 23/12/16 Subscribe?
     }
 
     /**
@@ -35,7 +34,6 @@ public final class ExpeditionMundus {
      */
     public static void questions() {
         Aldo.get("/question", (player, json) -> getQuestion(player));
-
         Aldo.post("/question/:questionID/answer", (player, json) -> {
             // TODO: 23/12/16 Answer question.
 

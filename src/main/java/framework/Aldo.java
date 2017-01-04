@@ -3,8 +3,8 @@ package framework;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import database.PlayerQueries;
-import http.Routes;
 import http.SubscriptionWebSocket;
+import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Route;
 import spark.Spark;
@@ -34,35 +34,35 @@ public final class Aldo {
     }
 
     /**
-     * Prepares the routes.
-     */
-    public static void setupRoutes() {
-        addRoute(() -> Spark.before("/Aldo/player/:playerID/*", (request, response) ->
-                Routes.validatePlayer(request.attribute("device"), request.params("playerID"))));
-    }
-
-    /**
      * Allows users to subscribe to paths, they wil then receive the same result as people querying those paths.
-     *
-     * @param path                 The path to subscribe to.
+     *  @param path                 The path to subscribe to.
      * @param paths                The paths that the subscription will inform on.
      * @param subscriptionVerifier A verifier that defines who is allowed to subscribe.
+     * @return The websocket of the subscription.
      */
-    public static void subscribe(String path, String[] paths, SubscriptionVerifier subscriptionVerifier) {
+    public static SubscriptionWebSocket subscribe(String path, String[] paths,
+                                                  SubscriptionVerifier subscriptionVerifier) {
         SubscriptionWebSocket webSocket = new SubscriptionWebSocket("/subscribe/" + simplifyPath(path) + "/");
-        Spark.webSocket("/subscribe/" + simplifyPath(path) + "/*", webSocket);
-        addRoute(() -> Spark.before("/subscribe/" + simplifyPath(path) + "/:sessionID", (request, response) -> {
-            // TODO: 03/01/17 Get player and sessionID.
-            if (!subscriptionVerifier.handle(null, request.params("sessionID"))) {
+        Spark.webSocket("/subscribe/" + simplifyPath(path), webSocket);
+        addRoute(() -> Spark.before("/subscribe/" + simplifyPath(path), (request, response) -> {
+            Player player = request.attribute("player");
+            if (!subscriptionVerifier.handle(player, player.getSession().getSessionID())) {
                 Spark.halt(HttpStatus.UNAUTHORIZED_401, "You are unauthorized");
             }
         }));
 
         for (String s : paths) {
-            addRoute(() -> Spark.after("/Aldo/player/:playerID/" + simplifyPath(s), (request, response) ->
-                    webSocket.send(PlayerQueries.getPlayer(request.params("playerID")).getSession().getSessionID(),
-                            response.body())));
+            addRoute(() -> Spark.after("/Aldo/" + simplifyPath(s), (request, response) -> {
+                String[] authorizationValues = request.headers("Authorization").split(":");
+                if (authorizationValues.length == 3) {
+                    webSocket.send(PlayerQueries.getPlayer(authorizationValues[2]).getSession().getSessionID(),
+                            response.body());
+                } else {
+                    Spark.halt(HttpStatus.BAD_REQUEST_400);
+                }
+            }));
         }
+        return webSocket;
     }
 
     /**
@@ -128,7 +128,7 @@ public final class Aldo {
             if (!request.body().equals("")) {
                 jsonObject = new JsonParser().parse(request.body()).getAsJsonObject();
             }
-            response.body(requestHandler.handle(PlayerQueries.getPlayer(request.params("playerID")),
+            response.body(requestHandler.handle(request.attribute("player"),
                     jsonObject).toString());
             return null;
         };
@@ -154,8 +154,7 @@ public final class Aldo {
      * @param implementation The implementation by the user.
      */
     public static void post(String path, RequestHandler implementation) {
-        addRoute(() -> Spark.post("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
-
+        addRoute(() -> Spark.post("/Aldo/" + simplifyPath(path), toRoute(implementation)));
     }
 
     /**
@@ -165,7 +164,7 @@ public final class Aldo {
      * @param implementation The implementation by the user.
      */
     public static void get(String path, RequestHandler implementation) {
-        addRoute(() -> Spark.get("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
+        addRoute(() -> Spark.get("/Aldo/" + simplifyPath(path), toRoute(implementation)));
 
     }
 
@@ -176,7 +175,7 @@ public final class Aldo {
      * @param implementation The implementation by the user.
      */
     public static void put(String path, RequestHandler implementation) {
-        addRoute(() -> Spark.put("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
+        addRoute(() -> Spark.put("/Aldo/" + simplifyPath(path), toRoute(implementation)));
 
     }
 
@@ -187,7 +186,7 @@ public final class Aldo {
      * @param implementation The implementation by the user.
      */
     public static void delete(String path, RequestHandler implementation) {
-        addRoute(() -> Spark.delete("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
+        addRoute(() -> Spark.delete("/Aldo/" + simplifyPath(path), toRoute(implementation)));
 
     }
 }

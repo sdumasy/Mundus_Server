@@ -31,7 +31,7 @@ public final class Routes {
      * Setup all route hooks.
      */
     public static void setupRoutes() {
-//        setupWebsocketRoutes();
+        setupTokenRoute();
         setupTokenValidation();
 
         setupCreateSessionRoute();
@@ -48,41 +48,45 @@ public final class Routes {
     }
 
     /**
-     * Setup the route that allows the use of websockets.
+     * Creates route to get a token.
      */
-    private static void setupWebsocketRoutes() {
+    private static void setupTokenRoute() {
+        post("/token", (request, response) -> {
+            Device device = Device.newDevice(request.headers("Authorization").split(":")[0]);
+            if (device != null) {
+                response.body(device.toJson().toString());
+            } else {
+                halt(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
+            }
+            return null;
+        });
     }
 
     /**
      * Setup the route for new tokens and intercept all other requests that don't come with a proper deviceID and token.
      */
     private static void setupTokenValidation() {
-        post("/token", (request, response) -> {
-            Device device = Device.newDevice(request.headers("Authorization").split(":")[0]);
-            if (device != null) {
-                response.body(device.toJson().toString());
-                return null;
-            } else {
-                halt(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
-                return null;
-            }
-        });
-
         before((request, response) -> {
             Logger.getGlobal().log(Level.INFO, request.requestMethod() + ": " + request.uri());
-            if (!request.uri().equals("/token") && !request.uri().startsWith("/subscribe/")) {
-                // TODO: 04/01/17 remove socket surpassing validation.
-                String[] stringArray = request.headers("Authorization").split(":");
-                Device device = new Device(stringArray[0], stringArray[1]);
+            if (!request.uri().equals("/token")) {
+                String[] authorizationValues = request.headers("Authorization").split(":");
+                // TODO: 04/01/17 Halt if there is no authorization header
+                Device device = new Device(authorizationValues[0], authorizationValues[1]);
                 if (!device.authenticate()) {
                     halt(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
                 } else {
                     request.attribute("device", device);
                 }
+                if (authorizationValues.length == 3) {
+                    Player player = PlayerQueries.getPlayer(authorizationValues[2]);
+                    if (player.getDevice().equals(device)) {
+                        request.attribute("player", player);
+                    } else {
+                        halt(HttpStatus.UNAUTHORIZED_401, "PlayerID does not match deviceID.");
+                    }
+                }
             }
         });
-
-        after((request, response) -> Logger.getGlobal().log(Level.INFO, "Response: " + response.raw()));
     }
 
     /**

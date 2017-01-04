@@ -23,7 +23,6 @@ public final class App {
      */
     public static void main(String[] args) {
         port(getHerokuAssignedPort());
-        Aldo.setupRoutes();
         ExpeditionMundus.create();
         Routes.setupRoutes();
         Aldo.start(); //Executes the http routes defined by expedition Mundus

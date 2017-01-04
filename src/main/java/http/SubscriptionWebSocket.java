@@ -1,13 +1,12 @@
 package http;
 
+import database.PlayerQueries;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.websocket.common.WebSocketSession;
-import spark.Spark;
 
 import java.io.IOException;
 import java.util.Map;
@@ -22,8 +21,6 @@ import java.util.logging.Logger;
  */
 @WebSocket
 public class SubscriptionWebSocket {
-    // TODO: 03/01/17 Make subscription per path.
-
     private Map<String, Queue<Session>> sessions = new ConcurrentHashMap<>();
     private String prefix;
 
@@ -93,12 +90,11 @@ public class SubscriptionWebSocket {
      * @return The sessionID.
      */
     protected String getSessionID(Session session) {
-        String path = ((WebSocketSession) session).getRequestURI().getRawPath();
-        // TODO: 04/01/17 Change to .getUpgradeRequest().getHeader("authorization") to get the sessionID
-        if (path.startsWith(prefix)) {
-            return path.substring(prefix.length());
+        String[] authorizationValues = session.getUpgradeRequest().getHeader("Authorization").split(":");
+        if (authorizationValues.length == 3) {
+            return PlayerQueries.getPlayer(authorizationValues[2]).getSession().getSessionID();
         } else {
-            Spark.halt(HttpStatus.BAD_REQUEST_400);
+            session.close(HttpStatus.BAD_REQUEST_400, "Invalid Authorization header.");
             return null;
         }
     }
