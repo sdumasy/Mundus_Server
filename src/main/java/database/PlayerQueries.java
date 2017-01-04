@@ -13,6 +13,7 @@ import java.util.Map;
 import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
 import static spark.Spark.halt;
+import static util.Halt.halter;
 
 /**
  * Queries needed for teh Player class.
@@ -92,11 +93,11 @@ public final class PlayerQueries {
                         player.getSession().getSessionID(), player.getRoleID(),
                         player.getScore(), player.getUsername());
             } else {
-                halt(HttpStatus.UNAUTHORIZED_401, "Username already used.");
+                halter(HttpStatus.UNAUTHORIZED_401, "Username already used.");
                 return false;
             }
         } else {
-            halt(HttpStatus.UNAUTHORIZED_401, "Player already created.");
+            halter(HttpStatus.UNAUTHORIZED_401, "Player already created.");
             return false;
         }
     }
@@ -135,9 +136,9 @@ public final class PlayerQueries {
         if (list.size() == 1) {
             return createPlayer(list.get(0));
         } else if (list.size() == 0) {
-            halt(HttpStatus.UNAUTHORIZED_401, "No player found.");
+            halter(HttpStatus.UNAUTHORIZED_401, "No player found.");
         } else {
-            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Player not unique.");
+            halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "Player not unique.");
         }
         return null;
     }

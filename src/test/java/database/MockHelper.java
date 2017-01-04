@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by Thomas on 4-1-2017.
  */
-final class MockHelper {
+public final class MockHelper {
     private static String s;
     private static Object o;
     private static Map<String, Object> m;
@@ -34,7 +34,7 @@ final class MockHelper {
     /**
      * Helper method that sets up return maps for search querries in case the calls are mocked.
      */
-    static void beforeMock() {
+    public static void beforeMock() {
         s = "";
         o = "";
         m = new HashMap<>();

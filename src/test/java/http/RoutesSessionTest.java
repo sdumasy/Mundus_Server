@@ -24,7 +24,7 @@ import spark.Spark;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static http.Routes.validateSession;
+import static http.RoutesSession.validateSession;
 import static http.RoutesTest.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -39,6 +39,8 @@ import static org.mockito.Mockito.when;
 @PowerMockIgnore("javax.net.ssl.*")
 public class RoutesSessionTest {
     private static final String MOCKED_TOKEN = "some_token";
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     /**
      * Start the spark framework.
@@ -49,15 +51,6 @@ public class RoutesSessionTest {
     }
 
     /**
-     * Mock the token validation and always return the same token.
-     */
-    @Before
-    public  void before() {
-        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
-        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
-    }
-
-    /**
      * Stop the spark framework.
      */
     @AfterClass
@@ -65,8 +58,14 @@ public class RoutesSessionTest {
         Spark.stop();
     }
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+    /**
+     * Mock the token validation and always return the same token.
+     */
+    @Before
+    public  void before() {
+        PowerMockito.mockStatic(AuthenticationTokenQueries.class);
+        when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
+    }
 
     /**
      * Try creating a session.
@@ -140,7 +139,7 @@ public class RoutesSessionTest {
         when(SessionQueries.isMember(any(), any())).thenReturn(true);
 
         String uri = "/session/some_id";
-        HttpResponse response = processAuthorizedGetRoute(uri, new Device("Device_ID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedGetRoute(uri, "Device_ID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -207,7 +206,7 @@ public class RoutesSessionTest {
         setSessionStatusSetup();
 
         String uri = "/session/some_id/manage/play";
-        HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
@@ -220,7 +219,7 @@ public class RoutesSessionTest {
         setSessionStatusSetup();
 
         String uri = "/session/some_id/manage/pause";
-        HttpResponse response = processAuthorizedPutRoute(uri, new Device("DeviceID", MOCKED_TOKEN));
+        HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN);
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
 
