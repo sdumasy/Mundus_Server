@@ -12,6 +12,8 @@ import spark.Spark;
 import java.util.LinkedList;
 import java.util.List;
 
+import static util.Halt.halter;
+
 /**
  * Connection class to framework.
  */
@@ -47,7 +49,7 @@ public final class Aldo {
         addRoute(() -> Spark.before("/subscribe/" + simplifyPath(path), (request, response) -> {
             Player player = request.attribute("player");
             if (!subscriptionVerifier.handle(player, player.getSession().getSessionID())) {
-                Spark.halt(HttpStatus.UNAUTHORIZED_401, "You are unauthorized");
+                halter(HttpStatus.UNAUTHORIZED_401, "You are unauthorized");
             }
         }));
 
@@ -58,7 +60,7 @@ public final class Aldo {
                     webSocket.send(PlayerQueries.getPlayer(authorizationValues[2]).getSession().getSessionID(),
                             response.body());
                 } else {
-                    Spark.halt(HttpStatus.BAD_REQUEST_400);
+                    halter(HttpStatus.BAD_REQUEST_400, "Bad request");
                 }
             }));
         }

@@ -16,7 +16,7 @@ import static database.CreateUniqueIDs.generateUniqueID;
 import static database.CreateUniqueIDs.generateUniqueJoinToken;
 import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
-import static spark.Spark.halt;
+import static util.Halt.halter;
 
 /**
  * Contains the sql queries for the sessions.
@@ -81,9 +81,9 @@ public final class SessionQueries {
             return Player.newPlayer(Session.getSession(map.get("session_id").toString()),
                     (int) map.get("role_id"), device, 0, username);
         } else if (result.size() == 0) {
-            halt(HttpStatus.UNAUTHORIZED_401, "Invalid joinToken");
+            halter(HttpStatus.UNAUTHORIZED_401, "Invalid joinToken");
         } else {
-            halt(HttpStatus.UNAUTHORIZED_401, "Identical joinTokens in database");
+            halter(HttpStatus.UNAUTHORIZED_401, "Identical joinTokens in database");
         }
         return null;
     }
@@ -116,9 +116,9 @@ public final class SessionQueries {
             return new Session(sessionID, map.get("player_id").toString(), (Integer) map.get("status"),
                     Timestamp.valueOf(map.get("created").toString()).toLocalDateTime());
         } else if (result.size() == 0) {
-            halt(HttpStatus.NOT_FOUND_404, "No session found.");
+            halter(HttpStatus.NOT_FOUND_404, "No session found.");
         } else {
-            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "SessionID not unique.");
+            halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "SessionID not unique.");
         }
         return null;
     }

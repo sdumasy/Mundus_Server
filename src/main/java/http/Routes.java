@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static spark.Spark.*;
+import static util.Halt.halter;
 
 /**
  * Declares the API routes.
@@ -51,7 +52,7 @@ public final class Routes {
                 response.body(device.toJson().toString());
                 return response.body();
             } else {
-                halt(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
+                halter(HttpStatus.UNAUTHORIZED_401, "Already have an authentication token.");
                 return null;
             }
         });
@@ -68,7 +69,7 @@ public final class Routes {
                 // TODO: 04/01/17 Halt if there is no authorization header
                 Device device = new Device(authorizationValues[0], authorizationValues[1]);
                 if (!device.authenticate()) {
-                    halt(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
+                    halter(HttpStatus.UNAUTHORIZED_401, "Invalid Token or deviceID.");
                 } else {
                     request.attribute("device", device);
                 }
@@ -77,7 +78,7 @@ public final class Routes {
                     if (player.getDevice().equals(device)) {
                         request.attribute("player", player);
                     } else {
-                        halt(HttpStatus.UNAUTHORIZED_401, "PlayerID does not match deviceID.");
+                        halter(HttpStatus.UNAUTHORIZED_401, "PlayerID does not match deviceID.");
                     }
                 }
             }

@@ -20,15 +20,15 @@ public final class Database {
     private static Connection connection = null;
 
 
-//    private static String url =
-//            "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/"
-//                    + "z7vnfv6y27vhnelm?useSSL=false";
-//    private static String user = "yum29ckgulepk404";
-//    private static String password = "xp5oc6vwuz4tijx4";
+    private static String url =
+            "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/"
+                    + "z7vnfv6y27vhnelm?useSSL=false";
+    private static String user = "yum29ckgulepk404";
+    private static String password = "xp5oc6vwuz4tijx4";
 
-    private static String url = "jdbc:mysql://127.0.0.1:3306/mundus?useSSL=false";
-    private static String user = "root";
-    private static String password = "";
+//    private static String url = "jdbc:mysql://127.0.0.1:3306/mundus?useSSL=false";
+//    private static String user = "root";
+//    private static String password = "";
 
     /**
      * Private constructor.

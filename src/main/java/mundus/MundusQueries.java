@@ -10,7 +10,7 @@ import java.util.Random;
 
 import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
-import static spark.Spark.halt;
+import static util.Halt.halter;
 
 /**
  * Created by Thomas on 4-1-2017.
@@ -34,7 +34,7 @@ public final class MundusQueries {
         if(assignedQuestions(player.getPlayerID()) < 3) {
             return verifyAssignQuestion(player.getPlayerID(), player.getSession().getSessionID());
         } else {
-            halt(HttpStatus.UNAUTHORIZED_401, "You have reached the maximum amount of assigned questions.");
+            halter(HttpStatus.UNAUTHORIZED_401, "You have reached the maximum amount of assigned questions.");
             return null;
         }
     }
@@ -66,7 +66,7 @@ public final class MundusQueries {
             Map<String, Object> m = result.get(i);
             return assignQuestion(m, playerID, sessionID);
         }
-        halt(HttpStatus.NOT_FOUND_404, "There are no more questions.");
+        halter(HttpStatus.NOT_FOUND_404, "There are no more questions.");
         return null;
     }
 
@@ -87,16 +87,4 @@ public final class MundusQueries {
         jsonObject.addProperty("text", m.get("text").toString());
         return jsonObject;
     }
-
-//    /**
-//     * Verify whether a question has already been assigned to a player within a certain session.
-//     * @param questionID The ID of the question
-//     * @param sessionID  The ID of the session
-//     * @return True if the question has already been assigned, false otherwise
-//     */
-//    public static boolean questionAssigned(String questionID, String sessionID) {
-//        String query = "SELECT `question_id` FROM `session_question` WHERE `question_id` = ? AND `session_id` = ? ";
-//        List<Map<String, Object>> result = executeSearchQuery(query, questionID, sessionID);
-//        return result.size() > 0;
-//    }
 }
