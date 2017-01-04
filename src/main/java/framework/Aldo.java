@@ -157,4 +157,37 @@ public final class Aldo {
         addRoute(() -> Spark.post("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
 
     }
+
+    /**
+     * A get request.
+     *
+     * @param path           The path of the get request.
+     * @param implementation The implementation by the user.
+     */
+    public static void get(String path, RequestHandler implementation) {
+        addRoute(() -> Spark.get("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
+
+    }
+
+    /**
+     * A put request.
+     *
+     * @param path           The path of the put request.
+     * @param implementation The implementation by the user.
+     */
+    public static void put(String path, RequestHandler implementation) {
+        addRoute(() -> Spark.put("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
+
+    }
+
+    /**
+     * A delete request.
+     *
+     * @param path           The path of the delete request.
+     * @param implementation The implementation by the user.
+     */
+    public static void delete(String path, RequestHandler implementation) {
+        addRoute(() -> Spark.delete("/Aldo/player/:playerID/" + simplifyPath(path), toRoute(implementation)));
+
+    }
 }
