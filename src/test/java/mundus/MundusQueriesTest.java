@@ -14,8 +14,7 @@ import spark.HaltException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static database.MockHelper.*;
 import static mundus.MundusQueries.getQuestion;
@@ -73,15 +72,14 @@ public class MundusQueriesTest {
      * question available.
      */
     @Test
-    public void getQuestionSuccesTest() {
+    public void getQuestionSuccessTest() {
         beforeMock();
         Map<String, Object> map = new HashMap<>();
         map.put("question_id", "42");
         map.put("text", "Is this a question?");
         getEmpty().add(map);
         PowerMockito.mockStatic(Database.class);
-        when(Database.executeSearchQuery(any(), any())).thenReturn(getResult());
-        when(Database.executeSearchQuery(any())).thenReturn(getEmpty());
+        when(Database.executeSearchQuery(any(), any())).thenReturn(getResult()).thenReturn(getEmpty());
         when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 
         JsonObject jsonObject = getQuestion(getPlayer());
@@ -90,7 +88,7 @@ public class MundusQueriesTest {
     }
 
     /**
-     * Verify that an exception is thrown when al questions are already assigned.
+     * Verify that an exception is thrown when all questions are already assigned.
      */
     @Test
     public void getQuestionFailureTest() {
@@ -100,8 +98,8 @@ public class MundusQueriesTest {
         map.put("text", "Is this a question?");
         getEmpty().add(map);
         PowerMockito.mockStatic(Database.class);
-        when(Database.executeSearchQuery(any(), any())).thenReturn(getResult());
-        when(Database.executeSearchQuery(any())).thenReturn(getEmpty());
+        List<Map<String, Object>> none = new ArrayList<>();
+        when(Database.executeSearchQuery(any(), any())).thenReturn(getResult()).thenReturn(none);
         when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getEmpty());
         when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 

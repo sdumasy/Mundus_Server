@@ -57,17 +57,14 @@ public final class MundusQueries {
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject verifyAssignQuestion(String playerID, String sessionID) {
-        String query = "SELECT * FROM `question`";
-        List<Map<String, Object>> result = executeSearchQuery(query);
+        String query = "SELECT * FROM `question` WHERE `question`.`question_id` NOT IN ( " +
+                "SELECT `question_id` FROM `session_question` WHERE `session_id = ?)";
+        List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
         Random r = new Random();
-        while(result.size() > 0) {
+        if(result.size() > 0) {
             int i = r.nextInt(result.size());
             Map<String, Object> m = result.get(i);
-            if (questionAssigned(m.get("question_id").toString(), sessionID)) {
-                result.remove(i);
-            } else {
-                return assignQuestion(m, playerID, sessionID);
-            }
+            return assignQuestion(m, playerID, sessionID);
         }
         halt(HttpStatus.NOT_FOUND_404, "There are no more questions.");
         return null;
@@ -91,15 +88,15 @@ public final class MundusQueries {
         return jsonObject;
     }
 
-    /**
-     * Verify whether a question has already been assigned to a player within a certain session.
-     * @param questionID The ID of the question
-     * @param sessionID  The ID of the session
-     * @return True if the question has already been assigned, false otherwise
-     */
-    public static boolean questionAssigned(String questionID, String sessionID) {
-        String query = "SELECT `question_id` FROM `session_question` WHERE `question_id` = ? AND `session_id` = ? ";
-        List<Map<String, Object>> result = executeSearchQuery(query, questionID, sessionID);
-        return result.size() > 0;
-    }
+//    /**
+//     * Verify whether a question has already been assigned to a player within a certain session.
+//     * @param questionID The ID of the question
+//     * @param sessionID  The ID of the session
+//     * @return True if the question has already been assigned, false otherwise
+//     */
+//    public static boolean questionAssigned(String questionID, String sessionID) {
+//        String query = "SELECT `question_id` FROM `session_question` WHERE `question_id` = ? AND `session_id` = ? ";
+//        List<Map<String, Object>> result = executeSearchQuery(query, questionID, sessionID);
+//        return result.size() > 0;
+//    }
 }
