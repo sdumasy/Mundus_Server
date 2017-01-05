@@ -143,7 +143,7 @@ public final class SessionQueries {
      * @param sessionID    the id of the session.
      * @return A JsonArray containing the scores of all players within a session.
      */
-    public static JsonArray getPlayers(String sessionID) {
+    public static JsonObject getPlayers(String sessionID) {
         String query = "SELECT `player_id`, `username`, `score` FROM `session_player`  WHERE `session_id`=? ";
         JsonArray jsonArray = new JsonArray();
         List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
@@ -154,6 +154,8 @@ public final class SessionQueries {
             jsonObject.addProperty("score", aResult.get("score").toString());
             jsonArray.add(jsonObject);
         }
-        return jsonArray;
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("players", jsonArray);
+        return jsonObject;
     }
 }
