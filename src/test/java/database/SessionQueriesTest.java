@@ -1,6 +1,7 @@
 package database;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import models.Device;
 import models.Player;
 import models.Role;
@@ -150,7 +151,8 @@ public class SessionQueriesTest {
             DatabaseTest.setupDevice();
             DatabaseTest.setupSession();
 
-            JsonArray jsonArray = getPlayers(DatabaseTest.SESSION_ID);
+            JsonObject jsonObject = getPlayers(DatabaseTest.SESSION_ID);
+            JsonArray jsonArray = jsonObject.get("players").getAsJsonArray();
             assertEquals(1, jsonArray.size());
             assertEquals(DatabaseTest.PLAYER_ID, jsonArray.get(0).getAsJsonObject().get("playerID").getAsString());
         } finally {
