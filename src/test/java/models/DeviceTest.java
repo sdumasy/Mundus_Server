@@ -17,8 +17,8 @@ import static org.junit.Assert.*;
  */
 public class DeviceTest {
     private Device device;
-    private String deviceID = "deviceID";
-    private String token = "token";
+    private String deviceID = DatabaseTest.DEVICE_ID;
+    private String token = DatabaseTest.TOKEN;
 
     /**
      * Make sure the database is clean before we do anything else.

@@ -41,8 +41,9 @@ public final class Database {
         try {
             queries = new ConcurrentLinkedQueue<>();
             queryRunner = new QueryRunner();
+            Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
