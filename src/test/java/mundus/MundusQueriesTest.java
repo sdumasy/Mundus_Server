@@ -76,7 +76,7 @@ public class MundusQueriesTest {
         beforeMock();
         Map<String, Object> map = new HashMap<>();
         map.put("question_id", "42");
-        map.put("text", "Is this a question?");
+        map.put("question", "Is this a question?");
         getEmpty().add(map);
         PowerMockito.mockStatic(Database.class);
         when(Database.executeSearchQuery(any(), any())).thenReturn(getResult()).thenReturn(getEmpty());
@@ -84,7 +84,7 @@ public class MundusQueriesTest {
 
         JsonObject jsonObject = getQuestion(getPlayer());
         assertEquals("42", jsonObject.get("question_id").getAsString());
-        assertEquals("Is this a question?", jsonObject.get("text").getAsString());
+        assertEquals("Is this a question?", jsonObject.get("question").getAsString());
     }
 
     /**
@@ -95,7 +95,7 @@ public class MundusQueriesTest {
         beforeMock();
         Map<String, Object> map = new HashMap<>();
         map.put("question_id", "42");
-        map.put("text", "Is this a question?");
+        map.put("question", "Is this a question?");
         getEmpty().add(map);
         PowerMockito.mockStatic(Database.class);
         List<Map<String, Object>> none = new ArrayList<>();

@@ -159,6 +159,24 @@ public class PlayerTest {
     }
 
     /**
+     *  Test whether player is an moderator.
+     */
+    @Test
+    public void isModeratorTrueTest() {
+        player.setRoleID(1);
+        assertTrue(player.isModerator());
+    }
+
+    /**
+     * Test whether player is an moderator.
+     */
+    @Test
+    public void isModeratorFalseTest() {
+        player.setRoleID(0);
+        assertFalse(player.isModerator());
+    }
+
+    /**
      * Test the setting and getting of a players score.
      */
     @Test
