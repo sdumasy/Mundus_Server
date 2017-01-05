@@ -111,13 +111,11 @@ public final class MundusQueries {
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject getSubmitted(Player player) {
-        System.out.println("1");
         if (player.isAdmin() || player.isModerator()) {
             String query = "SELECT `question`.`question`, `question`.`question_id`, `question`.`correct_answer`, "
                     + "`session_question`.`answer` FROM `session_question` INNER JOIN `question` "
                     + "ON `session_question`.`question_id`=`question`.`question_id`"
                     + "WHERE `session_question`.`session_id` = ? AND `session_question`.`reviewed` = -1";
-            System.out.println("2");
             return answersToJson(executeSearchQuery(query, player.getSession().getSessionID()));
         } else {
             halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of this session.");
@@ -131,7 +129,6 @@ public final class MundusQueries {
      * @return The converted JsonObject.
      */
     private static JsonObject answersToJson(List<Map<String, Object>> maps) {
-        System.out.println("3");
         JsonArray jsonArray = new JsonArray();
         for (Map<String, Object> result : maps) {
             System.out.println(result);
@@ -142,9 +139,33 @@ public final class MundusQueries {
             jsonObject.addProperty("question", result.get("question").toString());
             jsonArray.add(jsonObject);
         }
-        System.out.println("4");
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("answers", jsonArray);
         return jsonObject;
+    }
+
+
+    public static void submitReview(Player player, String questionID, JsonObject jsonObject) {
+        if (player.isAdmin() || player.isModerator()) {
+            String review = jsonObject.get("reviewed").getAsString();
+            String query = "UPDATE `session_question` SET `reviewed` = ?"
+                    + "WHERE `session_id` = ? AND `question_id` = ?";
+            executeManipulationQuery(query, review, player.getSession().getSessionID(), questionID);
+        } else {
+            halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of this session.");
+        }
+    }
+
+    /**
+     * Returns all published (correct) answers in a session to a player.
+     * @param player The player that wants the answers
+     * @return A JsonObject that contains the new questions id and text.
+     */
+    public static JsonObject getPublications(Player player) {
+        String query = "SELECT `question`.`question`, `question`.`question_id`, `question`.`correct_answer`, "
+                + "`session_question`.`answer` FROM `session_question` INNER JOIN `question` "
+                + "ON `session_question`.`question_id`=`question`.`question_id`"
+                + "WHERE `session_question`.`session_id` = ? AND `session_question`.`reviewed` = 1";
+        return answersToJson(executeSearchQuery(query, player.getSession().getSessionID()));
     }
 }

@@ -7,9 +7,7 @@ import models.Session;
 
 import java.util.concurrent.TimeUnit;
 
-import static mundus.MundusQueries.getQuestion;
-import static mundus.MundusQueries.getSubmitted;
-import static mundus.MundusQueries.submitAnswer;
+import static mundus.MundusQueries.*;
 
 
 /**
@@ -53,18 +51,12 @@ public final class ExpeditionMundus {
             return jsonObject;
         });
 
-        Aldo.get("/publications", (player, json) -> {
-            // TODO: 05/01/17 Get an overview of all approved answers.
-
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
-            return jsonObject;
-        });
+        Aldo.get("/publications", (player, json) -> getPublications(player));
 
         Aldo.get("/submitted", (player, json) -> getSubmitted(player));
 
         Aldo.put("/question/:questionID/review", (player, json) -> {
-            //TODO: 05/01/17 a teacher either approves or disapproves an answer.
+            submitReview(player, json.get(":questionid").getAsString(), json);
 
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("response", json.toString() + player.getPlayerID());
