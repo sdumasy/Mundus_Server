@@ -11,6 +11,9 @@ import static http.Routes.validatePlayer;
 import static spark.Spark.*;
 import static util.Halt.halter;
 
+/**
+ * Routes associated with session.
+ */
 public final class RoutesSession {
     /**
      * Private constructor.

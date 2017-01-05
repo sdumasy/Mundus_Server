@@ -83,7 +83,10 @@ public final class Routes {
 
             request.attribute("device", device);
 
-            response.body(validDeviceRoute.handle(request, device).toString());
+            JsonElement result = validDeviceRoute.handle(request, device);
+            if (result != null) {
+                response.body(result.toString());
+            }
             return response.body();
         };
     }

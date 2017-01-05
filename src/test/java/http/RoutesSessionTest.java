@@ -180,7 +180,7 @@ public class RoutesSessionTest {
         PowerMockito.mockStatic(PlayerQueries.class);
         when(PlayerQueries.getPlayer(any())).thenReturn(new Player("AdminID", session, device, Role.User, 0, ""));
 
-        String uri = "/session/manage/play";
+        String uri = "/session/play";
         HttpResponse response = processAuthorizedPutRoute(uri, "OtherID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 403 Forbidden", response.getStatusLine().toString());
     }
@@ -206,7 +206,7 @@ public class RoutesSessionTest {
     public void setSessionStatusPlayTest() throws IOException {
         setSessionStatusSetup();
 
-        String uri = "/session/manage/play";
+        String uri = "/session/play";
         HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
@@ -219,7 +219,7 @@ public class RoutesSessionTest {
     public void setSessionStatusPauseTest() throws IOException {
         setSessionStatusSetup();
 
-        String uri = "/session/manage/pause";
+        String uri = "/session/pause";
         HttpResponse response = processAuthorizedPutRoute(uri, "DeviceID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
@@ -232,7 +232,7 @@ public class RoutesSessionTest {
     public void setSessionStatusDeleteTest() throws IOException {
         setSessionStatusSetup();
 
-        String uri = "/session/manage/delete";
+        String uri = "/session/delete";
         HttpResponse response = processAuthorizedDeleteRoute(uri, "DeviceID", MOCKED_TOKEN, "AdminID");
         assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
     }
