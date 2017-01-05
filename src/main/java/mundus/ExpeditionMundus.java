@@ -2,6 +2,7 @@ package mundus;
 
 import com.google.gson.JsonObject;
 import framework.Aldo;
+import http.SubscriptionWebSocket;
 
 import static mundus.MundusQueries.getQuestion;
 
@@ -22,17 +23,21 @@ public final class ExpeditionMundus {
      * Creates http routes.
      */
     public static void create() {
-//        Aldo.setupGameLoop(() -> Logger.getGlobal().log(Level.INFO, "Game loop is running!"),
-//                ((int) TimeUnit.SECONDS.toMillis((long) 1))); //No magic number :D
-        Aldo.subscribe("/1", new String[]{"/echo1"}, (player, sessionID) -> true);
+        SubscriptionWebSocket webSocket = Aldo.subscribe("/demo",
+                new String[]{"/echo1", "/echo2"}, (player, sessionID) -> true);
         Aldo.subscribe("/2", new String[]{"/echo2"}, (player, sessionID) -> true);
+//        Aldo.setupGameLoop(() -> {
+//            for (Session session : Aldo.getSessions()) {
+//                webSocket.send(session.getSessionID(), "Game loop notifies you.");
+//            }
+//        }, (int) TimeUnit.MINUTES.toMillis((long) 1));
         questions();
     }
 
     /**
      * Creates routes associated with research questions.
      */
-    public static void questions() {
+    protected static void questions() {
         Aldo.get("/question", (player, json) -> getQuestion(player));
         Aldo.post("/question/:questionID/answer", (player, json) -> {
             // TODO: 23/12/16 Answer question.

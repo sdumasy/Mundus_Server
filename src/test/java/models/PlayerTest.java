@@ -175,7 +175,7 @@ public class PlayerTest {
         JsonObject jsonObject = player.toJson();
 
         assertEquals("playerID_42", jsonObject.get("playerID").getAsString());
-        assertEquals(player.getSession().getSessionID(), jsonObject.get("sessionID").getAsString());
+        assertEquals("sessionID_42", jsonObject.get("sessionID").getAsString());
         assertEquals("Admin", jsonObject.get("role").getAsString());
         assertEquals("42", jsonObject.get("score").getAsString());
         assertEquals("username_42", jsonObject.get("username").getAsString());

@@ -9,6 +9,7 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -157,5 +158,22 @@ public final class SessionQueries {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("players", jsonArray);
         return jsonObject;
+    }
+
+    /**
+     * Retrieve all sessions from the database.
+     *
+     * @return All sessions in the database.
+     */
+    public static List<Session> getAllSession() {
+        String query = "SELECT * FROM `session`";
+        List<Map<String, Object>> result = executeSearchQuery(query);
+
+        List<Session> sessions = new LinkedList<>();
+        for (Map<String, Object> map : result) {
+            sessions.add(new Session(map.get("session_id").toString(), map.get("player_id").toString(),
+                    (Integer) map.get("status"), Timestamp.valueOf(map.get("created").toString()).toLocalDateTime()));
+        }
+        return sessions;
     }
 }

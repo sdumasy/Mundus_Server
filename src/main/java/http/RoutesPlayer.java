@@ -40,9 +40,7 @@ public final class RoutesPlayer {
     }
 
     /**
-     * Setup the route that allows clients to get their scores.
-     * The client needs to provide a player ID.
-     * There is no role verification as everyone should be able to request any players score.
+     * Setup the route that allows clients to get their player information.
      */
     static void setupGetPlayerRoute() {
         get("/player", validatePlayer((request, player) -> player.toJson()));
