@@ -46,8 +46,7 @@ public final class MundusQueries {
      */
     public static int assignedQuestions(String playerID) {
         String query = "SELECT `question_id` FROM `session_question` WHERE `player_id` = ? AND `reviewed` IS NOT 1 ";
-        List<Map<String, Object>> result = executeSearchQuery(query, playerID);
-        return result.size();
+        return executeSearchQuery(query, playerID).size();
     }
 
     /**
