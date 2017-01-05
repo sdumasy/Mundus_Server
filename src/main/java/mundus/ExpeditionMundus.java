@@ -3,6 +3,9 @@ package mundus;
 import com.google.gson.JsonObject;
 import framework.Aldo;
 import http.SubscriptionWebSocket;
+import models.Session;
+
+import java.util.concurrent.TimeUnit;
 
 import static mundus.MundusQueries.getQuestion;
 
@@ -26,11 +29,11 @@ public final class ExpeditionMundus {
         SubscriptionWebSocket webSocket = Aldo.subscribe("/demo",
                 new String[]{"/echo1", "/echo2"}, (player, sessionID) -> true);
         Aldo.subscribe("/2", new String[]{"/echo2"}, (player, sessionID) -> true);
-//        Aldo.setupGameLoop(() -> {
-//            for (Session session : Aldo.getSessions()) {
-//                webSocket.send(session.getSessionID(), "Game loop notifies you.");
-//            }
-//        }, (int) TimeUnit.MINUTES.toMillis((long) 1));
+        Aldo.setupGameLoop(() -> {
+            for (Session session : Aldo.getSessions()) {
+                webSocket.send(session.getSessionID(), "Game loop notifies you.");
+            }
+        }, (int) TimeUnit.MILLISECONDS.toMillis((long) 10));
         questions();
     }
 

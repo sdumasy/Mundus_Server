@@ -13,7 +13,7 @@ import static models.Device.newDevice;
 import static org.junit.Assert.*;
 
 /**
- * Created by Thomas on 22-12-2016.
+ * Tests device.
  */
 public class DeviceTest {
     private Device device;
@@ -46,7 +46,7 @@ public class DeviceTest {
         assertEquals(deviceID, newDevice.getDeviceID());
         assertNotNull(newDevice.getToken());
 
-        executeManipulationQuery("DELETE FROM device WHERE device_id='" + deviceID + "';");
+        executeManipulationQuery("DELETE FROM device WHERE device_id = ?", deviceID);
     }
 
     /**
