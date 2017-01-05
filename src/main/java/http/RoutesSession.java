@@ -11,11 +11,6 @@ import static http.Routes.validatePlayer;
 import static spark.Spark.*;
 import static util.Halt.halter;
 
-/**
- * Could not be prevented easily.
- */
-@SuppressWarnings("PMD.TooManyStaticImports")
-
 public final class RoutesSession {
     /**
      * Private constructor.
@@ -58,8 +53,7 @@ public final class RoutesSession {
 
     /**
      * Setup the route that allows clients to get all players and their scores in their session.
-     * The client needs to provide a session ID.
-     * There is no role verification as everyone should be able to request any players score.
+     * There is no role verification as everyone should be able to request any players score of there session.
      */
     static void setupGetSessionPlayersRoute() {
         get("/session/players", validatePlayer((request, player) ->
