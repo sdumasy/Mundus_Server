@@ -210,7 +210,7 @@ public class MundusQueriesTest {
         try {
             beforeMock();
             PowerMockito.mockStatic(Database.class);
-            when(Database.executeManipulationQuery(any(), any())).thenReturn(true);
+            when(Database.executeManipulationQuery(any(), any(), any())).thenReturn(true);
 
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("reviewed", "1");
@@ -230,7 +230,7 @@ public class MundusQueriesTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("reviewed", "1");
         submitReview(getPlayer(), "", jsonObject);
-        
+
         exception.expect(HaltException.class);
         submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
                 new Device("", ""), Role.User, 0, "username"), "", jsonObject);
