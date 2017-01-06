@@ -118,7 +118,7 @@ public final class MundusQueries {
                     + "WHERE `session_question`.`session_id` = ? AND `session_question`.`reviewed` = -1";
             return answersToJson(executeSearchQuery(query, player.getSession().getSessionID()));
         } else {
-            halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of this session.");
+            halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of your session.");
             return null;
         }
     }
@@ -131,7 +131,6 @@ public final class MundusQueries {
     private static JsonObject answersToJson(List<Map<String, Object>> maps) {
         JsonArray jsonArray = new JsonArray();
         for (Map<String, Object> result : maps) {
-            System.out.println(result);
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("answer", result.get("answer").toString());
             jsonObject.addProperty("correct_answer", result.get("correct_answer").toString());
