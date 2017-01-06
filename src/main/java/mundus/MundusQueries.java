@@ -147,7 +147,7 @@ public final class MundusQueries {
     public static void submitReview(Player player, String questionID, JsonObject jsonObject) {
         if (player.isAdmin() || player.isModerator()) {
             String review = jsonObject.get("reviewed").getAsString();
-            String query = "UPDATE `session_question` SET `reviewed` = ?"
+            String query = "UPDATE `session_question` SET `reviewed` = ? "
                     + "WHERE `session_id` = ? AND `question_id` = ?";
             executeManipulationQuery(query, review, player.getSession().getSessionID(), questionID);
         } else {
