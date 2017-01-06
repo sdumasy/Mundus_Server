@@ -3,8 +3,10 @@ package mundus;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import database.Database;
+import models.Device;
 import models.Player;
 import models.Role;
+import models.Session;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,6 +20,7 @@ import spark.HaltException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -195,7 +198,8 @@ public class MundusQueriesTest {
         PowerMockito.mockStatic(Database.class);
 
         exception.expect(HaltException.class);
-        getSubmitted(new Player("ID", any(), any(), Role.User, 0, "username"));
+        getSubmitted(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
+                new Device("", ""), Role.User, 0, "username"));
     }
 
     /**
@@ -223,9 +227,13 @@ public class MundusQueriesTest {
     @Test
     public void submitReviewFailureTest() {
         beforeMock();
-
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("reviewed", "1");
+        submitReview(getPlayer(), "", jsonObject);
+        
         exception.expect(HaltException.class);
-        submitReview(new Player("ID", any(), any(), Role.User, 0, "username"), "", any());
+        submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
+                new Device("", ""), Role.User, 0, "username"), "", jsonObject);
     }
 
     /**
