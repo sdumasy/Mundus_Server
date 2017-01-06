@@ -210,7 +210,7 @@ public class MundusQueriesTest {
         try {
             beforeMock();
             PowerMockito.mockStatic(Database.class);
-            when(Database.executeManipulationQuery(any(), any(), any())).thenReturn(true);
+            when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("reviewed", "1");
