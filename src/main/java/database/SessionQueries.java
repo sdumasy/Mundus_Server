@@ -62,6 +62,7 @@ public final class SessionQueries {
         jsonObject.addProperty("modToken", modToken);
         jsonObject.addProperty("userToken", userToken);
         jsonObject.addProperty("playerID", playerID);
+        JsonObject.addProperty("username", userName);
         return jsonObject;
     }
 
