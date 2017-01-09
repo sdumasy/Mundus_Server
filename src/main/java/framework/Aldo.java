@@ -11,6 +11,7 @@ import spark.Spark;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static util.Halt.halter;
 
@@ -126,6 +127,11 @@ public final class Aldo {
             JsonObject jsonObject = new JsonObject();
             if (!request.body().equals("")) {
                 jsonObject = new JsonParser().parse(request.body()).getAsJsonObject();
+            }
+            if (request.params().size() != 0) {
+                for (Map.Entry<String, String> e: request.params().entrySet()) {
+                    jsonObject.addProperty(e.getKey(), e.getValue());
+                }
             }
 
             return requestHandler.handle(player, jsonObject);

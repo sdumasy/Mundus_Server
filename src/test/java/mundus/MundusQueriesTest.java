@@ -1,7 +1,13 @@
 package mundus;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import database.Database;
+import models.Device;
+import models.Player;
+import models.Role;
+import models.Session;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -14,11 +20,14 @@ import spark.HaltException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static database.MockHelper.*;
-import static mundus.MundusQueries.getQuestion;
-import static mundus.MundusQueries.verifyAssignQuestion;
+import static mundus.MundusQueries.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -76,7 +85,7 @@ public class MundusQueriesTest {
         beforeMock();
         Map<String, Object> map = new HashMap<>();
         map.put("question_id", "42");
-        map.put("text", "Is this a question?");
+        map.put("question", "Is this a question?");
         getEmpty().add(map);
         PowerMockito.mockStatic(Database.class);
         when(Database.executeSearchQuery(any(), any())).thenReturn(getResult()).thenReturn(getEmpty());
@@ -84,7 +93,7 @@ public class MundusQueriesTest {
 
         JsonObject jsonObject = getQuestion(getPlayer());
         assertEquals("42", jsonObject.get("question_id").getAsString());
-        assertEquals("Is this a question?", jsonObject.get("text").getAsString());
+        assertEquals("Is this a question?", jsonObject.get("question").getAsString());
     }
 
     /**
@@ -95,7 +104,7 @@ public class MundusQueriesTest {
         beforeMock();
         Map<String, Object> map = new HashMap<>();
         map.put("question_id", "42");
-        map.put("text", "Is this a question?");
+        map.put("question", "Is this a question?");
         getEmpty().add(map);
         PowerMockito.mockStatic(Database.class);
         List<Map<String, Object>> none = new ArrayList<>();
@@ -118,5 +127,136 @@ public class MundusQueriesTest {
 
         exception.expect(HaltException.class);
         verifyAssignQuestion("", "");
+    }
+
+    /**
+     * Verify that an exception is thrown when you try to answer a question that does not belong to you.
+     */
+    @Test
+    public void submitAnswerSuccesTest() {
+        try {
+            beforeMock();
+            PowerMockito.mockStatic(Database.class);
+            when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getResult());
+            when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("answer", "42");
+            submitAnswer(getPlayer(), "", jsonObject);
+        } catch (Exception e) {
+            Assert.fail("Submitting an answer should succeed, but it failed: " + e.getLocalizedMessage());
+        }
+
+    }
+
+    /**
+     * Verify that you can answer a question that belongs to you.
+     */
+    @Test
+    public void submitAnswerFailureTest() {
+        beforeMock();
+        PowerMockito.mockStatic(Database.class);
+        when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getEmpty());
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("answer", "42");
+
+        exception.expect(HaltException.class);
+        submitAnswer(getPlayer(), "", jsonObject);
+    }
+
+    /**
+     * Verify that you can get all non reviewed questions in your session as a moderator or administrator.
+     */
+    @Test
+    public void getSubmittedSuccessTest() {
+        beforeMock();
+        PowerMockito.mockStatic(Database.class);
+        Map<String, Object> map = new HashMap<>();
+        map.put("question_id", "42");
+        map.put("question", "?");
+        map.put("answer", "answer");
+        map.put("correct_answer", "correct");
+        getEmpty().add(map);
+        when(Database.executeSearchQuery(any(), any())).thenReturn(getEmpty());
+
+        JsonObject jsonObjectList = getSubmitted(getPlayer());
+        JsonArray jsonArray = jsonObjectList.getAsJsonArray("answers");
+        JsonObject jsonObject = jsonArray.get(0).getAsJsonObject();
+        assertEquals("42", jsonObject.get("question_id").getAsString());
+        assertEquals("?", jsonObject.get("question").getAsString());
+        assertEquals("answer", jsonObject.get("answer").getAsString());
+        assertEquals("correct", jsonObject.get("correct_answer").getAsString());
+    }
+
+
+    /**
+     * Verify that you can't get submitted answers if you are not a moderator or an admin.
+     */
+    @Test
+    public void getSubmittedFailureTest() {
+        beforeMock();
+        PowerMockito.mockStatic(Database.class);
+
+        exception.expect(HaltException.class);
+        getSubmitted(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
+                new Device("", ""), Role.User, 0, "username"));
+    }
+
+    /**
+     * Verify that you can submit a review for questions in your session as a moderator or administrator.
+     */
+    @Test
+    public void submitReviewSuccessTest() {
+        try {
+            beforeMock();
+            PowerMockito.mockStatic(Database.class);
+            when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("reviewed", "1");
+            submitReview(getPlayer(), "", jsonObject);
+
+        } catch (Exception e) {
+            Assert.fail("Submitting a review should succeed, but it failed: " + e.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Verify that you cannot submit a review for questions in your session if you are a user.
+     */
+    @Test
+    public void submitReviewFailureTest() {
+        beforeMock();
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("reviewed", "1");
+        submitReview(getPlayer(), "", jsonObject);
+
+        exception.expect(HaltException.class);
+        submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
+                new Device("", ""), Role.User, 0, "username"), "", jsonObject);
+    }
+
+    /**
+     * Verify that you can get all non reviewed questions in your session as a moderator or administrator.
+     */
+    @Test
+    public void getPublicationsSuccessTest() {
+        beforeMock();
+        PowerMockito.mockStatic(Database.class);
+        Map<String, Object> map = new HashMap<>();
+        map.put("question_id", "42");
+        map.put("question", "?");
+        map.put("answer", "answer");
+        map.put("correct_answer", "correct");
+        getEmpty().add(map);
+        when(Database.executeSearchQuery(any(), any())).thenReturn(getEmpty());
+
+        JsonObject jsonObjectList = getPublications(getPlayer());
+        JsonArray jsonArray = jsonObjectList.getAsJsonArray("answers");
+        JsonObject jsonObject = jsonArray.get(0).getAsJsonObject();
+        assertEquals("42", jsonObject.get("question_id").getAsString());
+        assertEquals("?", jsonObject.get("question").getAsString());
+        assertEquals("answer", jsonObject.get("answer").getAsString());
+        assertEquals("correct", jsonObject.get("correct_answer").getAsString());
     }
 }
