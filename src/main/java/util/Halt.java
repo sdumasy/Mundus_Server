@@ -21,6 +21,7 @@ public final class Halt {
      *
      * @param status       Status of the halt.
      * @param errorMessage Message for the error.
+     * @throws HaltException throws an HaltException.
      */
     public static void halter(int status, String errorMessage) throws HaltException {
         JsonObject jsonObject = new JsonObject();
