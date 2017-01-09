@@ -112,10 +112,10 @@ public final class MundusQueries {
      */
     public static JsonObject getSubmitted(Player player) {
         if (player.isAdmin() || player.isModerator()) {
-            String query = "SELECT `question`.`question`, `question`.`question_id`, `question`.`correct_answer`, "
-                    + "`session_question`.`answer` FROM `session_question` INNER JOIN `question` "
-                    + "ON `session_question`.`question_id`=`question`.`question_id`"
-                    + "WHERE `session_question`.`session_id` = ? AND `session_question`.`reviewed` = -1";
+            String query = "SELECT `q`.`question`, `q`.`question_id`, `q`.`correct_answer`, "
+                    + "`sq`.`answer` FROM `session_question` `sq` INNER JOIN `question` `q` "
+                    + "ON `sq`.`question_id`=`q`.`question_id`"
+                    + "WHERE `sq`.`session_id` = ? AND `sq`.`reviewed` = -1";
             return answersToJson(executeSearchQuery(query, player.getSession().getSessionID()));
         } else {
             halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of your session.");
@@ -161,10 +161,10 @@ public final class MundusQueries {
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject getPublications(Player player) {
-        String query = "SELECT `question`.`question`, `question`.`question_id`, `question`.`correct_answer`, "
-                + "`session_question`.`answer` FROM `session_question` INNER JOIN `question` "
-                + "ON `session_question`.`question_id`=`question`.`question_id`"
-                + "WHERE `session_question`.`session_id` = ? AND `session_question`.`reviewed` = 1";
+        String query = "SELECT `q`.`question`, `q`.`question_id`, `q`.`correct_answer`, "
+                + "`sq`.`answer` FROM `session_question` `sq` INNER JOIN `question` `q` "
+                + "ON `sq`.`question_id`=`q`.`question_id`"
+                + "WHERE `sq`.`session_id` = ? AND `sq`.`reviewed` = 1";
         return answersToJson(executeSearchQuery(query, player.getSession().getSessionID()));
     }
 }
