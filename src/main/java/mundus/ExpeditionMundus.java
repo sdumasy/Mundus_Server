@@ -1,7 +1,6 @@
 package mundus;
 
 import com.google.gson.JsonObject;
-import database.SessionQueries;
 import framework.Aldo;
 import http.SubscriptionWebSocket;
 import models.Session;
@@ -44,6 +43,8 @@ public final class ExpeditionMundus {
     protected static void questions() {
         Aldo.get("/question", (player, json) -> getQuestion(player));
 
+        Aldo.get("/assigned", (player, json) -> getAssignedQuestions(player));
+
         Aldo.post("/question/:questionID/answer", (player, json) -> {
             submitAnswer(player, json.get(":questionid").getAsString(), json);
 
@@ -65,7 +66,7 @@ public final class ExpeditionMundus {
         });
 
         Aldo.get("/players", (player, json) -> {
-            SessionQueries.getPlayers(player.getSession().getSessionID());
+            getPlayersPublications(player.getSession().getSessionID());
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("response", json.toString() + player.getPlayerID());
             return jsonObject;
