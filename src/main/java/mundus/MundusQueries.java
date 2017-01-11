@@ -143,16 +143,45 @@ public final class MundusQueries {
         return jsonObject;
     }
 
-
+    /**
+     * Review the question submission of a player, and give the player points if correct.
+     * @param player Player object of an admin or moderator
+     * @param questionID The questions that is going to be reviewed
+     * @param jsonObject The review field in an JsonObject
+     */
     public static void submitReview(Player player, String questionID, JsonObject jsonObject) {
         if (player.isAdmin() || player.isModerator()) {
             String review = jsonObject.get("reviewed").getAsString();
             String query = "UPDATE `session_question` SET `reviewed` = ? "
                     + "WHERE `session_id` = ? AND `question_id` = ?";
             executeManipulationQuery(query, review, player.getSession().getSessionID(), questionID);
+            if(review.equals("1")) {
+                increaseScore(questionID, player.getSession().getSessionID());
+            }
         } else {
             halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of this session.");
         }
+    }
+
+    /**
+     * Increase a players score by questionID that has been approved
+     * @param questionID The question that has been approved
+     * @param sessionID The session that the player is in.
+     */
+    public static void increaseScore(String questionID, String sessionID) {
+        String query = "SELECT `player_id` FROM  `session_question` WHERE `question_id` = ? AND `session_id` = ?";
+        List<Map<String, Object>> result = executeSearchQuery(query, questionID, sessionID);
+        Map<String, Object> map = result.get(0);
+        String playerID = map.get("player_id").toString();
+
+        query = "SELECT `score` FROM  `session_player` WHERE `player_id` = ?";
+        result = executeSearchQuery(query, playerID);
+        map = result.get(0);
+        int score = Integer.parseInt(map.get("score").toString());
+        score = score + 1;
+
+        query = "UPDATE `session_player` SET  `score` = ? WHERE `player_id` = ?";
+        executeManipulationQuery(query, score, playerID);
     }
 
     /**
@@ -217,7 +246,7 @@ public final class MundusQueries {
                 + "INNER JOIN `question` `q` ON `sq`.`question_id`=`q`.`question_id`"
                 + "WHERE `sq`.`player_id` = ? AND (`sq`.`reviewed` != 1 OR `sq`.`reviewed` IS NULL)";
         JsonArray jsonArray = new JsonArray();
-        List<Map<String, Object>> result = executeSearchQuery(query, player.getSession().getSessionID());
+        List<Map<String, Object>> result = executeSearchQuery(query, player.getPlayerID());
         for (Map<String, Object> aResult : result) {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("question_id", aResult.get("question_id").toString());

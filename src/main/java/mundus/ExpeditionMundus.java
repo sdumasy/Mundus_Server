@@ -65,12 +65,7 @@ public final class ExpeditionMundus {
             return jsonObject;
         });
 
-        Aldo.get("/players", (player, json) -> {
-            getPlayersPublications(player.getSession().getSessionID());
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
-            return jsonObject;
-        });
+        Aldo.get("/players", (player, json) -> getPlayersPublications(player.getSession().getSessionID()));
 
 
         Aldo.post("/echo1", (player, json) -> {
