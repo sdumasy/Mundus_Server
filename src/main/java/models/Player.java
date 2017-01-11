@@ -149,6 +149,15 @@ public class Player {
     }
 
     /**
+     * Returns whether this player is an admin or not.
+     *
+     * @return The boolean value.
+     */
+    public boolean isModerator() {
+        return getRoleID() == 1;
+    }
+
+    /**
      * Gets the score.
      *
      * @return The score.

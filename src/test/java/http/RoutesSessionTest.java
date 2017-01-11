@@ -99,9 +99,8 @@ public class RoutesSessionTest {
      * @throws IOException Throws an exception if the request execution fails.
      */
     @Test
-    public void setupJoinSessionSuccesTest() throws IOException {
+    public void setupJoinSessionSuccessTest() throws IOException {
         PowerMockito.mockStatic(SessionQueries.class);
-        when(SessionQueries.createSession(any(), any())).thenReturn(new JsonObject());
         Device device = new Device("Device_ID", MOCKED_TOKEN);
         Session session = new Session("", "", 1, LocalDateTime.now());
         when(SessionQueries.playerJoinSession(any(), any(), any())).thenReturn(

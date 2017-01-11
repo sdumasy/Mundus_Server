@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static database.Database.executeManipulationQuery;
 import static database.Database.executeSearchQuery;
-import static spark.Spark.halt;
 import static util.Halt.halter;
 
 /**
@@ -74,7 +73,7 @@ public final class PlayerQueries {
         } else if (result.size() == 1) {
             return true;
         } else {
-            halt(HttpStatus.INTERNAL_SERVER_ERROR_500, "Multiple identical database entries exist.");
+            halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "Multiple identical database entries exist.");
             return true;
         }
     }
