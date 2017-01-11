@@ -2,12 +2,10 @@ package mundus;
 
 import com.google.gson.JsonObject;
 import framework.Aldo;
-import http.SubscriptionWebSocket;
-import models.Session;
-
-import java.util.concurrent.TimeUnit;
+import org.eclipse.jetty.http.HttpStatus;
 
 import static mundus.MundusQueries.*;
+import static util.Halt.halter;
 
 
 /**
@@ -26,57 +24,54 @@ public final class ExpeditionMundus {
      * Creates http routes.
      */
     public static void create() {
-        SubscriptionWebSocket webSocket = Aldo.subscribe("/demo",
-                new String[]{"/echo1", "/echo2"}, (player, sessionID) -> true);
-        Aldo.subscribe("/2", new String[]{"/echo2"}, (player, sessionID) -> true);
-        Aldo.setupGameLoop(() -> {
-            for (Session session : Aldo.getSessions()) {
-                webSocket.send(session.getSessionID(), "Game loop notifies you.");
-            }
-        }, (int) TimeUnit.MILLISECONDS.toMillis((long) 10));
-        questions();
+        Aldo.subscribe("/answer", new String[]{"/question/:questionID/answer"}, (player, sessionID) ->
+                player.isAdmin() || player.isModerator());
+        questionPaths();
+        moderatorQuestionPaths();
     }
 
     /**
      * Creates routes associated with research questions.
      */
-    protected static void questions() {
+    protected static void questionPaths() {
         Aldo.get("/question", (player, json) -> getQuestion(player));
 
-        Aldo.get("/assigned", (player, json) -> getAssignedQuestions(player));
-
         Aldo.post("/question/:questionID/answer", (player, json) -> {
-            submitAnswer(player, json.get(":questionid").getAsString(), json);
+            String questionID = json.get(":questionid").getAsString();
+            if (!json.has("answer")) {
+                halter(HttpStatus.BAD_REQUEST_400, "'answer' not specified in json body");
+            }
+            String answer = json.get("answer").getAsString();
+            submitAnswer(player, questionID, answer);
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            jsonObject.addProperty("playerID", player.getPlayerID());
+            jsonObject.addProperty("questionID", questionID);
+            jsonObject.addProperty("answer", answer);
             return jsonObject;
         });
 
         Aldo.get("/publications", (player, json) -> getPublications(player));
+    }
 
+    /**
+     * Question paths only accessible for moderator and admin.
+     */
+    protected static void moderatorQuestionPaths() {
         Aldo.get("/submitted", (player, json) -> getSubmitted(player));
 
         Aldo.put("/question/:questionID/review", (player, json) -> {
-            submitReview(player, json.get(":questionid").getAsString(), json);
+            String questionID = json.get(":questionid").getAsString();
+            if (!json.has("reviewed")) {
+                halter(HttpStatus.BAD_REQUEST_400, "'reviewed' not specified in json body");
+            }
+            String review = json.get("reviewed").getAsString();
+            submitReview(player, questionID, review);
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
-            return jsonObject;
-        });
-
-        Aldo.get("/players", (player, json) -> getPlayersPublications(player.getSession().getSessionID()));
-
-
-        Aldo.post("/echo1", (player, json) -> {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
-            return jsonObject;
-        });
-
-        Aldo.post("/echo2", (player, json) -> {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            jsonObject.addProperty("playerID", player.getPlayerID());
+            jsonObject.addProperty("questionID", questionID);
+            jsonObject.addProperty("review", review);
             return jsonObject;
         });
     }

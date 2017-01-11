@@ -140,9 +140,7 @@ public class MundusQueriesTest {
             when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getResult());
             when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("answer", "42");
-            submitAnswer(getPlayer(), "", jsonObject);
+            submitAnswer(getPlayer(), "", "42");
         } catch (Exception e) {
             Assert.fail("Submitting an answer should succeed, but it failed: " + e.getLocalizedMessage());
         }
@@ -161,7 +159,7 @@ public class MundusQueriesTest {
         jsonObject.addProperty("answer", "42");
 
         exception.expect(HaltException.class);
-        submitAnswer(getPlayer(), "", jsonObject);
+        submitAnswer(getPlayer(), "", "42");
     }
 
     /**
@@ -212,9 +210,7 @@ public class MundusQueriesTest {
             PowerMockito.mockStatic(Database.class);
             when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("reviewed", "1");
-            submitReview(getPlayer(), "", jsonObject);
+            submitReview(getPlayer(), "", "1");
 
         } catch (Exception e) {
             Assert.fail("Submitting a review should succeed, but it failed: " + e.getLocalizedMessage());
@@ -227,13 +223,11 @@ public class MundusQueriesTest {
     @Test
     public void submitReviewFailureTest() {
         beforeMock();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("reviewed", "1");
-        submitReview(getPlayer(), "", jsonObject);
+        submitReview(getPlayer(), "", "1");
 
         exception.expect(HaltException.class);
         submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
-                new Device("", ""), Role.User, 0, "username"), "", jsonObject);
+                new Device("", ""), Role.User, 0, "username"), "", "1");
     }
 
     /**
