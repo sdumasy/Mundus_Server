@@ -2,6 +2,8 @@ package mundus;
 
 import com.google.gson.JsonObject;
 import framework.Aldo;
+import http.SubscriptionWebSocket;
+import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
 import static mundus.MundusQueries.*;
@@ -24,8 +26,16 @@ public final class ExpeditionMundus {
      * Creates http routes.
      */
     public static void create() {
-        Aldo.subscribe("/answer", new String[]{"/question/:questionID/answer"}, (player, sessionID) ->
-                player.isAdmin() || player.isModerator());
+        SubscriptionWebSocket socket = Aldo.subscribe("/answer", new String[]{"/question/:questionID/answer"},
+                (player, sessionID) -> player.isAdmin() || player.isModerator());
+
+        // Keep web socket alive.
+        Aldo.setupGameLoop(() -> {
+            for (Session session : Aldo.getSessions()) {
+                socket.send(session.getSessionID(), "");
+            }
+        }, 30000);
+
         questionPaths();
         moderatorQuestionPaths();
     }
