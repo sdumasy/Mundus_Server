@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -49,6 +50,21 @@ public final class MundusQueries {
         String query = "SELECT `question_id` FROM `session_question` "
                 + "WHERE `player_id` = ? AND (`reviewed` != 1 OR `reviewed` IS NULL) ";
         return executeSearchQuery(query, playerID).size();
+    }
+
+    /**
+     * Retrieves all the questionIDS.
+     *
+     * @return A list of questionIDs.
+     */
+    public static List<String> getAllQuestionIDs() {
+        String query = "SELECT `question_id` FROM `question`";
+        List<Map<String, Object>> result = executeSearchQuery(query);
+        List<String> questionIDs = new ArrayList<>();
+        for (Map<String, Object> map : result) {
+            questionIDs.add(map.get("question_id").toString());
+        }
+        return questionIDs;
     }
 
     /**
@@ -112,7 +128,7 @@ public final class MundusQueries {
      * @param questionID The id of the question.
      * @return Whether the question is assigned to the player.
      */
-    private static boolean isAssigned(String playerID, String questionID) {
+    public static boolean isAssigned(String playerID, String questionID) {
         String query = "SELECT `question_id` FROM `session_question` WHERE `player_id` = ? AND `question_id` = ? ";
         return executeSearchQuery(query, playerID, questionID).size() == 1;
     }
@@ -167,7 +183,7 @@ public final class MundusQueries {
             String query = "UPDATE `session_question` SET `reviewed` = ? "
                     + "WHERE `session_id` = ? AND `question_id` = ?";
             executeManipulationQuery(query, review, player.getSession().getSessionID(), questionID);
-            if(review.equals("1")) {
+            if (review.equals("1")) {
                 increaseScore(questionID, player.getSession().getSessionID());
             }
         } else {
@@ -176,7 +192,7 @@ public final class MundusQueries {
     }
 
     /**
-     * Increase a players score by questionID that has been approved
+     * Increase a players score by questionID that has been approved.
      * @param questionID The question that has been approved
      * @param sessionID The session that the player is in.
      */
@@ -233,7 +249,7 @@ public final class MundusQueries {
     }
 
     /**
-     * Get all publications made by a playerID and return in a JsonArray
+     * Get all publications made by a playerID and return in a JsonArray.
      * @param playerID The playerID
      * @return A JsonArray with the publications
      */

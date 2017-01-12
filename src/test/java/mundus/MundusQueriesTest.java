@@ -117,6 +117,27 @@ public class MundusQueriesTest {
     }
 
     /**
+     * Test the retrieval of all the question ids.
+     */
+    @Test
+    public void getAllQuestionIDsSuccessTest() {
+        beforeMock();
+        Map<String, Object> map = new HashMap<>();
+        map.put("question_id", "42");
+        getEmpty().add(map);
+        map = new HashMap<>();
+        map.put("question_id", "43");
+        getEmpty().add(map);
+        PowerMockito.mockStatic(Database.class);
+        when(Database.executeSearchQuery(any())).thenReturn(getEmpty());
+
+        List<String> ids = getAllQuestionIDs();
+
+        assertTrue(ids.contains("43"));
+        assertTrue(ids.contains("42"));
+    }
+
+    /**
      * Verify that an exception is thrown when there are no more questions available to assign.
      */
     @Test

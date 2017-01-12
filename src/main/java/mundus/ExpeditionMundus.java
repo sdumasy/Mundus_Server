@@ -3,8 +3,10 @@ package mundus;
 import com.google.gson.JsonObject;
 import framework.Aldo;
 import http.SubscriptionWebSocket;
-import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static mundus.MundusQueries.*;
 import static util.Halt.halter;
@@ -26,13 +28,19 @@ public final class ExpeditionMundus {
      * Creates http routes.
      */
     public static void create() {
-        SubscriptionWebSocket socket = Aldo.subscribe("/answer", new String[]{"/question/:questionID/answer"},
-                (player, sessionID) -> player.isAdmin() || player.isModerator());
+        List<SubscriptionWebSocket> sockets = new ArrayList<>();
+        sockets.add(Aldo.subscribe("/answer", new String[]{"/question/:questionID/answer"},
+                (player, sessionID) -> player.isAdmin() || player.isModerator()));
+        for (String questionID : getAllQuestionIDs()) {
+            sockets.add(Aldo.subscribe("/question/" + questionID,
+                    new String[]{"/question/" + questionID + "/review"}, (player, sessionID) ->
+                            isAssigned(player.getPlayerID(), questionID)));
+        }
 
         // Keep web socket alive.
         Aldo.setupGameLoop(() -> {
-            for (Session session : Aldo.getSessions()) {
-                socket.send(session.getSessionID(), "");
+            for (SubscriptionWebSocket socket : sockets) {
+                socket.sendAll("");
             }
         }, 30000);
 
@@ -63,7 +71,7 @@ public final class ExpeditionMundus {
             return jsonObject;
         });
 
-        Aldo.get("/publications", (player, json) -> getPublications(player));
+        Aldo.get("publications", (player, json) -> getPublications(player));
 
         Aldo.get("/players", (player, json) -> getPlayersPublications(player.getSession().getSessionID()));
     }
