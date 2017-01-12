@@ -167,9 +167,32 @@ public final class MundusQueries {
             String query = "UPDATE `session_question` SET `reviewed` = ? "
                     + "WHERE `session_id` = ? AND `question_id` = ?";
             executeManipulationQuery(query, review, player.getSession().getSessionID(), questionID);
+            if(review.equals("1")) {
+                increaseScore(questionID, player.getSession().getSessionID());
+            }
         } else {
             halter(HttpStatus.UNAUTHORIZED_401, "You are not an admin or moderator of this session.");
         }
+    }
+
+    /**
+     * Increase a players score by questionID that has been approved
+     * @param questionID The question that has been approved
+     * @param sessionID The session that the player is in.
+     */
+    public static void increaseScore(String questionID, String sessionID) {
+        String query = "SELECT `player_id` FROM  `session_question` WHERE `question_id` = ? AND `session_id` = ?";
+        List<Map<String, Object>> result = executeSearchQuery(query, questionID, sessionID);
+        Map<String, Object> map = result.get(0);
+        String playerID = map.get("player_id").toString();
+
+        query = "SELECT `score` FROM  `session_player` WHERE `player_id` = ?";
+        result = executeSearchQuery(query, playerID);
+        map = result.get(0);
+        int score = Integer.parseInt(map.get("score").toString());
+        score = score + 1;
+        query = "UPDATE `session_player` SET  `score` = ? WHERE `player_id` = ?";
+        executeManipulationQuery(query, score, playerID);
     }
 
     /**
@@ -183,5 +206,65 @@ public final class MundusQueries {
                 + "ON `sq`.`question_id`=`q`.`question_id`"
                 + "WHERE `sq`.`session_id` = ? AND `sq`.`reviewed` = 1";
         return answersToJson(executeSearchQuery(query, player.getSession().getSessionID()));
+    }
+
+    /**
+     * Get all player scores and publications in a session.
+     *
+     * @param sessionID    the id of the session.
+     * @return A JsonArray containing the scores of all players within a session.
+     */
+    public static JsonObject getPlayersPublications(String sessionID) {
+        String query = "SELECT `player_id`, `username`, `score` FROM `session_player`  WHERE `session_id`=? ";
+        JsonArray jsonArray = new JsonArray();
+        List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
+        for (Map<String, Object> aResult : result) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("playerID", aResult.get("player_id").toString());
+            jsonObject.addProperty("username", aResult.get("username").toString());
+            jsonObject.addProperty("score", aResult.get("score").toString());
+            jsonObject.add("publications", getPlayerPublications(aResult.get("player_id").toString()));
+
+            jsonArray.add(jsonObject);
+        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("players", jsonArray);
+        return jsonObject;
+    }
+
+    /**
+     * Get all publications made by a playerID and return in a JsonArray
+     * @param playerID The playerID
+     * @return A JsonArray with the publications
+     */
+    private static JsonArray getPlayerPublications(String playerID) {
+        String query = "SELECT `q`.`question`, `q`.`question_id`, `q`.`correct_answer`, "
+                + "`sq`.`answer` FROM `session_question` `sq` INNER JOIN `question` `q` "
+                + "ON `sq`.`question_id`=`q`.`question_id`"
+                + "WHERE `sq`.`player_id` = ? AND `sq`.`reviewed` = 1";
+        JsonObject jsonObject = answersToJson(executeSearchQuery(query, playerID));
+        return jsonObject.get("answers").getAsJsonArray();
+    }
+
+    /**
+     * Returns all questions that have been assigned to a player.
+     * @param player The player that wants the questions assigned to him
+     * @return A JsonObject that contains the new questions id and text.
+     */
+    public static JsonObject getAssignedQuestions(Player player) {
+        String query = "SELECT `q`.`question`, `q`.`question_id` FROM `session_question` `sq` "
+                + "INNER JOIN `question` `q` ON `sq`.`question_id`=`q`.`question_id`"
+                + "WHERE `sq`.`player_id` = ? AND (`sq`.`reviewed` != 1 OR `sq`.`reviewed` IS NULL)";
+        JsonArray jsonArray = new JsonArray();
+        List<Map<String, Object>> result = executeSearchQuery(query, player.getPlayerID());
+        for (Map<String, Object> aResult : result) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("question_id", aResult.get("question_id").toString());
+            jsonObject.addProperty("question", aResult.get("question").toString());
+            jsonArray.add(jsonObject);
+        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("questions", jsonArray);
+        return jsonObject;
     }
 }

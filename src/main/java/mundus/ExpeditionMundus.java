@@ -36,6 +36,8 @@ public final class ExpeditionMundus {
     protected static void questionPaths() {
         Aldo.get("/question", (player, json) -> getQuestion(player));
 
+        Aldo.get("/assigned", (player, json) -> getAssignedQuestions(player));
+
         Aldo.post("/question/:questionID/answer", (player, json) -> {
             String questionID = json.get(":questionid").getAsString();
             if (!json.has("answer")) {
@@ -52,6 +54,8 @@ public final class ExpeditionMundus {
         });
 
         Aldo.get("/publications", (player, json) -> getPublications(player));
+
+        Aldo.get("/players", (player, json) -> getPlayersPublications(player.getSession().getSessionID()));
     }
 
     /**

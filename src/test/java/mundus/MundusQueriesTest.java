@@ -208,7 +208,15 @@ public class MundusQueriesTest {
         try {
             beforeMock();
             PowerMockito.mockStatic(Database.class);
+            Map<String, Object> map = new HashMap<>();
+            map.put("score", "42");
+            map.put("player_id", "some id");
+            getEmpty().add(map);
+            
             when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
+            when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getEmpty());
+            when(Database.executeSearchQuery(any(), any())).thenReturn(getEmpty());
+            when(Database.executeManipulationQuery(any(), any(), any())).thenReturn(true);
 
             submitReview(getPlayer(), "", "1");
 
@@ -223,7 +231,6 @@ public class MundusQueriesTest {
     @Test
     public void submitReviewFailureTest() {
         beforeMock();
-        submitReview(getPlayer(), "", "1");
 
         exception.expect(HaltException.class);
         submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
