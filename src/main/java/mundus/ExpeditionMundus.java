@@ -83,11 +83,18 @@ public final class ExpeditionMundus {
         Aldo.get("/submitted", (player, json) -> getSubmitted(player));
 
         Aldo.put("/question/:questionID/review", (player, json) -> {
+
             String questionID = json.get(":questionid").getAsString();
             if (!json.has("reviewed")) {
                 halter(HttpStatus.BAD_REQUEST_400, "'reviewed' not specified in json body");
             }
-            String review = json.get("reviewed").getAsString();
+            int review = -1;
+            try {
+                review = json.get("reviewed").getAsInt();
+            } catch (NumberFormatException e) {
+                halter(HttpStatus.BAD_REQUEST_400, "The value of 'reviewed' cannot be cast to an int.");
+            }
+
             submitReview(player, questionID, review);
 
             JsonObject jsonObject = new JsonObject();

@@ -239,7 +239,7 @@ public class MundusQueriesTest {
             when(Database.executeSearchQuery(any(), any())).thenReturn(getEmpty());
             when(Database.executeManipulationQuery(any(), any(), any())).thenReturn(true);
 
-            submitReview(getPlayer(), "", "1");
+            submitReview(getPlayer(), "", 1);
 
         } catch (Exception e) {
             Assert.fail("Submitting a review should succeed, but it failed: " + e.getLocalizedMessage());
@@ -255,7 +255,7 @@ public class MundusQueriesTest {
 
         exception.expect(HaltException.class);
         submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
-                new Device("", ""), Role.User, 0, "username"), "", "1");
+                new Device("", ""), Role.User, 0, "username"), "", 1);
     }
 
     /**

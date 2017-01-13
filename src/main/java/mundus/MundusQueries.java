@@ -178,12 +178,12 @@ public final class MundusQueries {
      * @param questionID The question being reviewed.
      * @param review The review of the question.
      */
-    public static void submitReview(Player player, String questionID, String review) {
+    public static void submitReview(Player player, String questionID, int review) {
         if (player.isAdmin() || player.isModerator()) {
             String query = "UPDATE `session_question` SET `reviewed` = ? "
                     + "WHERE `session_id` = ? AND `question_id` = ?";
             executeManipulationQuery(query, review, player.getSession().getSessionID(), questionID);
-            if (review.equals("1")) {
+            if (review == 1) {
                 increaseScore(questionID, player.getSession().getSessionID());
             }
         } else {
