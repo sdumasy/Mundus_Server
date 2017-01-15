@@ -96,7 +96,8 @@ public final class MundusQueries {
      */
     public static JsonObject assignQuestion(Map<String, Object> m, String playerID, String sessionID) {
         String questionID = m.get("question_id").toString();
-        String query = "INSERT INTO `session_question` (question_id, player_id, session_id) VALUES(?, ?, ?)";
+        String query = "INSERT INTO `session_question` "
+                + "(question_id, player_id, session_id, reviewed) VALUES(?, ?, ?, -2)";
         executeManipulationQuery(query, questionID, playerID, sessionID);
 
         JsonObject jsonObject = new JsonObject();
@@ -268,7 +269,7 @@ public final class MundusQueries {
      * @return A JsonObject that contains the new questions id and text.
      */
     public static JsonObject getAssignedQuestions(Player player) {
-        String query = "SELECT `q`.`question`, `q`.`question_id` FROM `session_question` `sq` "
+        String query = "SELECT `q`.`question`, `q`.`question_id`, `sq`.`reviewed` FROM `session_question` `sq` "
                 + "INNER JOIN `question` `q` ON `sq`.`question_id`=`q`.`question_id`"
                 + "WHERE `sq`.`player_id` = ? AND (`sq`.`reviewed` != 1 OR `sq`.`reviewed` IS NULL)";
         JsonArray jsonArray = new JsonArray();
@@ -277,6 +278,7 @@ public final class MundusQueries {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("question_id", aResult.get("question_id").toString());
             jsonObject.addProperty("question", aResult.get("question").toString());
+            jsonObject.addProperty("reviewed", aResult.get("reviewed").toString());
             jsonArray.add(jsonObject);
         }
         JsonObject jsonObject = new JsonObject();
