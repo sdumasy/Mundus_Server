@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import models.Device;
 import models.Player;
+import models.Role;
 import models.Session;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -37,15 +38,17 @@ public final class SessionQueries {
      * user as the administrator to the session.
      *
      * @param device The device that creates the session.
-     * @param userName The username of the admin.
+     * @param username The username of the admin.
      * @return A JsonObject that contains the generated playerID, modToken and userToken
      */
-    public static JsonObject createSession(Device device, String userName) {
+    public static JsonObject createSession(Device device, String username) {
         String sessionID = generateUniqueID("session", "session_id");
         String playerID = generateUniqueID("session_player", "player_id");
+        int status = 1;
+        LocalDateTime created = LocalDateTime.now();
 
         String query = "INSERT INTO `session` VALUES (?, ?, ?, ?)";
-        executeManipulationQuery(query, sessionID, playerID, 1, LocalDateTime.now());
+        executeManipulationQuery(query, sessionID, playerID, status, created);
 
         String modToken = generateUniqueJoinToken();
         query = "INSERT INTO `session_token` VALUES (?, ?, ?)";
@@ -55,15 +58,18 @@ public final class SessionQueries {
         executeManipulationQuery(query, userToken, sessionID, 2);
 
         query = "INSERT INTO `session_player` VALUES (?, ?, ?, ?, ?, ?)";
-        executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0, userName);
+        executeManipulationQuery(query, playerID, device.getDeviceID(), sessionID, 0, 0, username);
 
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("sessionID", sessionID);
-        jsonObject.addProperty("modToken", modToken);
-        jsonObject.addProperty("userToken", userToken);
-        jsonObject.addProperty("playerID", playerID);
-        jsonObject.addProperty("username", userName);
-        return jsonObject;
+        Session session = new Session(sessionID, playerID, status, created);
+        Player player = new Player(playerID, session, device, Role.Admin, 0, username);
+
+        JsonObject jsonTokens = new JsonObject();
+        jsonTokens.addProperty("moderator", modToken);
+        jsonTokens.addProperty("user", userToken);
+
+        JsonObject json = player.toJson();
+        json.add("tokens", jsonTokens);
+        return json;
     }
 
     /**

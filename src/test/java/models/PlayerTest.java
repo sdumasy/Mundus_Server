@@ -192,8 +192,8 @@ public class PlayerTest {
     public void toJsonTest() {
         JsonObject jsonObject = player.toJson();
 
-        assertEquals("playerID_42", jsonObject.get("playerID").getAsString());
-        assertEquals("sessionID_42", jsonObject.get("sessionID").getAsString());
+        assertEquals(playerID, jsonObject.get("playerID").getAsString());
+        assertEquals(sessionID, jsonObject.getAsJsonObject("session").get("sessionID").getAsString());
         assertEquals("Admin", jsonObject.get("role").getAsString());
         assertEquals("42", jsonObject.get("score").getAsString());
         assertEquals("username_42", jsonObject.get("username").getAsString());
