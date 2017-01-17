@@ -44,6 +44,7 @@ public class RoutesSessionTest {
      */
     @BeforeClass
     public static void beforeAll() {
+        DatabaseTest.clean();
         App.main(null);
     }
 

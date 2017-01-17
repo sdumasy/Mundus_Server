@@ -1,9 +1,7 @@
 package http;
 
 import application.App;
-import database.AuthenticationTokenQueries;
-import database.PlayerQueries;
-import database.SessionQueries;
+import database.*;
 import models.Device;
 import models.Player;
 import models.Role;
@@ -44,6 +42,7 @@ public class RoutesPlayerTest {
      */
     @BeforeClass
     public static void beforeAll() {
+        DatabaseTest.clean();
         App.main(null);
     }
 

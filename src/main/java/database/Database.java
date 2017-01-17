@@ -16,12 +16,7 @@ import java.util.logging.Logger;
  */
 public final class Database {
 
-//    private static String url = "jdbc:mysql://gi6kn64hu98hy0b6.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306/"
-//            + "z7vnfv6y27vhnelm?useSSL=false";
-//    private static String user = "yum29ckgulepk404";
-//    private static String password = "xp5oc6vwuz4tijx4";
-
-    private static String url = "jdbc:mysql://127.0.0.1:3306/mundus?useSSL=false";
+    private static String url = "jdbc:mysql://127.0.0.1:3306";
     private static String user = "root";
     private static String password = "";
 
@@ -45,6 +40,21 @@ public final class Database {
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Sets the database connection URL and authentication.
+     *
+     * @param url a database url of the form
+     * <code>jdbc:<em>subprotocol</em>:<em>subname</em></code>
+     * @param user the database user on whose behalf the connection is being
+     *   made
+     * @param password the user's password
+     */
+    public static void setConnection(String url, String user, String password) {
+        Database.url = url;
+        Database.user = user;
+        Database.password = password;
     }
 
     /**

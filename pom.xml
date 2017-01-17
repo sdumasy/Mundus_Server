@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>nl.mundus.server</groupId>
-    <artifactId>server-mundus</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <groupId>nl.aldo.server</groupId>
+    <artifactId>server-aldo</artifactId>
+    <version>0.6-SNAPSHOT</version>
 
     <properties>
         <!-- http://stackoverflow.com/questions/8975096/maven-checkstyle-configlocation-ignored -->

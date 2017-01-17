@@ -33,6 +33,11 @@ public class DatabaseTest {
      */
     @BeforeClass
     public static void clean() {
+        String url = "jdbc:mysql://127.0.0.1:3306/mundus?useSSL=false";
+        String user = "root";
+        String password = "";
+
+        Database.setConnection(url, user, password);
         cleanDatabase();
     }
 
