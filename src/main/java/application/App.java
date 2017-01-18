@@ -1,8 +1,10 @@
 package application;
 
+import database.Database;
 import framework.Aldo;
 import http.Routes;
 import mundus.ExpeditionMundus;
+import spark.Spark;
 
 import static spark.Spark.port;
 
@@ -27,6 +29,15 @@ public final class App {
         Routes.setupRoutes();
         Aldo.start(); //Executes the http routes defined by expedition Mundus
         // All web sockets should have been defined before.
+    }
+
+    /**
+     * Kills the Aldo game loop thread and database thread.
+     */
+    public static void stop() {
+        Database.closeDatabase();
+        Aldo.stopGameLoop();
+        Spark.stop();
     }
 
     /**

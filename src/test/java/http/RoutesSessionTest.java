@@ -18,7 +18,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import spark.Spark;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -53,7 +52,7 @@ public class RoutesSessionTest {
      */
     @AfterClass
     public static void after() {
-        Spark.stop();
+        App.stop();
     }
 
     /**

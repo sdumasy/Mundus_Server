@@ -117,6 +117,27 @@ public class MundusQueriesTest {
     }
 
     /**
+     * Test the retrieval of all the question ids.
+     */
+    @Test
+    public void getAllQuestionIDsSuccessTest() {
+        beforeMock();
+        Map<String, Object> map = new HashMap<>();
+        map.put("question_id", "42");
+        getEmpty().add(map);
+        map = new HashMap<>();
+        map.put("question_id", "43");
+        getEmpty().add(map);
+        PowerMockito.mockStatic(Database.class);
+        when(Database.executeSearchQuery(any())).thenReturn(getEmpty());
+
+        List<String> ids = getAllQuestionIDs();
+
+        assertTrue(ids.contains("43"));
+        assertTrue(ids.contains("42"));
+    }
+
+    /**
      * Verify that an exception is thrown when there are no more questions available to assign.
      */
     @Test
@@ -140,9 +161,7 @@ public class MundusQueriesTest {
             when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getResult());
             when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("answer", "42");
-            submitAnswer(getPlayer(), "", jsonObject);
+            submitAnswer(getPlayer(), "", "42");
         } catch (Exception e) {
             Assert.fail("Submitting an answer should succeed, but it failed: " + e.getLocalizedMessage());
         }
@@ -161,7 +180,7 @@ public class MundusQueriesTest {
         jsonObject.addProperty("answer", "42");
 
         exception.expect(HaltException.class);
-        submitAnswer(getPlayer(), "", jsonObject);
+        submitAnswer(getPlayer(), "", "42");
     }
 
     /**
@@ -210,11 +229,17 @@ public class MundusQueriesTest {
         try {
             beforeMock();
             PowerMockito.mockStatic(Database.class);
+            Map<String, Object> map = new HashMap<>();
+            map.put("score", "42");
+            map.put("player_id", "some id");
+            getEmpty().add(map);
+            
             when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
+            when(Database.executeSearchQuery(any(), any(), any())).thenReturn(getEmpty());
+            when(Database.executeSearchQuery(any(), any())).thenReturn(getEmpty());
+            when(Database.executeManipulationQuery(any(), any(), any())).thenReturn(true);
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("reviewed", "1");
-            submitReview(getPlayer(), "", jsonObject);
+            submitReview(getPlayer(), "", 1);
 
         } catch (Exception e) {
             Assert.fail("Submitting a review should succeed, but it failed: " + e.getLocalizedMessage());
@@ -227,13 +252,10 @@ public class MundusQueriesTest {
     @Test
     public void submitReviewFailureTest() {
         beforeMock();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("reviewed", "1");
-        submitReview(getPlayer(), "", jsonObject);
 
         exception.expect(HaltException.class);
         submitReview(new Player("ID", new Session("", "", 1, LocalDateTime.now()),
-                new Device("", ""), Role.User, 0, "username"), "", jsonObject);
+                new Device("", ""), Role.User, 0, "username"), "", 1);
     }
 
     /**

@@ -125,4 +125,37 @@ public class SubscriptionWebSocketTest {
 
         verify(remote, times(0)).sendString("message");
     }
+
+    /**
+     * Good weather test for sending a message to all the connected sessions.
+     *
+     * @throws IOException SendString might throw a error.
+     */
+    @Test
+    public void sendAllTestGood() throws IOException {
+        RemoteEndpoint remote = spy(RemoteEndpoint.class);
+        when(sessionMock.getRemote()).thenReturn(remote);
+
+        SubscriptionWebSocket socket = new SubscriptionWebSocket();
+        socket.connected(sessionMock);
+        socket.sendAll("message");
+
+        verify(remote, times(1)).sendString("message");
+    }
+
+    /**
+     * Bad weather test for sending a message to all the connected sessions.
+     *
+     * @throws IOException SendString might throw a error.
+     */
+    @Test
+    public void sendAllTestBad() throws IOException {
+        RemoteEndpoint remote = spy(RemoteEndpoint.class);
+        when(sessionMock.getRemote()).thenReturn(remote);
+
+        SubscriptionWebSocket socket = new SubscriptionWebSocket();
+        socket.sendAll("message");
+
+        verify(remote, times(0)).sendString("message");
+    }
 }

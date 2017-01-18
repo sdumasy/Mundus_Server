@@ -91,6 +91,7 @@ public final class Aldo {
      */
     public static void setupGameLoop(Runnable gameLoop, int interval) {
         if (interval > 0) {
+            stopGameLoop();
             (new Thread(() -> {
                 runningGameLoop = true;
                 while (runningGameLoop) {

@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,8 +77,8 @@ public final class Database {
      * @return result of query.
      */
     public static List<Map<String, Object>> executeSearchQuery(String sql, Object... params) {
-        CountDownLatch latch = new CountDownLatch(1);
-        Search search = new Search(sql, result1 -> latch.countDown(), params);
+        Search search = new Search(sql, result1 -> {
+        }, params);
         getInstance().add(search);
 
         while (search.getResult() == null) {
@@ -96,7 +95,7 @@ public final class Database {
      * @return <code>true</code> if query has been successfully executed, otherwise <code>false</code>
      */
     public static Boolean executeManipulationQuery(String sql, Object... params) {
-        Update update = new Update(sql, result1 -> {
+        Update update = new Update(sql, result -> {
         }, params);
         getInstance().add(update);
 
