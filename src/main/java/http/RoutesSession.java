@@ -51,7 +51,14 @@ public final class RoutesSession {
      * There is no role verification as everyone should be able to request any players score.
      */
     static void setupGetSessionRoute() {
-        get("/session", validatePlayer((request, player) -> player.getSession().toJson()));
+        get("/session", validatePlayer((request, player) -> {
+            JsonObject json = player.getSession().toJson();
+            if (player.isAdmin()) {
+                JsonObject jsonTokens = SessionQueries.getSessionTokens(player.getSession().getSessionID());
+                json.add("tokens", jsonTokens);
+            }
+            return json;
+        }));
     }
 
     /**

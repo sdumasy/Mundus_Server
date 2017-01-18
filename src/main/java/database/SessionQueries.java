@@ -125,9 +125,36 @@ public final class SessionQueries {
         if (result.size() > 1) {
             halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "SessionID not unique.");
         }
+
         Map<String, Object> map = result.get(0);
         return new Session(sessionID, map.get("player_id").toString(), (Integer) map.get("status"),
                     Timestamp.valueOf(map.get("created").toString()).toLocalDateTime());
+    }
+
+    /**
+     * Gets the tokens of a session by using the ID of a session.
+     *
+     * @param sessionID the ID of the session
+     * @return an instance of <code>JsonObject</code> containing the tokens
+     */
+    public static JsonObject getSessionTokens(String sessionID) {
+        String query = "SELECT `role_id`, `join_token` FROM `session_token`"
+                + "WHERE `session_id` = ? ORDER BY `role_id` ASC";
+        String[] keys = {"moderator", "user"};
+        List<Map<String, Object>> result = executeSearchQuery(query, sessionID);
+        JsonObject json = new JsonObject();
+        if (result.size() < 2) {
+            halter(HttpStatus.NOT_FOUND_404, "No session tokens found.");
+        }
+        if (result.size() > 2) {
+            halter(HttpStatus.INTERNAL_SERVER_ERROR_500, "SessionID not unique.");
+        }
+
+        for (int i = 0; i < result.size(); i++) {
+            Map<String, Object> row = result.get(i);
+            json.addProperty(keys[i], row.get("join_token").toString());
+        }
+        return json;
     }
 
     /**
