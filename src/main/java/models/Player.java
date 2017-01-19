@@ -184,7 +184,7 @@ public class Player {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerID", getPlayerID());
         jsonObject.add("session", session.toJson());
-        jsonObject.addProperty("role", role.name());
+        jsonObject.addProperty("role", role.getId());
         jsonObject.addProperty("score", score);
         jsonObject.addProperty("username", username);
         return jsonObject;

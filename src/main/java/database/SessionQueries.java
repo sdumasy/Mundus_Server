@@ -68,7 +68,7 @@ public final class SessionQueries {
         jsonTokens.addProperty("user", userToken);
 
         JsonObject json = player.toJson();
-        json.add("tokens", jsonTokens);
+        json.getAsJsonObject("session").add("tokens", jsonTokens);
         return json;
     }
 
