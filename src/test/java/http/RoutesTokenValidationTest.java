@@ -2,6 +2,7 @@ package http;
 
 import application.App;
 import database.AuthenticationTokenQueries;
+import database.DatabaseTest;
 import database.SessionQueries;
 import models.Device;
 import org.apache.http.HttpResponse;
@@ -40,6 +41,7 @@ public class RoutesTokenValidationTest {
      */
     @BeforeClass
     public static void beforeClass() {
+        DatabaseTest.clean();
         App.main(null);
     }
 

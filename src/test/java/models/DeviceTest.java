@@ -25,7 +25,7 @@ public class DeviceTest {
      */
     @BeforeClass
     public static void clean() {
-        DatabaseTest.cleanDatabase();
+        DatabaseTest.clean();
     }
 
     /**

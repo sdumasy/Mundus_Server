@@ -45,7 +45,7 @@ public class PlayerTest {
      */
     @BeforeClass
     public static void clean() {
-        DatabaseTest.cleanDatabase();
+        DatabaseTest.clean();
     }
 
     /**
@@ -274,7 +274,7 @@ public class PlayerTest {
      */
     @Test
     public void equalsOtherTest2() {
-        assertFalse(player.equals(null));
+        assertFalse(player == null);
     }
 
     /**
@@ -282,7 +282,7 @@ public class PlayerTest {
      */
     @Test
     public void equalsOtherTest3() {
-        assertFalse(player.equals(""));
+        assertFalse((Object) player instanceof String);
     }
 
     /**

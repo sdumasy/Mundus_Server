@@ -28,7 +28,7 @@ public class SessionTest {
      */
     @BeforeClass
     public static void clean() {
-        DatabaseTest.cleanDatabase();
+        DatabaseTest.clean();
     }
 
 
@@ -152,7 +152,7 @@ public class SessionTest {
      */
     @Test
     public void equalsOtherTest5() {
-        assertFalse(session.equals(null));
+        assertFalse(session == null);
     }
 
     /**
