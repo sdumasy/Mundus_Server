@@ -2,6 +2,7 @@ package http;
 
 import application.App;
 import database.AuthenticationTokenQueries;
+import database.DatabaseTest;
 import database.SessionQueries;
 import models.Device;
 import org.apache.http.HttpResponse;
@@ -15,7 +16,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import spark.Spark;
 
 import java.io.IOException;
 
@@ -41,6 +41,7 @@ public class RoutesTokenValidationTest {
      */
     @BeforeClass
     public static void beforeClass() {
+        DatabaseTest.clean();
         App.main(null);
     }
 
@@ -49,7 +50,7 @@ public class RoutesTokenValidationTest {
      */
     @AfterClass
     public static void afterClass() {
-        Spark.stop();
+        App.stop();
     }
 
     /**

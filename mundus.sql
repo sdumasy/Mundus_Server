@@ -105,7 +105,8 @@ CREATE TABLE `session_token` (
 -- -----------------------------------------------------
 CREATE TABLE `question` (
   `question_id` INT NOT NULL,
-  `text` VARCHAR(1000) NULL,
+  `question` VARCHAR(1000) NULL,
+  `correct_answer` VARCHAR(1000) NULL,
   PRIMARY KEY (`question_id`));
 
 
@@ -117,6 +118,7 @@ CREATE TABLE `session_question` (
   `question_id` INT NULL,
   `player_id` VARCHAR(45) NOT NULL,
   `answer` VARCHAR(1000) NOT NULL,
+  `session_id` VARCHAR(45) NOT NULL,
   `reviewed` INT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `question_id`

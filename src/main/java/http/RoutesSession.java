@@ -12,10 +12,8 @@ import static spark.Spark.*;
 import static util.Halt.halter;
 
 /**
- * Could not be prevented easily.
+ * Routes associated with session.
  */
-@SuppressWarnings("PMD.TooManyStaticImports")
-
 public final class RoutesSession {
     /**
      * Private constructor.
@@ -53,13 +51,19 @@ public final class RoutesSession {
      * There is no role verification as everyone should be able to request any players score.
      */
     static void setupGetSessionRoute() {
-        get("/session", validatePlayer((request, player) -> player.getSession().toJson()));
+        get("/session", validatePlayer((request, player) -> {
+            JsonObject json = player.getSession().toJson();
+            if (player.isAdmin()) {
+                JsonObject jsonTokens = SessionQueries.getSessionTokens(player.getSession().getSessionID());
+                json.add("tokens", jsonTokens);
+            }
+            return json;
+        }));
     }
 
     /**
      * Setup the route that allows clients to get all players and their scores in their session.
-     * The client needs to provide a session ID.
-     * There is no role verification as everyone should be able to request any players score.
+     * There is no role verification as everyone should be able to request any players score of there session.
      */
     static void setupGetSessionPlayersRoute() {
         get("/session/players", validatePlayer((request, player) ->
@@ -71,11 +75,11 @@ public final class RoutesSession {
      */
     static void setupSessionManagementRoutes() {
 
-        put("/session/manage/play", validatePlayer((request, player) -> setSessionStatus(player, 1)));
+        put("/session/play", validatePlayer((request, player) -> setSessionStatus(player, 1)));
 
-        put("/session/manage/pause", validatePlayer((request, player) -> setSessionStatus(player, 2)));
+        put("/session/pause", validatePlayer((request, player) -> setSessionStatus(player, 2)));
 
-        delete("/session/manage/delete", validatePlayer((request, player) -> setSessionStatus(player, 0)));
+        delete("/session/delete", validatePlayer((request, player) -> setSessionStatus(player, 0)));
     }
 
     /**

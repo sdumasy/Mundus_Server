@@ -2,8 +2,14 @@ package mundus;
 
 import com.google.gson.JsonObject;
 import framework.Aldo;
+import http.SubscriptionWebSocket;
+import org.eclipse.jetty.http.HttpStatus;
 
-import static mundus.MundusQueries.getQuestion;
+import java.util.ArrayList;
+import java.util.List;
+
+import static mundus.MundusQueries.*;
+import static util.Halt.halter;
 
 
 /**
@@ -22,43 +28,79 @@ public final class ExpeditionMundus {
      * Creates http routes.
      */
     public static void create() {
-//        Aldo.setupGameLoop(() -> Logger.getGlobal().log(Level.INFO, "Game loop is running!"),
-//                ((int) TimeUnit.SECONDS.toMillis((long) 1))); //No magic number :D
-        Aldo.subscribe("/1", new String[]{"/echo1"}, (player, sessionID) -> true);
-        Aldo.subscribe("/2", new String[]{"/echo2"}, (player, sessionID) -> true);
-        questions();
+        List<SubscriptionWebSocket> sockets = new ArrayList<>();
+        sockets.add(Aldo.subscribe("/answer", new String[]{"/question/:questionID/answer"},
+                (player, sessionID) -> player.isAdmin() || player.isModerator()));
+        for (String questionID : getAllQuestionIDs()) {
+            sockets.add(Aldo.subscribe("/question/" + questionID,
+                    new String[]{"/question/" + questionID + "/review"}, (player, sessionID) ->
+                            isAssigned(player.getPlayerID(), questionID)));
+        }
+
+        // Keep web socket alive.
+        Aldo.setupGameLoop(() -> {
+            for (SubscriptionWebSocket socket : sockets) {
+                socket.sendAll("");
+            }
+        }, 30000);
+
+        questionPaths();
+        moderatorQuestionPaths();
     }
 
     /**
      * Creates routes associated with research questions.
      */
-    public static void questions() {
+    protected static void questionPaths() {
         Aldo.get("/question", (player, json) -> getQuestion(player));
+
+        Aldo.get("/assigned", (player, json) -> getAssignedQuestions(player));
+
         Aldo.post("/question/:questionID/answer", (player, json) -> {
-            // TODO: 23/12/16 Answer question.
+            String questionID = json.get(":questionid").getAsString();
+            if (!json.has("answer")) {
+                halter(HttpStatus.BAD_REQUEST_400, "'answer' not specified in json body");
+            }
+            String answer = json.get("answer").getAsString();
+            submitAnswer(player, questionID, answer);
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            jsonObject.addProperty("playerID", player.getPlayerID());
+            jsonObject.addProperty("questionID", questionID);
+            jsonObject.addProperty("answer", answer);
             return jsonObject;
         });
 
-        Aldo.get("/publications", (player, json) -> {
-            // TODO: 23/12/16 Get an overview of all approved answers.
+        Aldo.get("publications", (player, json) -> getPublications(player));
+
+        Aldo.get("/players", (player, json) -> getPlayersPublications(player.getSession().getSessionID()));
+    }
+
+    /**
+     * Question paths only accessible for moderator and admin.
+     */
+    protected static void moderatorQuestionPaths() {
+        Aldo.get("/submitted", (player, json) -> getSubmitted(player));
+
+        Aldo.put("/question/:questionID/review", (player, json) -> {
+
+            String questionID = json.get(":questionid").getAsString();
+            if (!json.has("reviewed")) {
+                halter(HttpStatus.BAD_REQUEST_400, "'reviewed' not specified in json body");
+            }
+            int review = -1;
+            try {
+                review = json.get("reviewed").getAsInt();
+            } catch (NumberFormatException e) {
+                halter(HttpStatus.BAD_REQUEST_400, "The value of 'reviewed' cannot be cast to an int.");
+            }
+
+            submitReview(player, questionID, review);
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
-            return jsonObject;
-        });
-
-        Aldo.post("/echo1", (player, json) -> {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
-            return jsonObject;
-        });
-
-        Aldo.post("/echo2", (player, json) -> {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("response", json.toString() + player.getPlayerID());
+            jsonObject.addProperty("playerID", player.getPlayerID());
+            jsonObject.addProperty("questionID", questionID);
+            jsonObject.addProperty("review", review);
             return jsonObject;
         });
     }

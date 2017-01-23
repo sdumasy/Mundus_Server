@@ -149,6 +149,15 @@ public class Player {
     }
 
     /**
+     * Returns whether this player is an admin or not.
+     *
+     * @return The boolean value.
+     */
+    public boolean isModerator() {
+        return getRoleID() == 1;
+    }
+
+    /**
      * Gets the score.
      *
      * @return The score.
@@ -174,8 +183,8 @@ public class Player {
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerID", getPlayerID());
-        jsonObject.addProperty("sessionID", session.toJson().toString());
-        jsonObject.addProperty("role", role.name());
+        jsonObject.add("session", session.toJson());
+        jsonObject.addProperty("role", role.getId());
         jsonObject.addProperty("score", score);
         jsonObject.addProperty("username", username);
         return jsonObject;

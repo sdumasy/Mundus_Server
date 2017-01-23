@@ -2,15 +2,16 @@ package framework;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import database.PlayerQueries;
+import database.SessionQueries;
+import http.Routes;
 import http.SubscriptionWebSocket;
-import models.Player;
 import org.eclipse.jetty.http.HttpStatus;
 import spark.Route;
 import spark.Spark;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static util.Halt.halter;
 
@@ -31,7 +32,7 @@ public final class Aldo {
      *
      * @return The active instance of Aldo.
      */
-    public static Aldo getInstance() {
+    private static Aldo getInstance() {
         return instance;
     }
 
@@ -46,23 +47,20 @@ public final class Aldo {
                                                   SubscriptionVerifier subscriptionVerifier) {
         SubscriptionWebSocket webSocket = new SubscriptionWebSocket();
         Spark.webSocket("/subscribe/" + simplifyPath(path), webSocket);
-        addRoute(() -> Spark.before("/subscribe/" + simplifyPath(path), (request, response) -> {
-            Player player = request.attribute("player");
-            if (!subscriptionVerifier.handle(player, player.getSession().getSessionID())) {
-                halter(HttpStatus.UNAUTHORIZED_401, "You are unauthorized");
-            }
-        }));
+        addRoute(() -> Spark.before("/subscribe/" + simplifyPath(path), (request, response) ->
+                Routes.validatePlayer((request1, player) -> {
+                    if (!subscriptionVerifier.handle(player, player.getSession().getSessionID())) {
+                        halter(HttpStatus.UNAUTHORIZED_401, "You are unauthorized");
+                    }
+                    return null;
+                }).handle(request, response)));
 
         for (String s : paths) {
-            addRoute(() -> Spark.after("/Aldo/" + simplifyPath(s), (request, response) -> {
-                String[] authorizationValues = request.headers("Authorization").split(":");
-                if (authorizationValues.length == 3) {
-                    webSocket.send(PlayerQueries.getPlayer(authorizationValues[2]).getSession().getSessionID(),
-                            response.body());
-                } else {
-                    halter(HttpStatus.BAD_REQUEST_400, "Bad request");
-                }
-            }));
+            addRoute(() -> Spark.after("/Aldo/" + simplifyPath(s), (request, response) ->
+                    Routes.validatePlayer((request1, player) -> {
+                        webSocket.send(player.getSession().getSessionID(), response.body());
+                        return null;
+                    }).handle(request, response)));
         }
         return webSocket;
     }
@@ -93,6 +91,7 @@ public final class Aldo {
      */
     public static void setupGameLoop(Runnable gameLoop, int interval) {
         if (interval > 0) {
+            stopGameLoop();
             (new Thread(() -> {
                 runningGameLoop = true;
                 while (runningGameLoop) {
@@ -125,15 +124,28 @@ public final class Aldo {
      * @return The spark route.
      */
     protected static Route toRoute(RequestHandler requestHandler) {
-        return (request, response) -> {
+        return Routes.validatePlayer((request, player) -> {
             JsonObject jsonObject = new JsonObject();
             if (!request.body().equals("")) {
                 jsonObject = new JsonParser().parse(request.body()).getAsJsonObject();
             }
-            response.body(requestHandler.handle(request.attribute("player"),
-                    jsonObject).toString());
-            return null;
-        };
+            if (request.params().size() != 0) {
+                for (Map.Entry<String, String> e: request.params().entrySet()) {
+                    jsonObject.addProperty(e.getKey(), e.getValue());
+                }
+            }
+
+            return requestHandler.handle(player, jsonObject);
+        });
+    }
+
+    /**
+     * Get all the sessions.
+     *
+     * @return Returns all sessions.
+     */
+    public static List<models.Session> getSessions() {
+        return SessionQueries.getAllSession();
     }
 
     /**

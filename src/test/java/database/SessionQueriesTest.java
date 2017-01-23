@@ -1,6 +1,7 @@
 package database;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import models.Device;
 import models.Player;
 import models.Role;
@@ -30,7 +31,7 @@ public class SessionQueriesTest {
      */
     @BeforeClass
     public static void clean() {
-        DatabaseTest.cleanDatabase();
+        DatabaseTest.clean();
     }
 
     /**
@@ -123,6 +124,22 @@ public class SessionQueriesTest {
     }
 
     /**
+     * Gets the join tokens of a session.
+     */
+    @Test
+    public void getSessionTokensTest() {
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+
+            assertEquals(DatabaseTest.MOD_JOIN_ID, getSessionTokens(DatabaseTest.SESSION_ID).get("moderator").getAsString());
+            assertEquals(DatabaseTest.USER_JOIN_ID, getSessionTokens(DatabaseTest.SESSION_ID).get("user").getAsString());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
+    }
+
+    /**
      * Test if the administrator can change the state of the session.
      */
     @Test
@@ -150,7 +167,8 @@ public class SessionQueriesTest {
             DatabaseTest.setupDevice();
             DatabaseTest.setupSession();
 
-            JsonArray jsonArray = getPlayers(DatabaseTest.SESSION_ID);
+            JsonObject jsonObject = getPlayers(DatabaseTest.SESSION_ID);
+            JsonArray jsonArray = jsonObject.get("players").getAsJsonArray();
             assertEquals(1, jsonArray.size());
             assertEquals(DatabaseTest.PLAYER_ID, jsonArray.get(0).getAsJsonObject().get("playerID").getAsString());
         } finally {

@@ -22,10 +22,10 @@ public class SubscriptionWebSocket {
     private Map<String, Queue<Session>> sessions = new ConcurrentHashMap<>();
 
     /**
-     * Sends a message to all the sessions.
+     * Sends a message to the specified sessions.
      *
      * @param id      The id of the session to connect to.
-     * @param message the message to be sent.
+     * @param message The message to be sent.
      */
     public void send(String id, String message) {
         if (sessions.containsKey(id)) {
@@ -36,6 +36,17 @@ public class SubscriptionWebSocket {
                     Logger.getGlobal().log(Level.WARNING, e.getMessage());
                 }
             }
+        }
+    }
+
+    /**
+     * Sends a message to all sessions.
+     *
+     * @param message The message to be sent.
+     */
+    public void sendAll(String message) {
+        for (String id : sessions.keySet()) {
+            send(id, message);
         }
     }
 

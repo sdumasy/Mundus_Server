@@ -1,9 +1,7 @@
 package http;
 
 import application.App;
-import database.AuthenticationTokenQueries;
-import database.PlayerQueries;
-import database.SessionQueries;
+import database.*;
 import models.Device;
 import models.Player;
 import models.Role;
@@ -16,7 +14,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import spark.Spark;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -45,6 +42,7 @@ public class RoutesPlayerTest {
      */
     @BeforeClass
     public static void beforeAll() {
+        DatabaseTest.clean();
         App.main(null);
     }
 
@@ -53,7 +51,7 @@ public class RoutesPlayerTest {
      */
     @AfterClass
     public static void after() {
-        Spark.stop();
+        App.stop();
     }
 
     /**

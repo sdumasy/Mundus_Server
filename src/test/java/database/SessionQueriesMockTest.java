@@ -77,6 +77,32 @@ public class SessionQueriesMockTest {
     }
 
     /**
+     * Test whether getting tokens for a non existing session raises an exception.
+     */
+    @Test
+    public void getSessionTokensEmptyTest() {
+        beforeMock();
+        PowerMockito.mockStatic(Database.class);
+        when(Database.executeSearchQuery(any(), any())).thenReturn(getEmpty());
+        exception.expect(HaltException.class);
+        getSessionTokens("");
+    }
+
+    /**
+     * Test whether getting more than two tokens raises an exception.
+     */
+    @Test
+    public void getSessionTokensMultipleTest() {
+        beforeMock();
+        getResult().add(getM());
+        getResult().add(getM());
+        PowerMockito.mockStatic(Database.class);
+        when(Database.executeSearchQuery(any(), any())).thenReturn(getResult());
+        exception.expect(HaltException.class);
+        getSessionTokens("");
+    }
+
+    /**
      * Test changing the session status to zero.
      */
     @Test
