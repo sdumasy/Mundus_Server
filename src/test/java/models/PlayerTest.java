@@ -34,6 +34,7 @@ public class PlayerTest {
     private String playerID = "playerID_42";
     private String sessionID = "sessionID_42";
     private String username = "username_42";
+    private int score = 42;
     private String deviceID2 = "deviceID_43";
     private String token2 = "token_43";
     private String playerID2 = "playerID_43";
@@ -90,9 +91,9 @@ public class PlayerTest {
         DatabaseTest.setupSession();
         try {
             exception.expect(HaltException.class);
-            Player newPlayer = Player.newPlayer(
+            Player.newPlayer(
                     new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now()), 0,
-                    new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), 42, DatabaseTest.USERNAME);
+                    new Device(DatabaseTest.DEVICE_ID, DatabaseTest.TOKEN), score, DatabaseTest.USERNAME);
         } finally {
             DatabaseTest.cleanDatabase();
         }
@@ -192,11 +193,11 @@ public class PlayerTest {
     public void toJsonTest() {
         JsonObject jsonObject = player.toJson();
 
-        assertEquals("playerID_42", jsonObject.get("playerID").getAsString());
-        assertEquals("sessionID_42", jsonObject.get("sessionID").getAsString());
-        assertEquals("Admin", jsonObject.get("role").getAsString());
-        assertEquals("42", jsonObject.get("score").getAsString());
-        assertEquals("username_42", jsonObject.get("username").getAsString());
+        assertEquals(playerID, jsonObject.get("playerID").getAsString());
+        assertEquals(sessionID, jsonObject.getAsJsonObject("session").get("sessionID").getAsString());
+        assertEquals(0, jsonObject.get("role").getAsInt());
+        assertEquals(score, jsonObject.get("score").getAsInt());
+        assertEquals(username, jsonObject.get("username").getAsString());
     }
 
     /**
@@ -282,7 +283,7 @@ public class PlayerTest {
      */
     @Test
     public void equalsOtherTest3() {
-        assertFalse((Object) player instanceof String);
+        assertFalse(player.equals(""));
     }
 
     /**

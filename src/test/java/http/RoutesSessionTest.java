@@ -20,10 +20,14 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 
 import static http.RoutesTest.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -63,6 +67,23 @@ public class RoutesSessionTest {
     public  void before() {
         PowerMockito.mockStatic(AuthenticationTokenQueries.class);
         when(AuthenticationTokenQueries.selectAuthorizationToken(anyString())).thenReturn(MOCKED_TOKEN);
+    }
+
+    /**
+     * Test whether constructor is private and does not raise any exceptions.
+     *
+     * @throws NoSuchMethodException     The method must be there.
+     * @throws IllegalAccessException    The method must be accessible.
+     * @throws InvocationTargetException The method must be invocable
+     * @throws InstantiationException    The method must be instantiationable.
+     */
+    @Test
+    public void testConstructorIsPrivate() throws NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, InstantiationException {
+        Constructor<RoutesSession> constructor = RoutesSession.class.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 
     /**
@@ -137,6 +158,26 @@ public class RoutesSessionTest {
 
         when(PlayerQueries.getPlayer(any())).thenReturn(new Player("player", session,
                 new Device(DatabaseTest.DEVICE_ID, MOCKED_TOKEN), Role.User, 0, ""));
+
+        String uri = "/session";
+        HttpResponse response = processAuthorizedGetRoute(uri,
+                DatabaseTest.DEVICE_ID, MOCKED_TOKEN, "player");
+        assertEquals("HTTP/1.1 200 OK", response.getStatusLine().toString());
+    }
+
+    /**
+     * Try getting information as admin about a session by sessionID.
+     * @throws IOException Throws an exception if the request execution fails.
+     */
+    @Test
+    public void setupGetSessionAsAdminTest() throws IOException {
+        PowerMockito.mockStatic(SessionQueries.class);
+        PowerMockito.mockStatic(PlayerQueries.class);
+        Session session = new Session(DatabaseTest.SESSION_ID, DatabaseTest.PLAYER_ID, 1, LocalDateTime.now());
+        when(SessionQueries.getSession(any())).thenReturn(session);
+
+        when(PlayerQueries.getPlayer(any())).thenReturn(new Player(DatabaseTest.PLAYER_ID, session,
+                new Device(DatabaseTest.DEVICE_ID, MOCKED_TOKEN), Role.Admin, 0, DatabaseTest.ADMIN_USERNAME));
 
         String uri = "/session";
         HttpResponse response = processAuthorizedGetRoute(uri,

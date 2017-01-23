@@ -124,6 +124,22 @@ public class SessionQueriesTest {
     }
 
     /**
+     * Gets the join tokens of a session.
+     */
+    @Test
+    public void getSessionTokensTest() {
+        try {
+            DatabaseTest.setupDevice();
+            DatabaseTest.setupSession();
+
+            assertEquals(DatabaseTest.MOD_JOIN_ID, getSessionTokens(DatabaseTest.SESSION_ID).get("moderator").getAsString());
+            assertEquals(DatabaseTest.USER_JOIN_ID, getSessionTokens(DatabaseTest.SESSION_ID).get("user").getAsString());
+        } finally {
+            DatabaseTest.cleanDatabase();
+        }
+    }
+
+    /**
      * Test if the administrator can change the state of the session.
      */
     @Test
