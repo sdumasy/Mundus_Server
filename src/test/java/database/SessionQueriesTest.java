@@ -132,8 +132,11 @@ public class SessionQueriesTest {
             DatabaseTest.setupDevice();
             DatabaseTest.setupSession();
 
-            assertEquals(DatabaseTest.MOD_JOIN_ID, getSessionTokens(DatabaseTest.SESSION_ID).get("moderator").getAsString());
-            assertEquals(DatabaseTest.USER_JOIN_ID, getSessionTokens(DatabaseTest.SESSION_ID).get("user").getAsString());
+            assertEquals(DatabaseTest.MOD_JOIN_ID,
+                    getSessionTokens(DatabaseTest.SESSION_ID)
+                    .get("moderator").getAsString());
+            assertEquals(DatabaseTest.USER_JOIN_ID,
+                    getSessionTokens(DatabaseTest.SESSION_ID).get("user").getAsString());
         } finally {
             DatabaseTest.cleanDatabase();
         }
