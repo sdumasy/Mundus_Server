@@ -92,7 +92,7 @@ public class MundusQueriesTest {
         when(Database.executeManipulationQuery(any(), any(), any(), any())).thenReturn(true);
 
         JsonObject jsonObject = getQuestion(getPlayer());
-        assertEquals("42", jsonObject.get("question_id").getAsString());
+        assertEquals("42", jsonObject.get("questionID").getAsString());
         assertEquals("Is this a question?", jsonObject.get("question").getAsString());
     }
 
@@ -201,7 +201,7 @@ public class MundusQueriesTest {
         JsonObject jsonObjectList = getSubmitted(getPlayer());
         JsonArray jsonArray = jsonObjectList.getAsJsonArray("answers");
         JsonObject jsonObject = jsonArray.get(0).getAsJsonObject();
-        assertEquals("42", jsonObject.get("question_id").getAsString());
+        assertEquals("42", jsonObject.get("questionID").getAsString());
         assertEquals("?", jsonObject.get("question").getAsString());
         assertEquals("answer", jsonObject.get("answer").getAsString());
         assertEquals("correct", jsonObject.get("correct_answer").getAsString());
@@ -276,7 +276,7 @@ public class MundusQueriesTest {
         JsonObject jsonObjectList = getPublications(getPlayer());
         JsonArray jsonArray = jsonObjectList.getAsJsonArray("answers");
         JsonObject jsonObject = jsonArray.get(0).getAsJsonObject();
-        assertEquals("42", jsonObject.get("question_id").getAsString());
+        assertEquals("42", jsonObject.get("questionID").getAsString());
         assertEquals("?", jsonObject.get("question").getAsString());
         assertEquals("answer", jsonObject.get("answer").getAsString());
         assertEquals("correct", jsonObject.get("correct_answer").getAsString());

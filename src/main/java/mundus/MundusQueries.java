@@ -101,7 +101,7 @@ public final class MundusQueries {
         executeManipulationQuery(query, questionID, playerID, sessionID);
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("question_id", questionID);
+        jsonObject.addProperty("questionID", questionID);
         jsonObject.addProperty("question", m.get("question").toString());
         return jsonObject;
     }
@@ -163,7 +163,7 @@ public final class MundusQueries {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("answer", result.get("answer").toString());
             jsonObject.addProperty("correct_answer", result.get("correct_answer").toString());
-            jsonObject.addProperty("question_id", result.get("question_id").toString());
+            jsonObject.addProperty("questionID", result.get("question_id").toString());
             jsonObject.addProperty("question", result.get("question").toString());
             jsonArray.add(jsonObject);
         }
@@ -254,7 +254,7 @@ public final class MundusQueries {
      * @param playerID The playerID
      * @return A JsonArray with the publications
      */
-    private static JsonArray getPlayerPublications(String playerID) {
+    public static JsonArray getPlayerPublications(String playerID) {
         String query = "SELECT `q`.`question`, `q`.`question_id`, `q`.`correct_answer`, "
                 + "`sq`.`answer` FROM `session_question` `sq` INNER JOIN `question` `q` "
                 + "ON `sq`.`question_id`=`q`.`question_id`"
@@ -276,7 +276,7 @@ public final class MundusQueries {
         List<Map<String, Object>> result = executeSearchQuery(query, player.getPlayerID());
         for (Map<String, Object> aResult : result) {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("question_id", aResult.get("question_id").toString());
+            jsonObject.addProperty("questionID", aResult.get("question_id").toString());
             jsonObject.addProperty("question", aResult.get("question").toString());
             jsonObject.addProperty("reviewed", aResult.get("reviewed").toString());
             jsonArray.add(jsonObject);
